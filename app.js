@@ -808,7 +808,12 @@ function renderStep1KigoList() {
 
     parents.forEach(pData => {
         const itemEl = document.createElement('div');
-        itemEl.className = 'step1-kigo-item';
+        const len = (pData.parentKigo || '').length;
+        let extraClass = '';
+        if (len >= 8) extraClass = ' extra-long-kigo';
+        else if (len >= 6) extraClass = ' long-kigo';
+
+        itemEl.className = `step1-kigo-item${extraClass}`;
         itemEl.onclick = () => insertKigoToInput(pData.parentKigo);
         itemEl.textContent = pData.parentKigo;
         container.appendChild(itemEl);
