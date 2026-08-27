@@ -346,7 +346,7 @@ body, html {
 }
 
 .btn-group { display: flex; gap: 12px; justify-content: center; width: 100%; max-width: 400px; z-index: 40; flex-shrink: 0; }
-.btn { flex: 1; padding: 12px 0; font-size: 0.95rem; font-family: inherit; letter-spacing: 0.15em; color: #faf9f6; background-color: #2b2b2b; border: none; border-radius: 25px; cursor: pointer; transition: opacity 0.2s, transform 0.1s; user-select: none; white-space: nowrap; text-align: center; }
+.btn { flex: 1; padding: 12px 0; font-size: 0.95rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Hiragino Sans", "Noto Sans JP", sans-serif; letter-spacing: 0.15em; color: #faf9f6; background-color: #2b2b2b; border: none; border-radius: 25px; cursor: pointer; transition: opacity 0.2s, transform 0.1s; user-select: none; white-space: nowrap; text-align: center; }
 .btn:active { transform: scale(0.98); }
 .btn-outline { background-color: transparent; color: #555; border: 1px solid #b5b5b5; }
 .btn:disabled { opacity: 0.5; pointer-events: none; cursor: default; }
@@ -758,15 +758,21 @@ body, html {
 }
 .kigo-insert-action:hover { color: #2b2b2b; opacity: 0.8; }
 .kigo-insert-action:active { transform: scale(0.96); }
-.step1-btn-group {
+.step1-btn-group,
+.step2-btn-group {
     max-width: 290px !important;
     gap: 10px !important;
+    margin-top: 10px !important;
+}
+.step1-btn-group {
     margin-top: -2px !important;
 }
-.step1-btn-group .btn {
+.step1-btn-group .btn,
+.step2-btn-group .btn {
     padding: 8px 0 !important;
     font-size: 0.86rem !important;
     letter-spacing: 0.08em !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Hiragino Sans", "Noto Sans JP", sans-serif !important;
 }
 
 .step1-kigo-scroll-list {

@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.21">
+    <link rel="stylesheet" href="style.css?v=2.0.22">
 </head>
 <body>
 
@@ -473,11 +473,10 @@
                     <input type="text" id="authorKanaInput" class="text-input" placeholder="例：まつおばしょう">
                 </div>
 
-                <!-- 作句日付（年のみ・年月・年月日 自由入力 ＆ 今日ボタン） -->
+                <!-- 作句日付（年のみ・年月・年月日 自由入力） -->
                 <div class="form-group" style="margin-top: 15px; border-top: 1px dashed #ddd; padding-top: 10px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <div style="margin-bottom: 4px;">
                         <label class="form-label" style="margin: 0;">作句日付（年のみ・年月・年月日）</label>
-                        <span class="text-action-btn primary" style="font-size: 0.78rem;" onclick="setTodaySakkuDate()">今日の日付</span>
                     </div>
                     <div style="display: flex; gap: 6px; align-items: center;">
                         <input type="text" id="sakkuYearInput" class="text-input" style="flex: 2; text-align: center;" placeholder="年 (例: 1689)" inputmode="numeric">
@@ -487,11 +486,11 @@
                         <input type="text" id="sakkuDayInput" class="text-input" style="flex: 1.2; text-align: center;" placeholder="日" inputmode="numeric">
                         <span style="font-size: 0.85rem; color: #888; white-space: nowrap;">日</span>
                     </div>
-                    <div style="font-size: 0.72rem; color: #999; margin-top: 4px;">※すべて空欄にすると「年代不詳」として保存されます。</div>
+                    <div style="font-size: 0.72rem; color: #8c8476; margin-top: 5px; white-space: nowrap; letter-spacing: 0.02em;">※全て空欄にすると「年代不詳」として保存</div>
                 </div>
             </div>
         </div>
-        <div class="btn-group">
+        <div class="btn-group step2-btn-group">
             <button class="btn btn-outline" onclick="goToStep(1)">戻る</button>
             <button class="btn" onclick="goToStep3()">プレビューへ</button>
         </div>
@@ -533,6 +532,6 @@
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.21"></script>
+    <script src="app.js?v=2.0.22"></script>
 </body>
 </html>
