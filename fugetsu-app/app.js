@@ -138,7 +138,18 @@ function parseDateLabel(dateStr) {
 // ========================================================
 window.onload = function() {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
+        navigator.serviceWorker.register('./sw.js').then((reg) => {
+            // アプリ起動時に毎回バックグラウンドで最新アップデートを確認
+            reg.update().catch(() => {});
+        }).catch(() => {});
+
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+                refreshing = true;
+                window.location.reload();
+            }
+        });
     }
 
     loadUserSettings();

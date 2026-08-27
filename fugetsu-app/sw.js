@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fugetsu-release-v12';
+const CACHE_NAME = 'fugetsu-release-v13';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -39,14 +39,36 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Cache-First (キャッシュ優先で電波がなくても爆速起動)
+// Network-First for HTML/JS/CSS (電波があれば常に最新を取得し、オフライン時はキャッシュ)
 self.addEventListener('fetch', (event) => {
+  const url = event.request.url;
+  
+  if (url.endsWith('.html') || url.endsWith('.js') || url.endsWith('.css') || url.endsWith('/')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // 画像・データファイルなどはキャッシュ優先
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request);
+      if (cachedResponse) return cachedResponse;
+      return fetch(event.request).then((response) => {
+        if (response && response.status === 200) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+        }
+        return response;
+      });
     })
   );
 });
