@@ -188,9 +188,10 @@ function applyUserSettingsToUI() {
     updateHeaderTitle();
     const kiyoseBlock = document.getElementById('homeKiyoseBlock');
     if (kiyoseBlock) {
-        const isShow = !!userSettings.homeKiyose;
-        kiyoseBlock.classList.toggle('hidden', !isShow);
-        kiyoseBlock.style.display = isShow ? 'flex' : 'none';
+        // デフォルトで表示（hideHomeKiyose が true の場合のみ非表示）
+        const isHide = !!userSettings.hideHomeKiyose;
+        kiyoseBlock.classList.toggle('hidden', isHide);
+        kiyoseBlock.style.display = isHide ? 'none' : 'flex';
     }
 }
 
@@ -726,25 +727,26 @@ function openKigoCard(parentKigoName, fromContext = null) {
     const descCol = document.getElementById('cardDesc');
     descCol.innerHTML = `<div>${escapeHtml(desc)}</div>`;
 
-    // 4. アクション / 自作句カラム
+    // 4. アクション / 自作句カラム（右から左へ1句ずつ並ぶ純粋な横スクロール）
     const worksCol = document.getElementById('cardWorks');
     let worksHtml = '';
 
     if (fromContext === 'step1') {
-        // 作句中（ステップ1）から開いた場合：この季語を入力ボタンを最優先表示
+        // 作句中（ステップ1）から開いた場合：この季語を入力ボタンを表示
         worksHtml += `
-            <div class="kigo-insert-action" onclick="insertKigoToInput('${escapeHtml(parentKigoName)}')">
-                この季語を入力 ➔
+            <div class="kigo-work-single-col" style="justify-content: center;">
+                <div class="kigo-insert-action" onclick="insertKigoToInput('${escapeHtml(parentKigoName)}')">
+                    この季語を入力 ➔
+                </div>
             </div>
         `;
         if (works.length > 0) {
-            worksHtml += `<div class="works-kigo-title" style="margin-top: 1.5rem;">【登録作品】</div>`;
             works.forEach(w => {
                 const author = w.author || (userSettings.authorName || '風月');
                 worksHtml += `
-                    <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 8px;">
-                        <div class="kigo-user-phrase">${escapeHtml(w.phrase)}</div>
-                        <div class="kigo-user-author">${escapeHtml(author)}</div>
+                    <div class="kigo-work-single-col">
+                        <div class="kigo-work-phrase">${escapeHtml(w.phrase)}</div>
+                        <div class="kigo-work-author">${escapeHtml(author)}</div>
                     </div>
                 `;
             });
@@ -754,13 +756,12 @@ function openKigoCard(parentKigoName, fromContext = null) {
     } else {
         // 季寄せ画面から開いた場合
         if (works.length > 0) {
-            worksHtml = `<div class="works-kigo-title">【あなたの作品（${toKanjiNum(String(works.length))}句）】</div>`;
             works.forEach(w => {
                 const author = w.author || (userSettings.authorName || '風月');
                 worksHtml += `
-                    <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 8px;">
-                        <div class="kigo-user-phrase">${escapeHtml(w.phrase)}</div>
-                        <div class="kigo-user-author">${escapeHtml(author)}</div>
+                    <div class="kigo-work-single-col">
+                        <div class="kigo-work-phrase">${escapeHtml(w.phrase)}</div>
+                        <div class="kigo-work-author">${escapeHtml(author)}</div>
                     </div>
                 `;
             });
@@ -1166,8 +1167,8 @@ function openSettingsModal() {
     const startupChk = document.getElementById('settingStartupOmikuji');
     if (startupChk) startupChk.checked = !!userSettings.startupOmikuji;
     
-    const homeKiyoseChk = document.getElementById('settingHomeKiyose');
-    if (homeKiyoseChk) homeKiyoseChk.checked = !!userSettings.homeKiyose;
+    const hideHomeKiyoseChk = document.getElementById('settingHideHomeKiyose');
+    if (hideHomeKiyoseChk) hideHomeKiyoseChk.checked = !!userSettings.hideHomeKiyose;
 
     document.getElementById('settingsModal').classList.remove('hidden');
 }
@@ -1178,10 +1179,10 @@ function closeSettingsModal() {
 
 function onSettingCheckboxChanged() {
     const startupChk = document.getElementById('settingStartupOmikuji');
-    const homeKiyoseChk = document.getElementById('settingHomeKiyose');
+    const hideHomeKiyoseChk = document.getElementById('settingHideHomeKiyose');
 
     if (startupChk) userSettings.startupOmikuji = startupChk.checked;
-    if (homeKiyoseChk) userSettings.homeKiyose = homeKiyoseChk.checked;
+    if (hideHomeKiyoseChk) userSettings.hideHomeKiyose = hideHomeKiyoseChk.checked;
 
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
     applyUserSettingsToUI();
