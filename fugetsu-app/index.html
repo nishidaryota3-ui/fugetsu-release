@@ -139,17 +139,32 @@
         </div>
     </div>
 
-    <!-- 👤 作者選択 ＆ 句集印刷モーダル -->
+    <!-- 👤 句帳メニュー（三本柱：句帳切替・季寄せ・句集印刷）モーダル -->
     <div id="authorSelectModal" class="card-overlay hidden" onclick="closeAuthorSelectModal()">
         <div class="modal-card-content" onclick="event.stopPropagation()">
             <span class="modal-close-corner" onclick="closeAuthorSelectModal()">✕</span>
-            <h3 class="modal-title">句帳・句集の切り替え</h3>
-            <p class="settings-desc">表示する俳人を選択してください。</p>
-            <div id="authorSelectList" class="author-select-list"></div>
+            <h3 class="modal-title">句帳メニュー</h3>
+            
+            <!-- 一、句帳の切り替え -->
+            <div class="menu-pillar-section">
+                <div class="pillar-section-title">一、 句帳の切り替え</div>
+                <div id="authorSelectList" class="author-select-list"></div>
+            </div>
 
-            <!-- ▼▼ 句集印刷（PDF）セクション ▼▼ -->
-            <div class="print-section-box">
-                <div class="print-section-title">句集の冊子印刷 (PDF)</div>
+            <div class="settings-divider"></div>
+
+            <!-- 二、季寄せ・歳時記 -->
+            <div class="menu-pillar-section">
+                <div class="pillar-section-title">二、 季寄せ・歳時記</div>
+                <p class="settings-desc">全二万超の季語・オリジナル解説と、あなたの作品が連動する歳時記です。</p>
+                <button class="btn btn-outline" style="width: 100%; padding: 10px 0; font-size: 0.88rem;" onclick="openSaijikiScreenFromMenu()">季寄せを開く</button>
+            </div>
+
+            <div class="settings-divider"></div>
+
+            <!-- 三、句集印刷（PDF）セクション -->
+            <div class="menu-pillar-section">
+                <div class="pillar-section-title">三、 句集の冊子印刷 (PDF)</div>
                 <div class="print-setting-row">
                     <span>1ページの句数</span>
                     <select id="printLinesPerPage" class="text-input" style="width: 100px; padding: 4px 8px; font-size: 0.82rem; background: #ffffff;">
@@ -160,8 +175,61 @@
                         <option value="5">5句</option>
                     </select>
                 </div>
-                <button class="btn" style="padding: 9px 0; font-size: 0.85rem; margin-top: 3px;" onclick="printSelectedBooklet()">選択中の作者の句集を印刷（PDF）</button>
+                <button class="btn" style="padding: 9px 0; font-size: 0.85rem; margin-top: 5px; width: 100%;" onclick="printSelectedBooklet()">選択中の作者の句集を印刷（PDF）</button>
             </div>
+        </div>
+    </div>
+
+    <!-- 🌸 【新画面】季寄せ・歳時記 大画面 -->
+    <div id="saijikiScreen" class="step-screen">
+        <div class="read-header">
+            <div class="read-header-top">
+                <div class="breadcrumb">
+                    <span class="link" onclick="goToStartScreen()">home</span>
+                    <span class="separator">&lt;</span>
+                    <span class="link" onclick="startYomuMode()">俳句を読む</span>
+                    <span class="separator">&lt;</span>
+                    <span class="current">季寄せ</span>
+                </div>
+                
+                <div id="saijikiSearchWrapper" class="subtle-search-wrapper" onclick="expandSaijikiSearchInput()">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="saijikiSearchInput" class="subtle-search-input" placeholder="季語検索" oninput="onSaijikiSearchChanged()" onblur="collapseSaijikiSearchIfEmpty()">
+                    <span id="clearSaijikiSearchBtn" class="search-clear-btn hidden" onclick="clearSaijikiSearch(event)">✕</span>
+                </div>
+            </div>
+
+            <!-- 季節タブ -->
+            <div class="saijiki-season-tabs">
+                <span id="stabHaru" class="text-tab active" onclick="switchSaijikiSeason('haru')">春</span>
+                <span class="text-tab-divider">｜</span>
+                <span id="stabNatsu" class="text-tab" onclick="switchSaijikiSeason('natsu')">夏</span>
+                <span class="text-tab-divider">｜</span>
+                <span id="stabAki" class="text-tab" onclick="switchSaijikiSeason('aki')">秋</span>
+                <span class="text-tab-divider">｜</span>
+                <span id="stabHuyu" class="text-tab" onclick="switchSaijikiSeason('huyu')">冬</span>
+                <span class="text-tab-divider">｜</span>
+                <span id="stabShinnen" class="text-tab" onclick="switchSaijikiSeason('shinnen')">新年</span>
+                <span class="text-tab-divider">｜</span>
+                <span id="stabMuki" class="text-tab" onclick="switchSaijikiSeason('muki')">無季</span>
+            </div>
+        </div>
+
+        <!-- 季語横スクロールコンテナ（右から左へ並ぶ縦書き季語） -->
+        <div id="saijikiKigoList" class="horizontal-scroll-container saijiki-kigo-scroll-list">
+        </div>
+    </div>
+
+    <!-- 🌸 季語解説ポップアップカード（うてなモデル＋マイ歳時記自作句表示） -->
+    <div id="kigoCardOverlay" class="card-overlay hidden" onclick="closeKigoCard()">
+        <div class="kigo-card-content" onclick="event.stopPropagation()">
+            <span class="modal-close-corner" onclick="closeKigoCard()">✕</span>
+            <!-- 右から左への縦書きカラム -->
+            <div class="card-column parent-kigo-col" id="cardParentKigo"></div>
+            <div class="card-column child-kigo-col" id="cardChildKigo"></div>
+            <div class="card-column desc-kigo-col" id="cardDesc"></div>
+            <!-- 自作句・登録句カラム（作品がある場合） -->
+            <div class="card-column works-kigo-col" id="cardWorks"></div>
         </div>
     </div>
 
@@ -247,6 +315,32 @@
             <div class="btn-group">
                 <button class="btn btn-outline" onclick="cancelEmuMode()">戻る</button>
                 <button class="btn" onclick="goToStep2()">次へ（季語確認）</button>
+            </div>
+
+            <!-- ▼▼ 季寄せ参照スマートドック（キーボードと共存する静かなトレイ） ▼▼ -->
+            <div class="step1-saijiki-wrapper">
+                <div class="step1-saijiki-trigger" onclick="toggleStep1SaijikiTray()">
+                    <span id="step1TrayIcon">▿</span>
+                    <span id="step1TrayText">季寄せを参照する</span>
+                </div>
+                
+                <div id="step1SaijikiTray" class="step1-saijiki-tray hidden">
+                    <!-- 季節タブ -->
+                    <div class="step1-season-tabs">
+                        <span id="sttabHaru" class="text-tab active" onclick="switchStep1Season('haru')">春</span>
+                        <span class="text-tab-divider">｜</span>
+                        <span id="sttabNatsu" class="text-tab" onclick="switchStep1Season('natsu')">夏</span>
+                        <span class="text-tab-divider">｜</span>
+                        <span id="sttabAki" class="text-tab" onclick="switchStep1Season('aki')">秋</span>
+                        <span class="text-tab-divider">｜</span>
+                        <span id="sttabHuyu" class="text-tab" onclick="switchStep1Season('huyu')">冬</span>
+                        <span class="text-tab-divider">｜</span>
+                        <span id="sttabShinnen" class="text-tab" onclick="switchStep1Season('shinnen')">新年</span>
+                    </div>
+                    <!-- 季語リスト（タップでカーソル位置へ挿入） -->
+                    <div id="step1KigoList" class="horizontal-scroll-container step1-kigo-scroll-list">
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -46,6 +46,9 @@ let currentAuthorFilter = null; // null: 自分の句帳, 'ALL': すべて, ま�
 let editingHaikuObj = null; 
 let activeSelectedHaiku = null; 
 
+let currentSaijikiSeason = 'haru';
+let currentStep1Season = 'haru';
+
 let omikujiPool = [];
 let omikujiIndex = 0;
 let touchStartX = 0;
@@ -465,6 +468,334 @@ function selectAuthorFilter(author) {
     closeAuthorSelectModal();
     renderYomuList();
 }
+
+// ========================================================
+// 🌸 季寄せ・歳時記 大画面（マイ歳時記ハイブリッド）
+// ========================================================
+function openSaijikiScreenFromMenu() {
+    closeAuthorSelectModal();
+    document.querySelectorAll('.step-screen').forEach(el => el.classList.remove('active'));
+    document.getElementById('saijikiScreen').classList.add('active');
+    updateCatVisibility(false);
+    switchSaijikiSeason(currentSaijikiSeason || 'haru');
+}
+
+function switchSaijikiSeason(season) {
+    currentSaijikiSeason = season;
+    
+    // タブのactive切り替え
+    const tabs = ['haru', 'natsu', 'aki', 'huyu', 'shinnen', 'muki'];
+    tabs.forEach(s => {
+        const cap = s.charAt(0).toUpperCase() + s.slice(1);
+        const tabEl = document.getElementById(`stab${cap}`);
+        if (tabEl) tabEl.classList.toggle('active', s === season);
+    });
+
+    renderSaijikiKigoList();
+}
+
+function expandSaijikiSearchInput() {
+    const wrapper = document.getElementById('saijikiSearchWrapper');
+    const input = document.getElementById('saijikiSearchInput');
+    if (wrapper && input) { wrapper.classList.add('expanded'); input.focus(); }
+}
+
+function collapseSaijikiSearchIfEmpty() {
+    const wrapper = document.getElementById('saijikiSearchWrapper');
+    const input = document.getElementById('saijikiSearchInput');
+    if (wrapper && input && input.value.trim() === '') wrapper.classList.remove('expanded');
+}
+
+function onSaijikiSearchChanged() {
+    const input = document.getElementById('saijikiSearchInput');
+    const clearBtn = document.getElementById('clearSaijikiSearchBtn');
+    if (clearBtn && input) clearBtn.classList.toggle('hidden', input.value.trim() === '');
+    renderSaijikiKigoList();
+}
+
+function clearSaijikiSearch(event) {
+    if (event) event.stopPropagation();
+    const input = document.getElementById('saijikiSearchInput');
+    if (input) input.value = '';
+    const clearBtn = document.getElementById('clearSaijikiSearchBtn');
+    if (clearBtn) clearBtn.classList.add('hidden');
+    collapseSaijikiSearchIfEmpty();
+    renderSaijikiKigoList();
+}
+
+// 季寄せ季語一覧の描画（右から左へ並ぶ縦書きリスト ＋ 句数バッジ）
+function renderSaijikiKigoList() {
+    const container = document.getElementById('saijikiKigoList');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const query = document.getElementById('saijikiSearchInput') ? document.getElementById('saijikiSearchInput').value.trim().toLowerCase() : '';
+
+    // 1. 作品データベースから季語ごとの句数を集計
+    const kigoWorkMap = new Map();
+    haikuHistory.forEach(h => {
+        if (h.status === '完成句') {
+            const p = h.parentKigo || h.kigo;
+            if (p) {
+                if (!kigoWorkMap.has(p)) kigoWorkMap.set(p, []);
+                kigoWorkMap.get(p).push(h);
+            }
+        }
+    });
+
+    // 2. 現在の季節のユニークな親季語を抽出
+    const parentMap = new Map();
+    saijikiDatabase.forEach(item => {
+        const s = (item.season || '').toLowerCase();
+        const isSeasonMatch = (query !== '') ? true : (s === currentSaijikiSeason);
+        
+        if (isSeasonMatch) {
+            const p = item.parentKigo || item.kigo;
+            if (p && !parentMap.has(p)) {
+                parentMap.set(p, {
+                    parentKigo: p,
+                    parentKana: item.parentKana || '',
+                    season: item.season || '',
+                    detailSeason: item.detailSeason || '',
+                    desc: item.desc || '',
+                    children: new Set()
+                });
+            }
+            if (p && parentMap.has(p) && item.kigo && item.kigo !== p) {
+                parentMap.get(p).children.add(item.kigo);
+            }
+        }
+    });
+
+    // 3. 検索フィルタリング
+    let parents = Array.from(parentMap.values());
+    if (query !== '') {
+        parents = parents.filter(p => {
+            if (p.parentKigo.toLowerCase().includes(query)) return true;
+            if (p.parentKana.toLowerCase().includes(query)) return true;
+            for (const child of p.children) {
+                if (child.toLowerCase().includes(query)) return true;
+            }
+            return false;
+        });
+    }
+
+    if (parents.length === 0) {
+        container.innerHTML = '<div style="writing-mode: vertical-rl; color: #888; font-size: 0.95rem; margin: auto; letter-spacing: 0.2em;">該当する季語がありません</div>';
+        return;
+    }
+
+    // 4. 縦書き要素の生成
+    parents.forEach(pData => {
+        const works = kigoWorkMap.get(pData.parentKigo) || [];
+        const workCount = works.length;
+
+        const itemEl = document.createElement('div');
+        itemEl.className = 'saijiki-kigo-item';
+        itemEl.onclick = () => openKigoCard(pData.parentKigo);
+
+        let rubyHtml = escapeHtml(pData.parentKigo);
+        if (pData.parentKana && pData.parentKana !== pData.parentKigo) {
+            rubyHtml = `<ruby>${escapeHtml(pData.parentKigo)}<rt>${escapeHtml(pData.parentKana)}</rt></ruby>`;
+        }
+
+        let badgeHtml = '';
+        if (workCount > 0) {
+            const countStr = toKanjiNum(String(workCount));
+            badgeHtml = `<span class="kigo-count-badge">${countStr}</span>`;
+        }
+
+        itemEl.innerHTML = `
+            <div class="saijiki-kigo-text">${rubyHtml}</div>
+            ${badgeHtml}
+        `;
+
+        container.appendChild(itemEl);
+    });
+}
+
+// ========================================================
+// 🌸 季語解説ポップアップカード（うてなモデル＋マイ歳時記）
+// ========================================================
+function openKigoCard(parentKigoName) {
+    const overlay = document.getElementById('kigoCardOverlay');
+    if (!overlay) return;
+
+    // 季語データの特定
+    const items = saijikiDatabase.filter(it => (it.parentKigo === parentKigoName || it.kigo === parentKigoName));
+    if (items.length === 0) return;
+
+    const baseItem = items[0];
+    const parentKana = baseItem.parentKana || '';
+    const detailSeason = baseItem.detailSeason || '';
+    const desc = baseItem.desc || '解説はありません。';
+
+    // 傍題（子季語）一覧
+    const childSet = new Set();
+    items.forEach(it => {
+        if (it.kigo && it.kigo !== parentKigoName) {
+            childSet.add(it.kigo);
+        }
+    });
+    const childList = Array.from(childSet);
+
+    // 自作句・登録句の取得
+    const works = haikuHistory.filter(h => h.status === '完成句' && (h.parentKigo === parentKigoName || h.kigo === parentKigoName));
+
+    // 1. 親季語カラム
+    const parentCol = document.getElementById('cardParentKigo');
+    let rubyHtml = escapeHtml(parentKigoName);
+    if (parentKana && parentKana !== parentKigoName) {
+        rubyHtml = `<ruby>${escapeHtml(parentKigoName)}<rt>${escapeHtml(parentKana)}</rt></ruby>`;
+    }
+    parentCol.innerHTML = `
+        <div>${rubyHtml}</div>
+        ${detailSeason ? `<div class="parent-kigo-season">${escapeHtml(detailSeason)}</div>` : ''}
+    `;
+
+    // 2. 傍題カラム
+    const childCol = document.getElementById('cardChildKigo');
+    if (childList.length > 0) {
+        childCol.innerHTML = `
+            <div class="child-kigo-title">【傍題・子季語】</div>
+            <div>${childList.map(c => escapeHtml(c)).join('、 ')}</div>
+        `;
+        childCol.style.display = 'flex';
+    } else {
+        childCol.innerHTML = '';
+        childCol.style.display = 'none';
+    }
+
+    // 3. 解説カラム
+    const descCol = document.getElementById('cardDesc');
+    descCol.innerHTML = `<div>${escapeHtml(desc)}</div>`;
+
+    // 4. 自作句・登録句カラム
+    const worksCol = document.getElementById('cardWorks');
+    if (works.length > 0) {
+        let worksHtml = `<div class="works-kigo-title">【あなたの作品（${toKanjiNum(String(works.length))}句）】</div>`;
+        works.forEach(w => {
+            const author = w.author || (userSettings.authorName || '風月');
+            worksHtml += `
+                <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 8px;">
+                    <div class="kigo-user-phrase">${escapeHtml(w.phrase)}</div>
+                    <div class="kigo-user-author">${escapeHtml(author)}</div>
+                </div>
+            `;
+        });
+        worksCol.innerHTML = worksHtml;
+        worksCol.style.display = 'flex';
+    } else {
+        worksCol.innerHTML = `
+            <div class="kigo-compose-action" onclick="composeWithKigo('${escapeHtml(parentKigoName)}')">
+                この季語で詠む ➔
+            </div>
+        `;
+        worksCol.style.display = 'flex';
+    }
+
+    overlay.classList.remove('hidden');
+}
+
+function closeKigoCard() {
+    const overlay = document.getElementById('kigoCardOverlay');
+    if (overlay) overlay.classList.add('hidden');
+}
+
+function composeWithKigo(kigoName) {
+    closeKigoCard();
+    startEmuMode();
+    const input = document.getElementById('inputPhrase');
+    if (input) {
+        input.value = kigoName;
+        currentHaikuData.phrase = kigoName;
+        currentHaikuData.kigo = kigoName;
+        currentHaikuData.parentKigo = kigoName;
+        input.focus();
+    }
+}
+
+// ========================================================
+// 🖋️ 【詠む】ステップ1 季寄せスマートトレイ
+// ========================================================
+function toggleStep1SaijikiTray() {
+    const tray = document.getElementById('step1SaijikiTray');
+    const icon = document.getElementById('step1TrayIcon');
+    if (!tray) return;
+
+    const isHidden = tray.classList.contains('hidden');
+    tray.classList.toggle('hidden', !isHidden);
+    if (icon) icon.textContent = isHidden ? '▴' : '▿';
+
+    if (isHidden) {
+        renderStep1KigoList();
+    }
+}
+
+function switchStep1Season(season) {
+    currentStep1Season = season;
+    const tabs = ['haru', 'natsu', 'aki', 'huyu', 'shinnen'];
+    tabs.forEach(s => {
+        const cap = s.charAt(0).toUpperCase() + s.slice(1);
+        const tabEl = document.getElementById(`sttab${cap}`);
+        if (tabEl) tabEl.classList.toggle('active', s === season);
+    });
+    renderStep1KigoList();
+}
+
+function renderStep1KigoList() {
+    const container = document.getElementById('step1KigoList');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const seen = new Set();
+    const parents = [];
+    saijikiDatabase.forEach(item => {
+        const s = (item.season || '').toLowerCase();
+        if (s === currentStep1Season) {
+            const p = item.parentKigo || item.kigo;
+            if (p && !seen.has(p)) {
+                seen.add(p);
+                parents.push({ parentKigo: p, parentKana: item.parentKana || '' });
+            }
+        }
+    });
+
+    parents.forEach(pData => {
+        const itemEl = document.createElement('div');
+        itemEl.className = 'step1-kigo-item';
+        itemEl.onclick = () => insertKigoToInput(pData.parentKigo);
+        itemEl.textContent = pData.parentKigo;
+        container.appendChild(itemEl);
+    });
+}
+
+// カーソル位置へ季語をスマート挿入
+function insertKigoToInput(kigoText) {
+    const input = document.getElementById('inputPhrase');
+    if (!input) return;
+
+    const val = input.value;
+    const start = input.selectionStart !== null ? input.selectionStart : val.length;
+    const end = input.selectionEnd !== null ? input.selectionEnd : val.length;
+
+    // カーソル位置（または選択範囲）に挿入
+    const newVal = val.substring(0, start) + kigoText + val.substring(end);
+    input.value = newVal;
+
+    // カーソルを挿入した季語の直後に設定
+    const newPos = start + kigoText.length;
+    input.setSelectionRange(newPos, newPos);
+
+    // トレイを閉じる
+    const tray = document.getElementById('step1SaijikiTray');
+    const icon = document.getElementById('step1TrayIcon');
+    if (tray) tray.classList.add('hidden');
+    if (icon) icon.textContent = '▿';
+
+    input.focus();
+}
+
 
 // ========================================================
 // 🖨️ 句集の小冊子印刷・PDF出力（A4横・真ん中折り・右綴じレイアウト）

@@ -328,3 +328,276 @@ body, html {
 }
 .cal-info-btn:hover { color: #2b2b2b; opacity: 1; }
 .cal-info-btn.hidden { display: none !important; }
+
+/* ========================================================
+   三本柱メニュー（句帳切替・季寄せ・句集印刷）
+   ======================================================== */
+.menu-pillar-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: left;
+}
+.pillar-section-title {
+    font-size: 0.92rem;
+    color: #2b2b2b;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    border-left: 2px solid #8c8476;
+    padding-left: 6px;
+    margin-bottom: 2px;
+}
+
+/* ========================================================
+   🌸 季寄せ・歳時記 大画面
+   ======================================================== */
+.saijiki-season-tabs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    margin: 6px 0 10px;
+    z-index: 30;
+    font-size: 0.92rem;
+    letter-spacing: 0.1em;
+}
+.saijiki-kigo-scroll-list {
+    gap: 2.2rem !important;
+    padding: 0 8vw !important;
+}
+.saijiki-kigo-item {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    flex-shrink: 0;
+    padding: 0 4px;
+}
+.saijiki-kigo-item:hover { opacity: 0.75; }
+.saijiki-kigo-item:active { transform: scale(0.96); opacity: 0.6; }
+
+.saijiki-kigo-text {
+    writing-mode: vertical-rl;
+    -webkit-writing-mode: vertical-rl;
+    font-size: min(2.6vh, 23px);
+    letter-spacing: 0.22em;
+    line-height: 1.4;
+    color: #2b2b2b;
+    white-space: nowrap;
+}
+.saijiki-kigo-text ruby { ruby-position: over; -webkit-ruby-position: over; }
+.saijiki-kigo-text rt { font-size: 0.45em; color: #888888; letter-spacing: 0.05em; }
+
+.kigo-count-badge {
+    writing-mode: vertical-rl;
+    -webkit-writing-mode: vertical-rl;
+    font-size: 0.72rem;
+    color: #8c8476;
+    background: #f0ece6;
+    padding: 3px 2px;
+    border-radius: 4px;
+    font-family: serif;
+    letter-spacing: 0.1em;
+    min-height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ========================================================
+   🌸 季語解説ポップアップカード（うてなモデル＋マイ歳時記）
+   ======================================================== */
+.kigo-card-content {
+    background: #faf9f6;
+    padding: 6vh 6vw;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    max-width: 90vw;
+    max-height: 82vh;
+    display: flex;
+    flex-direction: row-reverse;
+    gap: clamp(1.5rem, 4vw, 3rem);
+    overflow-x: auto;
+    overflow-y: hidden;
+    position: relative;
+}
+
+.card-column {
+    writing-mode: vertical-rl;
+    -webkit-writing-mode: vertical-rl;
+    letter-spacing: 0.2em;
+    flex-shrink: 0;
+    max-height: 68vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.parent-kigo-col {
+    font-size: clamp(1.4rem, 4.5vw, 1.85rem);
+    font-weight: 500;
+    color: #2b2b2b;
+    line-height: 1.5;
+}
+.parent-kigo-col ruby { ruby-position: over; -webkit-ruby-position: over; }
+.parent-kigo-col rt { font-size: 0.45em; color: #666666; }
+.parent-kigo-season {
+    font-size: 0.8rem;
+    color: #8c8476;
+    margin-top: 1.2rem;
+    letter-spacing: 0.15em;
+}
+
+.child-kigo-col {
+    font-size: 0.95rem;
+    color: #555555;
+    margin-top: 1.5rem;
+    line-height: 1.6;
+    max-width: 140px;
+    overflow-y: auto;
+}
+.child-kigo-title {
+    font-size: 0.78rem;
+    color: #8c8476;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.1em;
+}
+
+.desc-kigo-col {
+    font-size: 0.92rem;
+    color: #333333;
+    line-height: 1.8;
+    margin-top: 2rem;
+    max-width: 220px;
+    overflow-y: auto;
+}
+
+/* 自作句・登録句カラム */
+.works-kigo-col {
+    border-left: 1px solid #e0dcd5;
+    padding-left: clamp(1.2rem, 3vw, 2.2rem);
+    margin-left: 0.5rem;
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 1.8rem;
+    align-items: center;
+}
+.works-kigo-title {
+    font-size: 0.82rem;
+    color: #8c8476;
+    letter-spacing: 0.15em;
+    white-space: nowrap;
+    align-self: flex-start;
+}
+.kigo-user-phrase {
+    font-size: clamp(1.05rem, 3.2vw, 1.25rem);
+    color: #2b2b2b;
+    line-height: 1.4;
+    letter-spacing: 0.2em;
+    white-space: nowrap;
+}
+.kigo-user-author {
+    font-size: 0.82rem;
+    color: #777;
+    margin-top: 1.5rem;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+}
+.kigo-compose-action {
+    font-size: 0.85rem;
+    color: #8c8476;
+    cursor: pointer;
+    letter-spacing: 0.15em;
+    border-bottom: 1px solid #8c8476;
+    padding-bottom: 2px;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+    align-self: center;
+}
+.kigo-compose-action:hover { color: #2b2b2b; border-color: #2b2b2b; }
+
+/* ========================================================
+   🖋️ 【詠む】ステップ1 季寄せ参照スマートトレイ
+   ======================================================== */
+.step1-saijiki-wrapper {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 5px;
+    z-index: 30;
+}
+.step1-saijiki-trigger {
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #8c8476;
+    letter-spacing: 0.12em;
+    padding: 6px 14px;
+    border-radius: 15px;
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid #e0dcd5;
+    transition: background 0.2s, color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    user-select: none;
+}
+.step1-saijiki-trigger:hover { background: #ffffff; color: #2b2b2b; }
+.step1-saijiki-trigger:active { transform: scale(0.97); }
+
+.step1-saijiki-tray {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #e5e1d8;
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-top: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    animation: traySlideDown 0.25s ease forwards;
+}
+.step1-saijiki-tray.hidden { display: none !important; }
+
+@keyframes traySlideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.step1-season-tabs {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #f0ece6;
+}
+.step1-kigo-scroll-list {
+    height: 18vh !important;
+    min-height: 110px !important;
+    max-height: 160px !important;
+    gap: 1.4rem !important;
+    padding: 0 15px !important;
+}
+.step1-kigo-item {
+    writing-mode: vertical-rl;
+    -webkit-writing-mode: vertical-rl;
+    font-size: 0.95rem;
+    letter-spacing: 0.18em;
+    color: #2b2b2b;
+    cursor: pointer;
+    white-space: nowrap;
+    padding: 4px 2px;
+    border-radius: 4px;
+    transition: background 0.15s, color 0.15s;
+}
+.step1-kigo-item:hover { color: #8c8476; }
+.step1-kigo-item:active { background: #f0ece6; }
+

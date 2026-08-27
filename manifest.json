@@ -1,6 +1,6 @@
 {
-  "name": "おみ句じ句帳 - 風月",
-  "short_name": "句帳 風月",
+  "name": "風月 - おみ句じ句帳",
+  "short_name": "風月",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#faf9f6",
