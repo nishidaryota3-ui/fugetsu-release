@@ -1212,6 +1212,30 @@ function completeWelcomeSetup() {
     document.getElementById('welcomeModal').classList.add('hidden');
 }
 
+// 漢数字表記の旧暦（例：旧暦七月十五日（文月））をアラビア数字（7月15日（文月））に変換するヘルパー
+function convertKanjiDateToArabic(str) {
+    if (!str) return '';
+    let s = str.replace(/^旧暦/, '');
+    
+    function kanjiToNum(kStr) {
+        const kanjiDigits = { '〇': 0, '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9 };
+        if (kStr === '十') return 10;
+        if (kStr.startsWith('十')) return 10 + (kanjiDigits[kStr[1]] || 0);
+        if (kStr.endsWith('十')) return (kanjiDigits[kStr[0]] || 1) * 10;
+        if (kStr.includes('十')) {
+            const parts = kStr.split('十');
+            return (kanjiDigits[parts[0]] || 1) * 10 + (kanjiDigits[parts[1]] || 0);
+        }
+        if (kStr === '二十') return 20;
+        if (kStr === '三十') return 30;
+        return kanjiDigits[kStr] !== undefined ? kanjiDigits[kStr] : kStr;
+    }
+
+    return s.replace(/([閏]?)([一二三四五六七八九十]+)月([一二三四五六七八九十]+)日/g, (match, leap, m, d) => {
+        return `${leap}${kanjiToNum(m)}月${kanjiToNum(d)}日`;
+    });
+}
+
 // ========================================================
 // 暦・行事詳細モーダル
 // ========================================================
@@ -1224,15 +1248,23 @@ function openKoyomiDetailModal() {
     const year = today.getFullYear();
     const month = today.getMonth() + 1;
     const date = today.getDate();
-    const eraYear = year - 2018; 
-    const eraStr = eraYear === 1 ? "元" : toKanjiNum(eraYear.toString());
     const wafuList = ['睦月','如月','弥生','卯月','皐月','水無月','文月','葉月','長月','神無月','霜月','師走'];
 
-    document.getElementById('koyomiModalDate').textContent = `令和${eraStr}年 ${toKanjiNum(month)}月${toKanjiNum(date)}日（${wafuList[month - 1]}）`;
+    // ① 新暦（アラビア数字）: 2026年8月27日（葉月）
+    document.getElementById('koyomiModalDate').textContent = `${year}年${month}月${date}日（${wafuList[month - 1]}）`;
     
-    let subParts = [];
-    if (todayData.lunar) subParts.push(todayData.lunar);
-    
+    // ② 旧暦（一段下げ・アラビア数字）: 7月15日（文月）
+    const lunarRaw = todayData.lunar || '';
+    const lunarFormatted = convertKanjiDateToArabic(lunarRaw);
+    const lunarEl = document.getElementById('koyomiModalLunar');
+    if (lunarFormatted) {
+        lunarEl.textContent = lunarFormatted;
+        lunarEl.style.display = 'block';
+    } else {
+        lunarEl.style.display = 'none';
+    }
+
+    // 節気・候の探索
     let currentSekki = todayData.sekki || '';
     let currentKou = todayData.kou || '';
     let currentKouYomi = todayData.kou_yomi || '';
@@ -1252,9 +1284,23 @@ function openKoyomiDetailModal() {
         }
     }
 
-    if (currentSekki) subParts.push(`節気: ${currentSekki}`);
-    if (currentKou) subParts.push(`候: ${currentKou}${currentKouYomi ? `（${currentKouYomi}）` : ''}`);
-    document.getElementById('koyomiModalSub').textContent = subParts.join(' ｜ ');
+    // ③ 節気（一段下げ）: 節気：処暑
+    const sekkiEl = document.getElementById('koyomiModalSekki');
+    if (currentSekki) {
+        sekkiEl.textContent = `節気：${currentSekki}`;
+        sekkiEl.style.display = 'block';
+    } else {
+        sekkiEl.style.display = 'none';
+    }
+
+    // ④ 候（一段下げ）: 候：綿柎開（わたのはなしべひらく）
+    const kouEl = document.getElementById('koyomiModalKou');
+    if (currentKou) {
+        kouEl.textContent = `候：${currentKou}${currentKouYomi ? `（${currentKouYomi}）` : ''}`;
+        kouEl.style.display = 'block';
+    } else {
+        kouEl.style.display = 'none';
+    }
 
     const listEl = document.getElementById('koyomiModalList');
     listEl.innerHTML = '';

@@ -291,13 +291,14 @@ body, html {
 }
 
 /* 暦詳細モーダル用スタイル */
-.koyomi-detail-modal-content { max-width: 420px; text-align: left; align-items: stretch; gap: 12px; }
-.koyomi-detail-header { border-bottom: 1px solid #e0dcd5; padding-bottom: 10px; margin-bottom: 5px; }
-.koyomi-detail-date { font-size: 1.2rem; color: #2b2b2b; font-weight: 500; letter-spacing: 0.08em; }
-.koyomi-detail-sub { font-size: 0.88rem; color: #666; margin-top: 4px; letter-spacing: 0.05em; }
-.koyomi-detail-list { display: flex; flex-direction: column; gap: 10px; max-height: 55vh; overflow-y: auto; padding-right: 4px; }
-.koyomi-section-title { font-size: 0.78rem; color: #8c8476; font-weight: 600; letter-spacing: 0.1em; margin-bottom: 3px; border-left: 2.5px solid #8c8476; padding-left: 6px; }
-.koyomi-event-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.koyomi-detail-modal-content { max-width: 420px; text-align: left; align-items: stretch; gap: 14px; }
+.koyomi-detail-header { border-bottom: 1px solid #e0dcd5; padding-bottom: 12px; margin-bottom: 6px; }
+.koyomi-detail-date { font-size: 1.18rem; color: #2b2b2b; font-weight: 500; letter-spacing: 0.06em; line-height: 1.4; }
+.koyomi-detail-sub-group { margin-top: 8px; padding-left: 0.9rem; display: flex; flex-direction: column; gap: 4px; }
+.koyomi-detail-sub-line { font-size: 0.88rem; color: #666666; letter-spacing: 0.05em; line-height: 1.4; }
+.koyomi-detail-list { display: flex; flex-direction: column; gap: 12px; max-height: 52vh; overflow-y: auto; padding-right: 4px; }
+.koyomi-section-title { font-size: 0.78rem; color: #8c8476; font-weight: 600; letter-spacing: 0.1em; margin-bottom: 4px; border-left: 2.5px solid #8c8476; padding-left: 6px; }
+.koyomi-event-tags { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 0.5rem; }
 .koyomi-event-tag { font-size: 0.85rem; color: #333; background: rgba(0,0,0,0.03); border: 1px solid #e2ded7; border-radius: 4px; padding: 3px 7px; line-height: 1.3; }
 .koyomi-event-tag.holiday { color: #d25b4e; border-color: #f1c7c2; background: #fff8f7; }
 
