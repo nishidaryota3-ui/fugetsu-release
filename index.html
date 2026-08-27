@@ -274,25 +274,30 @@
         </div>
     </div>
 
-    <!-- ⚙️ 設定・バックアップモーダル（三セクション構造） -->
+    <!-- ⚙️ 設定・バックアップモーダル（三本柱アコーディオン） -->
     <div id="settingsModal" class="card-overlay hidden" onclick="closeSettingsModal()">
-        <div class="modal-card-content settings-modal-content" onclick="event.stopPropagation()">
+        <div class="modal-card-content menu-accordion-modal settings-modal-content" onclick="event.stopPropagation()">
             <span class="modal-close-corner" onclick="closeSettingsModal()">✕</span>
             <h3 class="modal-title" style="margin-bottom: 5px;">句帳の設定</h3>
             
             <!-- 一、 俳号の変更 -->
             <div class="menu-pillar-section">
-                <div class="pillar-section-title">一、 俳号の変更</div>
-                <div class="settings-form" style="margin-top: 4px;">
-                    <div class="form-group">
-                        <label class="form-label">あなたの俳号（作者名）</label>
-                        <input type="text" id="settingAuthorName" class="text-input" placeholder="例：芭蕉、風月">
+                <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection1')">
+                    <span class="pillar-section-title">一、 俳号の変更</span>
+                    <span id="settingArrow1" class="pillar-accordion-arrow">▿</span>
+                </div>
+                <div id="settingSection1" class="pillar-accordion-body hidden">
+                    <div class="settings-form" style="margin-top: 4px; width: 100%;">
+                        <div class="form-group">
+                            <label class="form-label">あなたの俳号（作者名）</label>
+                            <input type="text" id="settingAuthorName" class="text-input" placeholder="例：芭蕉、風月">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">俳号のよみがな</label>
+                            <input type="text" id="settingAuthorKana" class="text-input" placeholder="例：ばしょう、ふうげつ">
+                        </div>
+                        <button class="btn pillar-action-btn gothic-btn" style="margin: 6px auto 0;" onclick="saveAuthorSettings()">保存する</button>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">俳号のよみがな</label>
-                        <input type="text" id="settingAuthorKana" class="text-input" placeholder="例：ばしょう、ふうげつ">
-                    </div>
-                    <button class="btn pillar-action-btn" style="margin: 6px auto 0;" onclick="saveAuthorSettings()">保存する</button>
                 </div>
             </div>
 
@@ -300,12 +305,17 @@
 
             <!-- 二、 データのバックアップ・復元 -->
             <div class="menu-pillar-section">
-                <div class="pillar-section-title">二、 データのバックアップ・復元</div>
-                <p class="settings-desc" style="margin-top: 4px;">端末の句帳データをファイルとして書き出したり、復元できます。</p>
-                <div class="settings-btn-row-fit">
-                    <button class="btn btn-outline settings-action-btn" onclick="exportHaikuData()">バックアップ出力</button>
-                    <button class="btn btn-outline settings-action-btn" onclick="triggerImportFileInput()">データ復元</button>
-                    <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="importHaikuData(event)">
+                <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection2')">
+                    <span class="pillar-section-title">二、 バックアップ・復元</span>
+                    <span id="settingArrow2" class="pillar-accordion-arrow">▿</span>
+                </div>
+                <div id="settingSection2" class="pillar-accordion-body hidden">
+                    <div class="settings-btn-row-fit">
+                        <button class="btn btn-outline settings-action-btn gothic-btn" onclick="exportHaikuData()">データ出力</button>
+                        <button class="btn btn-outline settings-action-btn gothic-btn" onclick="triggerImportFileInput()">データ復元</button>
+                        <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="importHaikuData(event)">
+                    </div>
+                    <div class="settings-sub-note">※JSON形式で保存 / 復元</div>
                 </div>
             </div>
 
@@ -313,16 +323,21 @@
 
             <!-- 三、 その他 -->
             <div class="menu-pillar-section">
-                <div class="pillar-section-title">三、 その他</div>
-                <div class="settings-checkbox-group">
-                    <label class="settings-checkbox-row">
-                        <input type="checkbox" id="settingStartupOmikuji" onchange="onSettingCheckboxChanged()">
-                        <span>起動時におみ句じを表示</span>
-                    </label>
-                    <label class="settings-checkbox-row">
-                        <input type="checkbox" id="settingHomeKiyose" onchange="onSettingCheckboxChanged()">
-                        <span>ホーム画面に「季寄せ」を追加</span>
-                    </label>
+                <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection3')">
+                    <span class="pillar-section-title">三、 その他</span>
+                    <span id="settingArrow3" class="pillar-accordion-arrow">▿</span>
+                </div>
+                <div id="settingSection3" class="pillar-accordion-body hidden">
+                    <div class="settings-checkbox-group" style="padding-top: 4px;">
+                        <label class="settings-checkbox-row">
+                            <input type="checkbox" id="settingStartupOmikuji" onchange="onSettingCheckboxChanged()">
+                            <span>起動時におみ句じを表示</span>
+                        </label>
+                        <label class="settings-checkbox-row">
+                            <input type="checkbox" id="settingHomeKiyose" onchange="onSettingCheckboxChanged()">
+                            <span>ホーム画面に「季寄せ」を追加</span>
+                        </label>
+                    </div>
                 </div>
             </div>
             

@@ -1024,9 +1024,40 @@ function printSelectedBooklet() {
 }
 
 // ========================================================
-// 設定 & プロフィール機能
+// 設定 & プロフィール機能（三本柱アコーディオン）
 // ========================================================
+function toggleSettingsAccordion(sectionId) {
+    const sectionEl = document.getElementById(sectionId);
+    if (!sectionEl) return;
+
+    const isHidden = sectionEl.classList.contains('hidden');
+    
+    // すべてのセクションを一旦閉じる
+    ['settingSection1', 'settingSection2', 'settingSection3'].forEach((id, idx) => {
+        const el = document.getElementById(id);
+        const arrow = document.getElementById(`settingArrow${idx + 1}`);
+        if (el) el.classList.add('hidden');
+        if (arrow) arrow.textContent = '▿';
+    });
+
+    // クリックされたセクションが閉じていた場合は開く
+    if (isHidden) {
+        sectionEl.classList.remove('hidden');
+        const num = sectionId.replace('settingSection', '');
+        const arrow = document.getElementById(`settingArrow${num}`);
+        if (arrow) arrow.textContent = '▴';
+    }
+}
+
 function openSettingsModal() {
+    // すべてのアコーディオンを閉じた状態にする
+    ['settingSection1', 'settingSection2', 'settingSection3'].forEach((id, idx) => {
+        const el = document.getElementById(id);
+        const arrow = document.getElementById(`settingArrow${idx + 1}`);
+        if (el) el.classList.add('hidden');
+        if (arrow) arrow.textContent = '▿';
+    });
+
     document.getElementById('settingAuthorName').value = userSettings.authorName || '';
     document.getElementById('settingAuthorKana').value = userSettings.authorKana || '';
     
