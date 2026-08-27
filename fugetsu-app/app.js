@@ -57,7 +57,9 @@ let touchStartY = 0;
 let userSettings = {
     authorName: '風月',
     authorKana: 'ふうげつ',
-    initialized: false
+    initialized: false,
+    startupOmikuji: false,
+    homeKiyose: false
 };
 
 let currentHaikuData = {
@@ -156,6 +158,8 @@ window.onload = function() {
 
     if (!userSettings.initialized) {
         document.getElementById('welcomeModal').classList.remove('hidden');
+    } else if (userSettings.startupOmikuji) {
+        startOmikujiMode();
     }
 };
 
@@ -166,7 +170,15 @@ function loadUserSettings() {
             userSettings = Object.assign(userSettings, JSON.parse(saved));
         }
     } catch (e) {}
+    applyUserSettingsToUI();
+}
+
+function applyUserSettingsToUI() {
     updateHeaderTitle();
+    const kiyoseBlock = document.getElementById('homeKiyoseBlock');
+    if (kiyoseBlock) {
+        kiyoseBlock.classList.toggle('hidden', !userSettings.homeKiyose);
+    }
 }
 
 function updateHeaderTitle() {
@@ -1015,11 +1027,29 @@ function printSelectedBooklet() {
 function openSettingsModal() {
     document.getElementById('settingAuthorName').value = userSettings.authorName || '';
     document.getElementById('settingAuthorKana').value = userSettings.authorKana || '';
+    
+    const startupChk = document.getElementById('settingStartupOmikuji');
+    if (startupChk) startupChk.checked = !!userSettings.startupOmikuji;
+    
+    const homeKiyoseChk = document.getElementById('settingHomeKiyose');
+    if (homeKiyoseChk) homeKiyoseChk.checked = !!userSettings.homeKiyose;
+
     document.getElementById('settingsModal').classList.remove('hidden');
 }
 
 function closeSettingsModal() {
     document.getElementById('settingsModal').classList.add('hidden');
+}
+
+function onSettingCheckboxChanged() {
+    const startupChk = document.getElementById('settingStartupOmikuji');
+    const homeKiyoseChk = document.getElementById('settingHomeKiyose');
+
+    if (startupChk) userSettings.startupOmikuji = startupChk.checked;
+    if (homeKiyoseChk) userSettings.homeKiyose = homeKiyoseChk.checked;
+
+    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
+    applyUserSettingsToUI();
 }
 
 function saveAuthorSettings() {
@@ -1029,7 +1059,7 @@ function saveAuthorSettings() {
     userSettings.authorKana = kana;
     userSettings.initialized = true;
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
-    updateHeaderTitle();
+    applyUserSettingsToUI();
     closeSettingsModal();
     alert('設定を保存しました。');
 }

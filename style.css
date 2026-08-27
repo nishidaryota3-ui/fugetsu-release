@@ -55,14 +55,14 @@ body, html {
     flex-direction: row; 
     justify-content: center; 
     align-items: center; 
-    gap: clamp(20px, 8vw, 50px); 
+    gap: clamp(12px, 4.5vw, 36px); 
     width: 100%; 
-    max-width: 480px; 
+    max-width: 500px; 
     margin-top: clamp(-35px, -6vh, -20px);
 }
-.top-icon-block { display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.15s ease, opacity 0.2s ease; }
+.top-icon-block { display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.15s ease, opacity 0.2s ease; flex-shrink: 0; }
 .top-icon-block:active { transform: scale(0.94); opacity: 0.8; }
-.top-icon-img { width: clamp(100px, 28vw, 150px); height: clamp(100px, 28vw, 150px); object-fit: contain; border-radius: 12px; }
+.top-icon-img { width: clamp(85px, 25vw, 130px); height: clamp(85px, 25vw, 130px); object-fit: contain; border-radius: 12px; }
 .top-icon-sub { margin-top: 10px; font-size: 0.74rem; color: #777; letter-spacing: 0.1em; font-family: "游明朝", "Yu Mincho", "ヒラギノ明朝 ProN", serif; text-align: center; }
 
 .read-header { width: 100%; position: relative; display: flex; flex-direction: column; justify-content: center; min-height: 44px; z-index: 30; }
@@ -145,13 +145,20 @@ body, html {
 .modal-close-corner:hover { color: #000; }
 
 .modal-title { font-size: 1.1rem; color: #2b2b2b; font-weight: 500; letter-spacing: 0.08em; }
-.settings-modal-content { gap: 15px; padding: 30px 20px 20px; }
-.settings-form { width: 100%; display: flex; flex-direction: column; gap: 10px; }
-.settings-divider { width: 100%; height: 1px; background: #e2ded7; margin: 5px 0; }
+.settings-modal-content { gap: 12px; padding: 28px 18px 18px; max-width: 330px; }
+.settings-form { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+.settings-divider { width: 100%; height: 1px; background: #e2ded7; margin: 4px 0; }
 .settings-subtitle { font-size: 0.95rem; color: #444; font-weight: 500; }
-.settings-desc { font-size: 0.8rem; color: #777; line-height: 1.5; text-align: left; }
-.settings-btn-row { display: flex; gap: 8px; width: 100%; }
-.app-version-note { font-size: 0.72rem; color: #aaa; margin-top: 5px; font-family: sans-serif; }
+.settings-desc { font-size: 0.8rem; color: #777; line-height: 1.4; text-align: left; }
+
+.settings-btn-row-fit { display: flex; gap: 8px; width: 100%; justify-content: center; margin-top: 6px; }
+.settings-action-btn { flex: 1; max-width: 135px; padding: 7px 0; font-size: 0.78rem; border-radius: 20px; white-space: nowrap; letter-spacing: 0.05em; }
+
+.settings-checkbox-group { display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 4px; }
+.settings-checkbox-row { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.84rem; color: #2b2b2b; user-select: none; text-align: left; letter-spacing: 0.04em; }
+.settings-checkbox-row input[type="checkbox"] { accent-color: #2b2b2b; width: 15px; height: 15px; cursor: pointer; }
+
+.app-version-note { font-size: 0.72rem; color: #aaa; margin-top: 2px; font-family: sans-serif; }
 
 /* 作者選択モーダル（スリム＆洗練された文字リスト） */
 .author-select-list { width: 100%; max-width: 270px; display: flex; flex-direction: column; gap: 5px; max-height: 35vh; overflow-y: auto; margin: 4px auto 0; }

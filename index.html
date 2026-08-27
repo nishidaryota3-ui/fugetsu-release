@@ -35,10 +35,15 @@
             </button>
         </div>
 
-        <div class="top-icon-container">
+        <div class="top-icon-container" id="topIconContainer">
             <div class="top-icon-block" onclick="startYomuMode()">
                 <img src="icon_top_input.png" alt="読む" class="top-icon-img">
                 <span class="top-icon-sub">俳句を読む</span>
+            </div>
+            <!-- ▼▼ 季寄せショートカット（設定でON/OFF） ▼▼ -->
+            <div id="homeKiyoseBlock" class="top-icon-block hidden" onclick="openSaijikiScreenFromMenu()">
+                <img src="kiyose.png" alt="季寄せ" class="top-icon-img" onerror="this.src='icon_top_input.png'">
+                <span class="top-icon-sub">季寄せ</span>
             </div>
             <div class="top-icon-block" onclick="startEmuMode()">
                 <img src="icon_top_output.png" alt="詠む" class="top-icon-img">
@@ -269,35 +274,59 @@
         </div>
     </div>
 
-    <!-- ⚙️ 設定・バックアップモーダル -->
+    <!-- ⚙️ 設定・バックアップモーダル（三セクション構造） -->
     <div id="settingsModal" class="card-overlay hidden" onclick="closeSettingsModal()">
         <div class="modal-card-content settings-modal-content" onclick="event.stopPropagation()">
             <span class="modal-close-corner" onclick="closeSettingsModal()">✕</span>
-            <h3 class="modal-title">句帳の設定</h3>
+            <h3 class="modal-title" style="margin-bottom: 5px;">句帳の設定</h3>
             
-            <div class="settings-form">
-                <div class="form-group">
-                    <label class="form-label">あなたの俳号（作者名）</label>
-                    <input type="text" id="settingAuthorName" class="text-input" placeholder="例：芭蕉、風月">
+            <!-- 一、 俳号の変更 -->
+            <div class="menu-pillar-section">
+                <div class="pillar-section-title">一、 俳号の変更</div>
+                <div class="settings-form" style="margin-top: 4px;">
+                    <div class="form-group">
+                        <label class="form-label">あなたの俳号（作者名）</label>
+                        <input type="text" id="settingAuthorName" class="text-input" placeholder="例：芭蕉、風月">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">俳号のよみがな</label>
+                        <input type="text" id="settingAuthorKana" class="text-input" placeholder="例：ばしょう、ふうげつ">
+                    </div>
+                    <button class="btn pillar-action-btn" style="margin: 6px auto 0;" onclick="saveAuthorSettings()">保存する</button>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">俳号のよみがな</label>
-                    <input type="text" id="settingAuthorKana" class="text-input" placeholder="例：ばしょう、ふうげつ">
-                </div>
-                <button class="btn" style="margin-top: 8px; padding: 8px 0; font-size: 0.88rem;" onclick="saveAuthorSettings()">保存する</button>
             </div>
 
             <div class="settings-divider"></div>
 
-            <h4 class="settings-subtitle">データのバックアップ・復元</h4>
-            <p class="settings-desc">端末に保存されている句帳データをファイルとして書き出したり、機種変更時に復元できます。</p>
-            <div class="settings-btn-row">
-                <button class="btn btn-outline" style="font-size: 0.8rem; padding: 8px;" onclick="exportHaikuData()">バックアップ出力 (JSON)</button>
-                <button class="btn btn-outline" style="font-size: 0.8rem; padding: 8px;" onclick="triggerImportFileInput()">データ復元 (読込)</button>
-                <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="importHaikuData(event)">
+            <!-- 二、 データのバックアップ・復元 -->
+            <div class="menu-pillar-section">
+                <div class="pillar-section-title">二、 データのバックアップ・復元</div>
+                <p class="settings-desc" style="margin-top: 4px;">端末の句帳データをファイルとして書き出したり、復元できます。</p>
+                <div class="settings-btn-row-fit">
+                    <button class="btn btn-outline settings-action-btn" onclick="exportHaikuData()">バックアップ出力</button>
+                    <button class="btn btn-outline settings-action-btn" onclick="triggerImportFileInput()">データ復元</button>
+                    <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="importHaikuData(event)">
+                </div>
+            </div>
+
+            <div class="settings-divider"></div>
+
+            <!-- 三、 その他 -->
+            <div class="menu-pillar-section">
+                <div class="pillar-section-title">三、 その他</div>
+                <div class="settings-checkbox-group">
+                    <label class="settings-checkbox-row">
+                        <input type="checkbox" id="settingStartupOmikuji" onchange="onSettingCheckboxChanged()">
+                        <span>起動時におみ句じを表示</span>
+                    </label>
+                    <label class="settings-checkbox-row">
+                        <input type="checkbox" id="settingHomeKiyose" onchange="onSettingCheckboxChanged()">
+                        <span>ホーム画面に「季寄せ」を追加</span>
+                    </label>
+                </div>
             </div>
             
-            <div class="app-version-note">おみ句じ句帳 - 風月 v2.0 (製品版)</div>
+            <div class="app-version-note" style="margin-top: 2px;">おみ句じ句帳 - 風月 v2.0</div>
         </div>
     </div>
 

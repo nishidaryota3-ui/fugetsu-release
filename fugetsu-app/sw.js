@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fugetsu-release-v5';
+const CACHE_NAME = 'fugetsu-release-v6';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -10,6 +10,7 @@ const ASSETS_TO_CACHE = [
   './omikuji-cat.png',
   './icon_top_input.png',
   './icon_top_output.png',
+  './kiyose.png',
   './data/koyomi.json',
   './data/saijiki.json'
 ];
