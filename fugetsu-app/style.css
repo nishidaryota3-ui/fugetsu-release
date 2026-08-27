@@ -11,6 +11,8 @@ body, html {
     padding: calc(15px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom));
 }
 .step-screen.active { display: flex !important; }
+.hidden { display: none !important; }
+.top-icon-block.hidden { display: none !important; }
 
 /* トップ設定バー & フラットSVGアイコン */
 .top-settings-bar {

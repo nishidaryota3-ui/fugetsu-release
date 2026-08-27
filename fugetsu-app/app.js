@@ -177,7 +177,9 @@ function applyUserSettingsToUI() {
     updateHeaderTitle();
     const kiyoseBlock = document.getElementById('homeKiyoseBlock');
     if (kiyoseBlock) {
-        kiyoseBlock.classList.toggle('hidden', !userSettings.homeKiyose);
+        const isShow = !!userSettings.homeKiyose;
+        kiyoseBlock.classList.toggle('hidden', !isShow);
+        kiyoseBlock.style.display = isShow ? 'flex' : 'none';
     }
 }
 
