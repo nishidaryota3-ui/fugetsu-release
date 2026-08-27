@@ -85,10 +85,20 @@ body, html {
 .search-clear-btn { font-size: 0.75rem; color: #888; cursor: pointer; padding: 0 2px; }
 .search-clear-btn.hidden { display: none; }
 
-.breadcrumb { font-size: 0.82rem; color: #666666; letter-spacing: 0.05em; display: flex; flex-wrap: wrap; align-items: center; gap: 0.2rem 0.4rem; line-height: 1.3; font-family: "游明朝", "Yu Mincho", "ヒラギノ明朝 ProN", serif; }
+.breadcrumb { 
+    font-size: 0.78rem; 
+    color: #666666; 
+    letter-spacing: 0.04em; 
+    display: flex; 
+    flex-wrap: wrap; 
+    align-items: center; 
+    gap: 0.2rem 0.4rem; 
+    line-height: 1.3; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Hiragino Sans", "Noto Sans JP", sans-serif; 
+}
 .breadcrumb span.link { cursor: pointer; border-bottom: 1px solid transparent; transition: color 0.2s; }
 .breadcrumb span.link:hover { color: #2b2b2b; border-bottom: 1px solid #2b2b2b; }
-.breadcrumb span.separator { color: #b5b5b5; font-family: sans-serif; }
+.breadcrumb span.separator { color: #b5b5b5; font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 0.75rem; }
 
 .read-tab-text-group { display: flex; align-items: center; justify-content: center; gap: 15px; width: 100%; margin: 6px 0 10px; z-index: 30; font-size: 0.92rem; letter-spacing: 0.1em; }
 .text-tab { cursor: pointer; color: #888; padding-bottom: 2px; border-bottom: 1.5px solid transparent; transition: color 0.2s, border-color 0.2s; }
@@ -143,18 +153,18 @@ body, html {
 .settings-btn-row { display: flex; gap: 8px; width: 100%; }
 .app-version-note { font-size: 0.72rem; color: #aaa; margin-top: 5px; font-family: sans-serif; }
 
-/* 作者選択モーダル（アイコンなし・品のある文字リスト） */
-.author-select-list { width: 100%; display: flex; flex-direction: column; gap: 6px; max-height: 40vh; overflow-y: auto; margin-top: 5px; }
+/* 作者選択モーダル（スリム＆洗練された文字リスト） */
+.author-select-list { width: 100%; max-width: 270px; display: flex; flex-direction: column; gap: 5px; max-height: 35vh; overflow-y: auto; margin: 4px auto 0; }
 .author-select-item {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 11px 14px; background: #ffffff; border: 1px solid #e0dcd5;
-    border-radius: 8px; cursor: pointer; font-size: 0.92rem; color: #2b2b2b;
+    padding: 8px 12px; background: #ffffff; border: 1px solid #e0dcd5;
+    border-radius: 6px; cursor: pointer; font-size: 0.85rem; color: #2b2b2b;
     transition: background 0.15s, border-color 0.15s; text-align: left;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
 }
 .author-select-item:hover { background: #f2eee8; border-color: #b5b0a6; }
 .author-select-item.active { border-color: #2b2b2b; font-weight: 600; background: #faf8f5; }
-.author-count-badge { font-size: 0.78rem; color: #888; background: #f0ece6; padding: 2px 7px; border-radius: 10px; font-family: sans-serif; }
+.author-count-badge { font-size: 0.74rem; color: #888; background: #f0ece6; padding: 1px 6px; border-radius: 8px; font-family: sans-serif; }
 
 /* 句集印刷セクションボックス */
 .print-section-box {
@@ -340,15 +350,29 @@ body, html {
 .cal-info-btn.hidden { display: none !important; }
 
 /* ========================================================
-   三本柱メニュー（句帳切替・季寄せ・句集印刷）
+   三本柱アコーディオンメニュー（句帳切替・季寄せ・句集印刷）
    ======================================================== */
+.menu-accordion-modal {
+    max-width: 330px !important;
+    padding: 30px 18px 20px !important;
+}
 .menu-pillar-section {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 8px;
     text-align: left;
 }
+.pillar-accordion-header {
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 4px;
+    border-radius: 4px;
+    transition: background 0.15s;
+    user-select: none;
+}
+.pillar-accordion-header:active { background: rgba(0,0,0,0.03); }
 .pillar-section-title {
     font-size: 0.92rem;
     color: #2b2b2b;
@@ -356,7 +380,54 @@ body, html {
     letter-spacing: 0.08em;
     border-left: 2px solid #8c8476;
     padding-left: 6px;
-    margin-bottom: 2px;
+}
+.pillar-accordion-arrow {
+    font-size: 0.72rem;
+    color: #8c8476;
+    transition: transform 0.2s ease;
+    font-family: sans-serif;
+    padding-right: 2px;
+}
+
+.pillar-accordion-body {
+    margin-top: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    animation: fadeInAccordion 0.2s ease forwards;
+}
+.pillar-accordion-body.hidden { display: none !important; }
+
+@keyframes fadeInAccordion {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.pillar-action-btn {
+    max-width: 190px !important;
+    width: 100% !important;
+    padding: 7px 16px !important;
+    font-size: 0.84rem !important;
+    margin: 4px auto 0 !important;
+    border-radius: 20px !important;
+    letter-spacing: 0.1em !important;
+}
+
+.print-select-box {
+    width: 125px !important;
+    padding: 3px 6px !important;
+    font-size: 0.78rem !important;
+    background: #ffffff !important;
+    border-radius: 4px !important;
+}
+.print-sub-note {
+    font-size: 0.72rem;
+    color: #8c8476;
+    margin-top: 6px;
+    text-align: center;
+    font-family: serif;
+    letter-spacing: 0.05em;
 }
 
 /* ========================================================

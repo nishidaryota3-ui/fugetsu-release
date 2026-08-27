@@ -139,43 +139,58 @@
         </div>
     </div>
 
-    <!-- 👤 句帳メニュー（三本柱：句帳切替・季寄せ・句集印刷）モーダル -->
+    <!-- 👤 句帳メニュー（三本柱アコーディオン：句帳切替・季寄せ・句集印刷）モーダル -->
     <div id="authorSelectModal" class="card-overlay hidden" onclick="closeAuthorSelectModal()">
-        <div class="modal-card-content" onclick="event.stopPropagation()">
+        <div class="modal-card-content menu-accordion-modal" onclick="event.stopPropagation()">
             <span class="modal-close-corner" onclick="closeAuthorSelectModal()">✕</span>
-            <h3 class="modal-title">句帳メニュー</h3>
+            <h3 class="modal-title" style="margin-bottom: 5px;">句帳メニュー</h3>
             
             <!-- 一、句帳の切り替え -->
             <div class="menu-pillar-section">
-                <div class="pillar-section-title">一、 句帳の切り替え</div>
-                <div id="authorSelectList" class="author-select-list"></div>
+                <div class="pillar-accordion-header" onclick="toggleMenuAccordion('pillarSection1')">
+                    <span class="pillar-section-title">一、 句帳の切り替え</span>
+                    <span id="pillarArrow1" class="pillar-accordion-arrow">▿</span>
+                </div>
+                <div id="pillarSection1" class="pillar-accordion-body hidden">
+                    <div id="authorSelectList" class="author-select-list"></div>
+                </div>
             </div>
 
             <div class="settings-divider"></div>
 
             <!-- 二、季寄せ・歳時記 -->
             <div class="menu-pillar-section">
-                <div class="pillar-section-title">二、 季寄せ・歳時記</div>
-                <p class="settings-desc">全二万超の季語・オリジナル解説と、あなたの作品が連動する歳時記です。</p>
-                <button class="btn btn-outline" style="width: 100%; padding: 10px 0; font-size: 0.88rem;" onclick="openSaijikiScreenFromMenu()">季寄せを開く</button>
+                <div class="pillar-accordion-header" onclick="toggleMenuAccordion('pillarSection2')">
+                    <span class="pillar-section-title">二、 季寄せ・歳時記</span>
+                    <span id="pillarArrow2" class="pillar-accordion-arrow">▿</span>
+                </div>
+                <div id="pillarSection2" class="pillar-accordion-body hidden">
+                    <button class="btn btn-outline pillar-action-btn" onclick="openSaijikiScreenFromMenu()">季寄せを開く</button>
+                </div>
             </div>
 
             <div class="settings-divider"></div>
 
             <!-- 三、句集印刷（PDF）セクション -->
             <div class="menu-pillar-section">
-                <div class="pillar-section-title">三、 句集の冊子印刷 (PDF)</div>
-                <div class="print-setting-row">
-                    <span>1ページの句数</span>
-                    <select id="printLinesPerPage" class="text-input" style="width: 100px; padding: 4px 8px; font-size: 0.82rem; background: #ffffff;">
-                        <option value="1">1句（ゆったり）</option>
-                        <option value="2">2句</option>
-                        <option value="3" selected>3句（標準）</option>
-                        <option value="4">4句</option>
-                        <option value="5">5句</option>
-                    </select>
+                <div class="pillar-accordion-header" onclick="toggleMenuAccordion('pillarSection3')">
+                    <span class="pillar-section-title">三、 句集の冊子印刷 (PDF)</span>
+                    <span id="pillarArrow3" class="pillar-accordion-arrow">▿</span>
                 </div>
-                <button class="btn" style="padding: 9px 0; font-size: 0.85rem; margin-top: 5px; width: 100%;" onclick="printSelectedBooklet()">選択中の作者の句集を印刷（PDF）</button>
+                <div id="pillarSection3" class="pillar-accordion-body hidden">
+                    <div class="print-setting-row" style="margin-bottom: 8px;">
+                        <span style="font-size: 0.84rem; color: #555;">1ページの句数</span>
+                        <select id="printLinesPerPage" class="text-input print-select-box">
+                            <option value="1">1句（ゆったり）</option>
+                            <option value="2">2句</option>
+                            <option value="3" selected>3句（標準）</option>
+                            <option value="4">4句</option>
+                            <option value="5">5句</option>
+                        </select>
+                    </div>
+                    <button class="btn pillar-action-btn" onclick="printSelectedBooklet()">印刷 (PDF)</button>
+                    <div class="print-sub-note">※選択中の作者の句を印刷</div>
+                </div>
             </div>
         </div>
     </div>

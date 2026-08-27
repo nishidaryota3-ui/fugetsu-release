@@ -401,12 +401,43 @@ function getFormattedSakkuDateFromFields() {
 }
 
 // ========================================================
-// 作者選択モーダル（アイコンなしの品のある文字リスト）
+// 👤 句帳メニュー（三本柱アコーディオン）
 // ========================================================
+function toggleMenuAccordion(sectionId) {
+    const sectionEl = document.getElementById(sectionId);
+    if (!sectionEl) return;
+
+    const isHidden = sectionEl.classList.contains('hidden');
+    
+    // すべてのセクションを一旦閉じる
+    ['pillarSection1', 'pillarSection2', 'pillarSection3'].forEach((id, idx) => {
+        const el = document.getElementById(id);
+        const arrow = document.getElementById(`pillarArrow${idx + 1}`);
+        if (el) el.classList.add('hidden');
+        if (arrow) arrow.textContent = '▿';
+    });
+
+    // クリックされたセクションが閉じていた場合は開く
+    if (isHidden) {
+        sectionEl.classList.remove('hidden');
+        const num = sectionId.replace('pillarSection', '');
+        const arrow = document.getElementById(`pillarArrow${num}`);
+        if (arrow) arrow.textContent = '▴';
+    }
+}
+
 function openAuthorSelectModal() {
     const listEl = document.getElementById('authorSelectList');
     if (!listEl) return;
     listEl.innerHTML = '';
+
+    // すべてのアコーディオンを閉じた状態にする
+    ['pillarSection1', 'pillarSection2', 'pillarSection3'].forEach((id, idx) => {
+        const el = document.getElementById(id);
+        const arrow = document.getElementById(`pillarArrow${idx + 1}`);
+        if (el) el.classList.add('hidden');
+        if (arrow) arrow.textContent = '▿';
+    });
 
     const myName = userSettings.authorName || '風月';
     
@@ -443,7 +474,7 @@ function openAuthorSelectModal() {
     if (otherAuthors.length > 0) {
         const divider = document.createElement('div');
         divider.className = 'settings-divider';
-        divider.style.margin = '8px 0';
+        divider.style.margin = '6px 0';
         listEl.appendChild(divider);
 
         otherAuthors.forEach(author => {
