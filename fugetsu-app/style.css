@@ -600,6 +600,7 @@ body, html {
     margin-left: 0.2rem;
     display: flex !important;
     flex-direction: row-reverse !important;
+    flex-wrap: nowrap !important;
     gap: clamp(1.6rem, 3.8vw, 2.8rem) !important;
     align-items: flex-start !important;
     justify-content: flex-start !important;
