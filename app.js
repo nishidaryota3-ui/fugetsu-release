@@ -732,9 +732,9 @@ function openKigoCard(parentKigoName, fromContext = null) {
     let worksHtml = '';
 
     if (fromContext === 'step1') {
-        // 作句中（ステップ1）から開いた場合：この季語を入力ボタンを表示
+        // 作句中（ステップ1）から開いた場合：この季語を入力ボタンを表示（下詰め）
         worksHtml += `
-            <div class="kigo-work-single-col" style="display: flex; align-items: center; justify-content: center;">
+            <div class="kigo-work-single-col" style="justify-content: flex-end;">
                 <div class="kigo-insert-action" onclick="insertKigoToInput('${escapeHtml(parentKigoName)}')">
                     この季語を入力 ➔
                 </div>
@@ -766,11 +766,14 @@ function openKigoCard(parentKigoName, fromContext = null) {
             worksCol.innerHTML = worksHtml;
             worksCol.style.display = 'flex';
         } else {
-            worksCol.innerHTML = `
-                <div class="kigo-compose-action" onclick="composeWithKigo('${escapeHtml(parentKigoName)}')">
-                    この季語で詠む ➔
+            worksHtml = `
+                <div class="kigo-work-single-col" style="justify-content: flex-end;">
+                    <div class="kigo-compose-action" onclick="composeWithKigo('${escapeHtml(parentKigoName)}')">
+                        この季語で詠む ➔
+                    </div>
                 </div>
             `;
+            worksCol.innerHTML = worksHtml;
             worksCol.style.display = 'flex';
         }
     }

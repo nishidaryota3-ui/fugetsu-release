@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.18">
+    <link rel="stylesheet" href="style.css?v=2.0.19">
 </head>
 <body>
 
@@ -86,7 +86,7 @@
                 </div>
                 
                 <div id="searchWrapper" class="subtle-search-wrapper" onclick="expandSearchInput()">
-                    <span class="search-icon">🔍</span>
+                    <span class="search-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
                     <input type="text" id="kigoFilterInput" class="subtle-search-input" placeholder="検索" oninput="onKigoFilterInputChanged()" onblur="collapseSearchIfEmpty()">
                     <span id="clearKigoFilterBtn" class="search-clear-btn hidden" onclick="clearKigoFilter(event)">✕</span>
                 </div>
@@ -213,7 +213,7 @@
                 </div>
                 
                 <div id="saijikiSearchWrapper" class="subtle-search-wrapper" onclick="expandSaijikiSearchInput()">
-                    <span class="search-icon">🔍</span>
+                    <span class="search-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
                     <input type="text" id="saijikiSearchInput" class="subtle-search-input" placeholder="季語検索" oninput="onSaijikiSearchChanged()" onblur="collapseSaijikiSearchIfEmpty()">
                     <span id="clearSaijikiSearchBtn" class="search-clear-btn hidden" onclick="clearSaijikiSearch(event)">✕</span>
                 </div>
@@ -396,7 +396,7 @@
                             <span id="sttabShinnen" class="text-tab" onclick="switchStep1Season('shinnen')">新年</span>
                         </div>
                         <div id="step1SearchWrapper" class="subtle-search-wrapper step1-search-box" onclick="expandStep1SearchInput()">
-                            <span class="search-icon">🔍</span>
+                            <span class="search-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
                             <input type="text" id="step1SearchInput" class="subtle-search-input" placeholder="季語検索" oninput="onStep1SearchChanged()" onblur="collapseStep1SearchIfEmpty()">
                             <span id="clearStep1SearchBtn" class="search-clear-btn hidden" onclick="clearStep1Search(event)">✕</span>
                         </div>
@@ -529,6 +529,6 @@
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.18"></script>
+    <script src="app.js?v=2.0.19"></script>
 </body>
 </html>
