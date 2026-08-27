@@ -159,7 +159,7 @@ window.onload = function() {
     if (!userSettings.initialized) {
         document.getElementById('welcomeModal').classList.remove('hidden');
     } else if (userSettings.startupOmikuji) {
-        startOmikujiMode();
+        triggerRandomOmikuji();
     }
 };
 
