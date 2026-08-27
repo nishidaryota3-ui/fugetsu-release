@@ -230,8 +230,6 @@
                 <span id="stabHuyu" class="text-tab" onclick="switchSaijikiSeason('huyu')">冬</span>
                 <span class="text-tab-divider">｜</span>
                 <span id="stabShinnen" class="text-tab" onclick="switchSaijikiSeason('shinnen')">新年</span>
-                <span class="text-tab-divider">｜</span>
-                <span id="stabMuki" class="text-tab" onclick="switchSaijikiSeason('muki')">無季</span>
             </div>
         </div>
 
@@ -376,27 +374,34 @@
                 <button class="btn gothic-btn" onclick="goToStep2()">次へ</button>
             </div>
 
-            <!-- ▼▼ 季寄せ参照スマートドック（キーボードと共存する静かなトレイ） ▼▼ -->
+            <!-- ▼▼ 季寄せスマートドック（キーボードと共存する静かなトレイ） ▼▼ -->
             <div class="step1-saijiki-wrapper">
                 <div class="step1-saijiki-trigger" onclick="toggleStep1SaijikiTray()">
                     <span id="step1TrayIcon">▿</span>
-                    <span id="step1TrayText">季寄せを参照する</span>
+                    <span id="step1TrayText">季寄せ</span>
                 </div>
                 
                 <div id="step1SaijikiTray" class="step1-saijiki-tray hidden">
-                    <!-- 季節タブ -->
-                    <div class="step1-season-tabs">
-                        <span id="sttabHaru" class="text-tab active" onclick="switchStep1Season('haru')">春</span>
-                        <span class="text-tab-divider">｜</span>
-                        <span id="sttabNatsu" class="text-tab" onclick="switchStep1Season('natsu')">夏</span>
-                        <span class="text-tab-divider">｜</span>
-                        <span id="sttabAki" class="text-tab" onclick="switchStep1Season('aki')">秋</span>
-                        <span class="text-tab-divider">｜</span>
-                        <span id="sttabHuyu" class="text-tab" onclick="switchStep1Season('huyu')">冬</span>
-                        <span class="text-tab-divider">｜</span>
-                        <span id="sttabShinnen" class="text-tab" onclick="switchStep1Season('shinnen')">新年</span>
+                    <!-- トレイヘッダー（季節タブ ＆ 検索バー） -->
+                    <div class="step1-tray-header">
+                        <div class="step1-season-tabs">
+                            <span id="sttabHaru" class="text-tab active" onclick="switchStep1Season('haru')">春</span>
+                            <span class="text-tab-divider">｜</span>
+                            <span id="sttabNatsu" class="text-tab" onclick="switchStep1Season('natsu')">夏</span>
+                            <span class="text-tab-divider">｜</span>
+                            <span id="sttabAki" class="text-tab" onclick="switchStep1Season('aki')">秋</span>
+                            <span class="text-tab-divider">｜</span>
+                            <span id="sttabHuyu" class="text-tab" onclick="switchStep1Season('huyu')">冬</span>
+                            <span class="text-tab-divider">｜</span>
+                            <span id="sttabShinnen" class="text-tab" onclick="switchStep1Season('shinnen')">新年</span>
+                        </div>
+                        <div id="step1SearchWrapper" class="subtle-search-wrapper step1-search-box" onclick="expandStep1SearchInput()">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="step1SearchInput" class="subtle-search-input" placeholder="季語検索" oninput="onStep1SearchChanged()" onblur="collapseStep1SearchIfEmpty()">
+                            <span id="clearStep1SearchBtn" class="search-clear-btn hidden" onclick="clearStep1Search(event)">✕</span>
+                        </div>
                     </div>
-                    <!-- 季語リスト（タップでカーソル位置へ挿入） -->
+                    <!-- 季語リスト（タップで季語カードを開く） -->
                     <div id="step1KigoList" class="horizontal-scroll-container step1-kigo-scroll-list">
                     </div>
                 </div>

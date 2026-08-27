@@ -528,8 +528,8 @@ function openSaijikiScreenFromMenu() {
 function switchSaijikiSeason(season) {
     currentSaijikiSeason = season;
     
-    // タブのactive切り替え
-    const tabs = ['haru', 'natsu', 'aki', 'huyu', 'shinnen', 'muki'];
+    // タブのactive切り替え（春、夏、秋、冬、新年）
+    const tabs = ['haru', 'natsu', 'aki', 'huyu', 'shinnen'];
     tabs.forEach(s => {
         const cap = s.charAt(0).toUpperCase() + s.slice(1);
         const tabEl = document.getElementById(`stab${cap}`);
@@ -662,7 +662,7 @@ function renderSaijikiKigoList() {
 // ========================================================
 // 🌸 季語解説ポップアップカード（うてなモデル＋マイ歳時記）
 // ========================================================
-function openKigoCard(parentKigoName) {
+function openKigoCard(parentKigoName, fromContext = null) {
     const overlay = document.getElementById('kigoCardOverlay');
     if (!overlay) return;
 
@@ -715,28 +715,54 @@ function openKigoCard(parentKigoName) {
     const descCol = document.getElementById('cardDesc');
     descCol.innerHTML = `<div>${escapeHtml(desc)}</div>`;
 
-    // 4. 自作句・登録句カラム
+    // 4. アクション / 自作句カラム
     const worksCol = document.getElementById('cardWorks');
-    if (works.length > 0) {
-        let worksHtml = `<div class="works-kigo-title">【あなたの作品（${toKanjiNum(String(works.length))}句）】</div>`;
-        works.forEach(w => {
-            const author = w.author || (userSettings.authorName || '風月');
-            worksHtml += `
-                <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 8px;">
-                    <div class="kigo-user-phrase">${escapeHtml(w.phrase)}</div>
-                    <div class="kigo-user-author">${escapeHtml(author)}</div>
-                </div>
-            `;
-        });
+    let worksHtml = '';
+
+    if (fromContext === 'step1') {
+        // 作句中（ステップ1）から開いた場合：この季語を入力ボタンを最優先表示
+        worksHtml += `
+            <div class="kigo-insert-action" onclick="insertKigoToInput('${escapeHtml(parentKigoName)}')">
+                この季語を入力 ➔
+            </div>
+        `;
+        if (works.length > 0) {
+            worksHtml += `<div class="works-kigo-title" style="margin-top: 1.5rem;">【登録作品】</div>`;
+            works.forEach(w => {
+                const author = w.author || (userSettings.authorName || '風月');
+                worksHtml += `
+                    <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 8px;">
+                        <div class="kigo-user-phrase">${escapeHtml(w.phrase)}</div>
+                        <div class="kigo-user-author">${escapeHtml(author)}</div>
+                    </div>
+                `;
+            });
+        }
         worksCol.innerHTML = worksHtml;
         worksCol.style.display = 'flex';
     } else {
-        worksCol.innerHTML = `
-            <div class="kigo-compose-action" onclick="composeWithKigo('${escapeHtml(parentKigoName)}')">
-                この季語で詠む ➔
-            </div>
-        `;
-        worksCol.style.display = 'flex';
+        // 季寄せ画面から開いた場合
+        if (works.length > 0) {
+            worksHtml = `<div class="works-kigo-title">【あなたの作品（${toKanjiNum(String(works.length))}句）】</div>`;
+            works.forEach(w => {
+                const author = w.author || (userSettings.authorName || '風月');
+                worksHtml += `
+                    <div style="display: flex; flex-direction: row-reverse; align-items: center; gap: 8px;">
+                        <div class="kigo-user-phrase">${escapeHtml(w.phrase)}</div>
+                        <div class="kigo-user-author">${escapeHtml(author)}</div>
+                    </div>
+                `;
+            });
+            worksCol.innerHTML = worksHtml;
+            worksCol.style.display = 'flex';
+        } else {
+            worksCol.innerHTML = `
+                <div class="kigo-compose-action" onclick="composeWithKigo('${escapeHtml(parentKigoName)}')">
+                    この季語で詠む ➔
+                </div>
+            `;
+            worksCol.style.display = 'flex';
+        }
     }
 
     overlay.classList.remove('hidden');
@@ -788,23 +814,80 @@ function switchStep1Season(season) {
     renderStep1KigoList();
 }
 
+function expandStep1SearchInput() {
+    const wrapper = document.getElementById('step1SearchWrapper');
+    const input = document.getElementById('step1SearchInput');
+    if (wrapper && input) { wrapper.classList.add('expanded'); input.focus(); }
+}
+
+function collapseStep1SearchIfEmpty() {
+    const wrapper = document.getElementById('step1SearchWrapper');
+    const input = document.getElementById('step1SearchInput');
+    if (wrapper && input && input.value.trim() === '') wrapper.classList.remove('expanded');
+}
+
+function onStep1SearchChanged() {
+    const input = document.getElementById('step1SearchInput');
+    const clearBtn = document.getElementById('clearStep1SearchBtn');
+    if (clearBtn && input) clearBtn.classList.toggle('hidden', input.value.trim() === '');
+    renderStep1KigoList();
+}
+
+function clearStep1Search(event) {
+    if (event) event.stopPropagation();
+    const input = document.getElementById('step1SearchInput');
+    if (input) input.value = '';
+    const clearBtn = document.getElementById('clearStep1SearchBtn');
+    if (clearBtn) clearBtn.classList.add('hidden');
+    collapseStep1SearchIfEmpty();
+    renderStep1KigoList();
+}
+
 function renderStep1KigoList() {
     const container = document.getElementById('step1KigoList');
     if (!container) return;
     container.innerHTML = '';
 
-    const seen = new Set();
-    const parents = [];
+    const query = document.getElementById('step1SearchInput') ? document.getElementById('step1SearchInput').value.trim().toLowerCase() : '';
+
+    const parentMap = new Map();
     saijikiDatabase.forEach(item => {
         const s = (item.season || '').toLowerCase();
-        if (s === currentStep1Season) {
+        const isSeasonMatch = (query !== '') ? true : (s === currentStep1Season);
+        
+        if (isSeasonMatch) {
             const p = item.parentKigo || item.kigo;
-            if (p && !seen.has(p)) {
-                seen.add(p);
-                parents.push({ parentKigo: p, parentKana: item.parentKana || '' });
+            if (p && !parentMap.has(p)) {
+                parentMap.set(p, {
+                    parentKigo: p,
+                    parentKana: item.parentKana || '',
+                    season: item.season || '',
+                    detailSeason: item.detailSeason || '',
+                    children: new Set()
+                });
+            }
+            if (p && parentMap.has(p) && item.kigo && item.kigo !== p) {
+                parentMap.get(p).children.add(item.kigo);
             }
         }
     });
+
+    let parents = Array.from(parentMap.values());
+    if (query !== '') {
+        parents = parents.filter(p => {
+            if (p.parentKigo.toLowerCase().includes(query)) return true;
+            if (p.parentKana.toLowerCase().includes(query)) return true;
+            for (const child of p.children) {
+                if (child.toLowerCase().includes(query)) return true;
+            }
+            return false;
+        });
+    }
+
+    if (parents.length === 0) {
+        container.innerHTML = '<div style="writing-mode: vertical-rl; color: #888; font-size: 0.88rem; margin: auto; letter-spacing: 0.2em;">該当する季語がありません</div>';
+        return;
+    }
 
     parents.forEach(pData => {
         const itemEl = document.createElement('div');
@@ -814,7 +897,8 @@ function renderStep1KigoList() {
         else if (len >= 6) extraClass = ' long-kigo';
 
         itemEl.className = `step1-kigo-item${extraClass}`;
-        itemEl.onclick = () => insertKigoToInput(pData.parentKigo);
+        // タップで季語カードを開く（step1コンテキスト）
+        itemEl.onclick = () => openKigoCard(pData.parentKigo, 'step1');
         itemEl.textContent = pData.parentKigo;
         container.appendChild(itemEl);
     });
@@ -822,6 +906,8 @@ function renderStep1KigoList() {
 
 // カーソル位置へ季語をスマート挿入
 function insertKigoToInput(kigoText) {
+    closeKigoCard();
+
     const input = document.getElementById('inputPhrase');
     if (!input) return;
 
