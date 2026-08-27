@@ -734,7 +734,7 @@ function openKigoCard(parentKigoName, fromContext = null) {
     if (fromContext === 'step1') {
         // 作句中（ステップ1）から開いた場合：この季語を入力ボタンを表示
         worksHtml += `
-            <div class="kigo-work-single-col" style="justify-content: center;">
+            <div class="kigo-work-single-col" style="display: flex; align-items: center; justify-content: center;">
                 <div class="kigo-insert-action" onclick="insertKigoToInput('${escapeHtml(parentKigoName)}')">
                     この季語を入力 ➔
                 </div>
@@ -745,8 +745,7 @@ function openKigoCard(parentKigoName, fromContext = null) {
                 const author = w.author || (userSettings.authorName || '風月');
                 worksHtml += `
                     <div class="kigo-work-single-col">
-                        <div class="kigo-work-phrase">${escapeHtml(w.phrase)}</div>
-                        <div class="kigo-work-author">${escapeHtml(author)}</div>
+                        ${escapeHtml(w.phrase)}　<span class="kigo-work-author">${escapeHtml(author)}</span>
                     </div>
                 `;
             });
@@ -760,8 +759,7 @@ function openKigoCard(parentKigoName, fromContext = null) {
                 const author = w.author || (userSettings.authorName || '風月');
                 worksHtml += `
                     <div class="kigo-work-single-col">
-                        <div class="kigo-work-phrase">${escapeHtml(w.phrase)}</div>
-                        <div class="kigo-work-author">${escapeHtml(author)}</div>
+                        ${escapeHtml(w.phrase)}　<span class="kigo-work-author">${escapeHtml(author)}</span>
                     </div>
                 `;
             });
