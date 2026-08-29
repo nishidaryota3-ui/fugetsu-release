@@ -552,7 +552,7 @@ body, html {
     gap: 3px;
     width: 95%;
     max-width: 380px;
-    margin: 2px auto 8px;
+    margin: 6px auto calc(6px + env(safe-area-inset-bottom));
     z-index: 30;
     font-family: "游明朝", "Yu Mincho", "ヒラギノ明朝 ProN", "Hiragino Mincho ProN", "Shippori Mincho", "MS P明朝", serif;
     font-size: 0.78rem;

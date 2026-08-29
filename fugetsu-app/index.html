@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.30">
+    <link rel="stylesheet" href="style.css?v=2.0.31">
 </head>
 <body>
 
@@ -240,33 +240,33 @@
                 <span class="mode-tab-divider">・</span>
                 <span id="smodeBunrui" class="mode-tab" onclick="switchSaijikiMode('bunrui')">分類別</span>
             </div>
-
-            <!-- 五十音クイックジャンプバー（スライダーのすぐ上・右から左へ流れる：わ〜あ） -->
-            <div id="saijikiGojuonBar" class="gojuon-jump-bar">
-                <span class="jump-tab" onclick="jumpToGojuon('わ')">わ</span>
-                <span class="jump-tab-dot">・</span>
-                <span class="jump-tab" onclick="jumpToGojuon('ら')">ら</span>
-                <span class="jump-tab-dot">・</span>
-                <span class="jump-tab" onclick="jumpToGojuon('や')">や</span>
-                <span class="jump-tab-dot">・</span>
-                <span class="jump-tab" onclick="jumpToGojuon('ま')">ま</span>
-                <span class="jump-tab-dot">・</span>
-                <span class="jump-tab" onclick="jumpToGojuon('は')">は</span>
-                <span class="jump-tab-dot">・</span>
-                <span class="jump-tab" onclick="jumpToGojuon('な')">な</span>
-                <span class="jump-tab-dot">・</span>
-                <span class="jump-tab" onclick="jumpToGojuon('た')">た</span>
-                <span class="jump-tab-dot">・</span>
-                <span class="jump-tab" onclick="jumpToGojuon('さ')">さ</span>
-                <span class="jump-tab-dot">・</span>
-                <span class="jump-tab" onclick="jumpToGojuon('か')">か</span>
-                <span class="jump-tab-dot">・</span>
-                <span class="jump-tab" onclick="jumpToGojuon('あ')">あ</span>
-            </div>
         </div>
 
         <!-- 季語横スクロールコンテナ（右から左へ並ぶ縦書き季語） -->
         <div id="saijikiKigoList" class="horizontal-scroll-container saijiki-kigo-scroll-list">
+        </div>
+
+        <!-- 五十音クイックジャンプバー（スクロールバーのすぐ下・右から左：わ〜あ） -->
+        <div id="saijikiGojuonBar" class="gojuon-jump-bar">
+            <span class="jump-tab" onclick="jumpToGojuon('わ')">わ</span>
+            <span class="jump-tab-dot">・</span>
+            <span class="jump-tab" onclick="jumpToGojuon('ら')">ら</span>
+            <span class="jump-tab-dot">・</span>
+            <span class="jump-tab" onclick="jumpToGojuon('や')">や</span>
+            <span class="jump-tab-dot">・</span>
+            <span class="jump-tab" onclick="jumpToGojuon('ま')">ま</span>
+            <span class="jump-tab-dot">・</span>
+            <span class="jump-tab" onclick="jumpToGojuon('は')">は</span>
+            <span class="jump-tab-dot">・</span>
+            <span class="jump-tab" onclick="jumpToGojuon('な')">な</span>
+            <span class="jump-tab-dot">・</span>
+            <span class="jump-tab" onclick="jumpToGojuon('た')">た</span>
+            <span class="jump-tab-dot">・</span>
+            <span class="jump-tab" onclick="jumpToGojuon('さ')">さ</span>
+            <span class="jump-tab-dot">・</span>
+            <span class="jump-tab" onclick="jumpToGojuon('か')">か</span>
+            <span class="jump-tab-dot">・</span>
+            <span class="jump-tab" onclick="jumpToGojuon('あ')">あ</span>
         </div>
     </div>
 
@@ -445,7 +445,10 @@
                         <span class="mode-tab-divider">・</span>
                         <span id="stmodeBunrui" class="mode-tab" onclick="switchStep1Mode('bunrui')">分類別</span>
                     </div>
-                    <!-- トレイ内五十音ジャンプバー（スライダーの上・右から左：わ〜あ） -->
+                    <!-- 季語リスト（タップで季語カードを開く） -->
+                    <div id="step1KigoList" class="horizontal-scroll-container step1-kigo-scroll-list">
+                    </div>
+                    <!-- トレイ内五十音ジャンプバー（スクロールバーのすぐ下・右から左：わ〜あ） -->
                     <div id="step1GojuonBar" class="gojuon-jump-bar step1-jump-bar">
                         <span class="jump-tab" onclick="jumpToStep1Gojuon('わ')">わ</span>
                         <span class="jump-tab-dot">・</span>
@@ -466,9 +469,6 @@
                         <span class="jump-tab" onclick="jumpToStep1Gojuon('か')">か</span>
                         <span class="jump-tab-dot">・</span>
                         <span class="jump-tab" onclick="jumpToStep1Gojuon('あ')">あ</span>
-                    </div>
-                    <!-- 季語リスト（タップで季語カードを開く） -->
-                    <div id="step1KigoList" class="horizontal-scroll-container step1-kigo-scroll-list">
                     </div>
                 </div>
             </div>
@@ -594,6 +594,6 @@
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.30"></script>
+    <script src="app.js?v=2.0.31"></script>
 </body>
 </html>
