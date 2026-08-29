@@ -1242,3 +1242,30 @@ body.large-text-mode #modalPhrase.extra-long-phrase {
     letter-spacing: 0.03em !important;
 }
 
+/* 👁️ Step3 プレビュー画面専用（上下にボタンがあるため専用最適化） */
+#previewPhrase {
+    font-size: min(2.6vh, 23px) !important;
+    letter-spacing: 0.12em !important;
+}
+#previewPhrase.long-phrase {
+    font-size: min(2.0vh, 18px) !important;
+    letter-spacing: 0.05em !important;
+}
+#previewPhrase.extra-long-phrase {
+    font-size: min(1.7vh, 14px) !important;
+    letter-spacing: 0.02em !important;
+}
+
+body.large-text-mode #previewPhrase {
+    font-size: min(2.7vh, 23px) !important;
+    letter-spacing: 0.10em !important;
+}
+body.large-text-mode #previewPhrase.long-phrase {
+    font-size: min(2.1vh, 18px) !important;
+    letter-spacing: 0.04em !important;
+}
+body.large-text-mode #previewPhrase.extra-long-phrase {
+    font-size: min(1.7vh, 14px) !important;
+    letter-spacing: 0.02em !important;
+}
+
