@@ -529,25 +529,43 @@ function selectAuthorFilter(author) {
 // ========================================================
 // 🌸 季寄せ・歳時記 大画面（マイ歳時記ハイブリッド）
 // ========================================================
-function openSaijikiScreenFromMenu() {
-    closeAuthorSelectModal();
-    document.querySelectorAll('.step-screen').forEach(el => el.classList.remove('active'));
-    document.getElementById('saijikiScreen').classList.add('active');
-    updateCatVisibility(false);
-    switchSaijikiSeason(currentSaijikiSeason || 'haru');
+let currentSaijikiMode = 'gojuon'; // 'gojuon' | 'jiki' | 'bunrui'
+let currentStep1Mode = 'gojuon';
+
+const JIKI_ORDER = {
+    'haru': ['初春', '仲春', '晩春', '三春'],
+    'natsu': ['初夏', '仲夏', '晩夏', '三夏'],
+    'aki': ['初秋', '仲秋', '晩秋', '三秋'],
+    'huyu': ['初冬', '仲冬', '晩冬', '暮', '三冬'],
+    'shinnen': ['新年']
+};
+
+const BUNRUI_ORDER = ['時候', '天文', '地理', '生活', '行事', '動物', '植物', '無季'];
+
+function switchSaijikiMode(mode) {
+    currentSaijikiMode = mode;
+    ['Gojuon', 'Jiki', 'Bunrui'].forEach(m => {
+        const tab = document.getElementById(`smode${m}`);
+        if (tab) tab.classList.toggle('active', m.toLowerCase() === mode);
+    });
+    renderSaijikiKigoList();
+}
+
+function switchStep1Mode(mode) {
+    currentStep1Mode = mode;
+    ['Gojuon', 'Jiki', 'Bunrui'].forEach(m => {
+        const tab = document.getElementById(`stmode${m}`);
+        if (tab) tab.classList.toggle('active', m.toLowerCase() === mode);
+    });
+    renderStep1KigoList();
 }
 
 function switchSaijikiSeason(season) {
     currentSaijikiSeason = season;
-    
-    // タブのactive切り替え（春、夏、秋、冬、新年）
-    const tabs = ['haru', 'natsu', 'aki', 'huyu', 'shinnen'];
-    tabs.forEach(s => {
-        const cap = s.charAt(0).toUpperCase() + s.slice(1);
-        const tabEl = document.getElementById(`stab${cap}`);
-        if (tabEl) tabEl.classList.toggle('active', s === season);
+    ['Haru', 'Natsu', 'Aki', 'Huyu', 'Shinnen'].forEach(s => {
+        const tab = document.getElementById(`stab${s}`);
+        if (tab) tab.classList.toggle('active', s.toLowerCase() === season);
     });
-
     renderSaijikiKigoList();
 }
 
@@ -580,7 +598,7 @@ function clearSaijikiSearch(event) {
     renderSaijikiKigoList();
 }
 
-// 季寄せ季語一覧の描画（右から左へ並ぶ縦書きリスト ＋ 句数バッジ）
+// 季寄せ季語一覧の描画（右から左へ並ぶ縦書きリスト ＋ 句数バッジ ＋ 3WAY切り替え）
 function renderSaijikiKigoList() {
     const container = document.getElementById('saijikiKigoList');
     if (!container) return;
@@ -614,6 +632,7 @@ function renderSaijikiKigoList() {
                     parentKana: item.parentKana || '',
                     season: item.season || '',
                     detailSeason: item.detailSeason || '',
+                    category: item.category || '生活',
                     desc: item.desc || '',
                     children: new Set()
                 });
@@ -642,8 +661,10 @@ function renderSaijikiKigoList() {
         return;
     }
 
-    // 4. 縦書き要素の生成
-    parents.forEach(pData => {
+    // 4. ソート＆グループ化ロジック（五十音順・時期別・分類別）
+    const sortKana = (arr) => [...arr].sort((a, b) => (a.parentKana || a.parentKigo).localeCompare(b.parentKana || b.parentKigo, 'ja'));
+
+    const renderItem = (pData) => {
         const works = kigoWorkMap.get(pData.parentKigo) || [];
         const workCount = works.length;
 
@@ -666,9 +687,49 @@ function renderSaijikiKigoList() {
             <div class="saijiki-kigo-text">${rubyHtml}</div>
             ${badgeHtml}
         `;
-
         container.appendChild(itemEl);
-    });
+    };
+
+    const renderSectionHeader = (title) => {
+        const sep = document.createElement('div');
+        sep.className = 'saijiki-section-separator';
+        sep.innerHTML = `<span class="saijiki-section-title">${escapeHtml(title)}</span>`;
+        container.appendChild(sep);
+    };
+
+    if (query !== '' || currentSaijikiMode === 'gojuon') {
+        // 【五十音順】モード（または検索時）：あいうえお順で全件流す
+        sortKana(parents).forEach(renderItem);
+    } else if (currentSaijikiMode === 'jiki') {
+        // 【時期別】モード：初 ➔ 仲 ➔ 晩 ➔ 三 （各グループ内あいうえお順）
+        const jikiKeys = JIKI_ORDER[currentSaijikiSeason] || ['初春', '仲春', '晩春', '三春'];
+        jikiKeys.forEach(jKey => {
+            const group = parents.filter(p => p.detailSeason === jKey);
+            if (group.length > 0) {
+                renderSectionHeader(`【${jKey}】`);
+                sortKana(group).forEach(renderItem);
+            }
+        });
+        const others = parents.filter(p => !jikiKeys.includes(p.detailSeason));
+        if (others.length > 0) {
+            renderSectionHeader('【その他】');
+            sortKana(others).forEach(renderItem);
+        }
+    } else if (currentSaijikiMode === 'bunrui') {
+        // 【分類別】モード：時候 ➔ 天文 ➔ 地理 ➔ 生活 ➔ 行事 ➔ 動物 ➔ 植物
+        BUNRUI_ORDER.forEach(bKey => {
+            const group = parents.filter(p => p.category === bKey);
+            if (group.length > 0) {
+                renderSectionHeader(`【${bKey}】`);
+                sortKana(group).forEach(renderItem);
+            }
+        });
+        const others = parents.filter(p => !BUNRUI_ORDER.includes(p.category));
+        if (others.length > 0) {
+            renderSectionHeader('【その他】');
+            sortKana(others).forEach(renderItem);
+        }
+    }
 }
 
 // ========================================================
@@ -885,6 +946,7 @@ function renderStep1KigoList() {
                     parentKana: item.parentKana || '',
                     season: item.season || '',
                     detailSeason: item.detailSeason || '',
+                    category: item.category || '生活',
                     children: new Set()
                 });
             }
@@ -911,7 +973,9 @@ function renderStep1KigoList() {
         return;
     }
 
-    parents.forEach(pData => {
+    const sortKana = (arr) => [...arr].sort((a, b) => (a.parentKana || a.parentKigo).localeCompare(b.parentKana || b.parentKigo, 'ja'));
+
+    const renderItem = (pData) => {
         const itemEl = document.createElement('div');
         const len = (pData.parentKigo || '').length;
         let extraClass = '';
@@ -923,7 +987,50 @@ function renderStep1KigoList() {
         itemEl.onclick = () => openKigoCard(pData.parentKigo, 'step1');
         itemEl.textContent = pData.parentKigo;
         container.appendChild(itemEl);
-    });
+    };
+
+    const renderSectionHeader = (title) => {
+        const sep = document.createElement('div');
+        sep.className = 'saijiki-section-separator';
+        sep.style.margin = '0 0.8rem';
+        sep.style.padding = '8px 4px';
+        sep.innerHTML = `<span class="saijiki-section-title" style="font-size: 0.78rem;">${escapeHtml(title)}</span>`;
+        container.appendChild(sep);
+    };
+
+    if (query !== '' || currentStep1Mode === 'gojuon') {
+        // 【五十音順】モード（または検索時）
+        sortKana(parents).forEach(renderItem);
+    } else if (currentStep1Mode === 'jiki') {
+        // 【時期別】モード
+        const jikiKeys = JIKI_ORDER[currentStep1Season] || ['初春', '仲春', '晩春', '三春'];
+        jikiKeys.forEach(jKey => {
+            const group = parents.filter(p => p.detailSeason === jKey);
+            if (group.length > 0) {
+                renderSectionHeader(`【${jKey}】`);
+                sortKana(group).forEach(renderItem);
+            }
+        });
+        const others = parents.filter(p => !jikiKeys.includes(p.detailSeason));
+        if (others.length > 0) {
+            renderSectionHeader('【その他】');
+            sortKana(others).forEach(renderItem);
+        }
+    } else if (currentStep1Mode === 'bunrui') {
+        // 【分類別】モード
+        BUNRUI_ORDER.forEach(bKey => {
+            const group = parents.filter(p => p.category === bKey);
+            if (group.length > 0) {
+                renderSectionHeader(`【${bKey}】`);
+                sortKana(group).forEach(renderItem);
+            }
+        });
+        const others = parents.filter(p => !BUNRUI_ORDER.includes(p.category));
+        if (others.length > 0) {
+            renderSectionHeader('【その他】');
+            sortKana(others).forEach(renderItem);
+        }
+    }
 }
 
 // カーソル位置へ季語をスマート挿入
