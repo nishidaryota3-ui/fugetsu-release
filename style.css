@@ -537,12 +537,20 @@ body, html {
     -webkit-writing-mode: vertical-rl;
     flex-shrink: 0;
     margin: 0 1.2rem;
-    padding: 12px 6px;
-    background: rgba(0, 0, 0, 0.03);
-    border-right: 1px dashed rgba(0, 0, 0, 0.15);
-    border-left: 1px dashed rgba(0, 0, 0, 0.15);
+    padding: 14px 6px;
+    background: rgba(0, 0, 0, 0.025);
+    border-right: 1px dashed rgba(0, 0, 0, 0.12);
+    border-left: 1px dashed rgba(0, 0, 0, 0.12);
     border-radius: 4px;
     user-select: none;
+}
+.saijiki-section-title {
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    color: #4a4439;
+    white-space: nowrap;
+    font-family: "游明朝", "Yu Mincho", "ヒラギノ明朝 ProN", "Hiragino Mincho ProN", "Shippori Mincho", "MS P明朝", serif;
 }
 /* 五十音クイックジャンプバー */
 .gojuon-jump-bar {

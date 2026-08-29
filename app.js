@@ -537,22 +537,22 @@ function openSaijikiScreenFromMenu() {
     switchSaijikiSeason(currentSaijikiSeason || 'haru');
 }
 
-let currentSaijikiMode = 'gojuon'; // 'gojuon' | 'jiki' | 'bunrui'
+let currentSaijikiMode = 'gojuon'; // 'gojuon' | 'jikou'
 let currentStep1Mode = 'gojuon';
 
 const JIKI_ORDER = {
-    'haru': ['初春', '仲春', '晩春', '三春'],
-    'natsu': ['初夏', '仲夏', '晩夏', '三夏'],
-    'aki': ['初秋', '仲秋', '晩秋', '三秋'],
-    'huyu': ['初冬', '仲冬', '晩冬', '暮', '三冬'],
+    'haru': ['三春', '初春', '仲春', '晩春'],
+    'natsu': ['三夏', '初夏', '仲夏', '晩夏'],
+    'aki': ['三秋', '初秋', '仲秋', '晩秋'],
+    'huyu': ['三冬', '初冬', '仲冬', '晩冬', '暮'],
     'shinnen': ['新年']
 };
 
-const BUNRUI_ORDER = ['時候', '天文', '地理', '生活', '行事', '動物', '植物', '無季'];
+const BUNRUI_ORDER = ['時候', '天文', '地理', '生活', '行事', '動物', '植物'];
 
 function switchSaijikiMode(mode) {
     currentSaijikiMode = mode;
-    ['Gojuon', 'Jiki', 'Bunrui'].forEach(m => {
+    ['Gojuon', 'Jikou'].forEach(m => {
         const tab = document.getElementById(`smode${m}`);
         if (tab) tab.classList.toggle('active', m.toLowerCase() === mode);
     });
@@ -561,7 +561,7 @@ function switchSaijikiMode(mode) {
 
 function switchStep1Mode(mode) {
     currentStep1Mode = mode;
-    ['Gojuon', 'Jiki', 'Bunrui'].forEach(m => {
+    ['Gojuon', 'Jikou'].forEach(m => {
         const tab = document.getElementById(`stmode${m}`);
         if (tab) tab.classList.toggle('active', m.toLowerCase() === mode);
     });
@@ -750,31 +750,35 @@ function renderSaijikiKigoList() {
     if (query !== '' || currentSaijikiMode === 'gojuon') {
         // 【五十音順】モード（または検索時）：あいうえお順で全件流す
         sortKana(parents).forEach(renderItem);
-    } else if (currentSaijikiMode === 'jiki') {
-        // 【時期別】モード：初 ➔ 仲 ➔ 晩 ➔ 三 （各グループ内あいうえお順）
-        const jikiKeys = JIKI_ORDER[currentSaijikiSeason] || ['初春', '仲春', '晩春', '三春'];
+    } else if (currentSaijikiMode === 'jikou') {
+        // 【時候順】モード：時期（三 ➔ 初 ➔ 仲 ➔ 晩） ➔ 分類（時候 ➔ 天文 ➔ 地理 ➔ 生活 ➔ 行事 ➔ 動物 ➔ 植物）
+        const jikiKeys = JIKI_ORDER[currentSaijikiSeason] || ['三春', '初春', '仲春', '晩春'];
         jikiKeys.forEach(jKey => {
-            const group = parents.filter(p => p.detailSeason === jKey);
-            if (group.length > 0) {
+            const jikiGroup = parents.filter(p => p.detailSeason === jKey);
+            if (jikiGroup.length > 0) {
+                // 時期の先頭見出し
                 renderSectionHeader(`【${jKey}】`);
-                sortKana(group).forEach(renderItem);
+                
+                // 時期内の7大分類
+                BUNRUI_ORDER.forEach(bKey => {
+                    const catGroup = jikiGroup.filter(p => p.category === bKey);
+                    if (catGroup.length > 0) {
+                        renderSectionHeader(`〔${bKey}〕`);
+                        sortKana(catGroup).forEach(renderItem);
+                    }
+                });
+                
+                // 未分類があれば
+                const othersInJiki = jikiGroup.filter(p => !BUNRUI_ORDER.includes(p.category));
+                if (othersInJiki.length > 0) {
+                    renderSectionHeader('〔その他〕');
+                    sortKana(othersInJiki).forEach(renderItem);
+                }
             }
         });
+        
+        // 定義外の時期があれば末尾に
         const others = parents.filter(p => !jikiKeys.includes(p.detailSeason));
-        if (others.length > 0) {
-            renderSectionHeader('【その他】');
-            sortKana(others).forEach(renderItem);
-        }
-    } else if (currentSaijikiMode === 'bunrui') {
-        // 【分類別】モード：時候 ➔ 天文 ➔ 地理 ➔ 生活 ➔ 行事 ➔ 動物 ➔ 植物
-        BUNRUI_ORDER.forEach(bKey => {
-            const group = parents.filter(p => p.category === bKey);
-            if (group.length > 0) {
-                renderSectionHeader(`【${bKey}】`);
-                sortKana(group).forEach(renderItem);
-            }
-        });
-        const others = parents.filter(p => !BUNRUI_ORDER.includes(p.category));
         if (others.length > 0) {
             renderSectionHeader('【その他】');
             sortKana(others).forEach(renderItem);
@@ -1058,31 +1062,28 @@ function renderStep1KigoList() {
     if (query !== '' || currentStep1Mode === 'gojuon') {
         // 【五十音順】モード（または検索時）
         sortKana(parents).forEach(renderItem);
-    } else if (currentStep1Mode === 'jiki') {
-        // 【時期別】モード
-        const jikiKeys = JIKI_ORDER[currentStep1Season] || ['初春', '仲春', '晩春', '三春'];
+    } else if (currentStep1Mode === 'jikou') {
+        // 【時候順】モード：時期（三 ➔ 初 ➔ 仲 ➔ 晩） ➔ 分類（時候 ➔ 天文 ➔ 地理 ➔ 生活 ➔ 行事 ➔ 動物 ➔ 植物）
+        const jikiKeys = JIKI_ORDER[currentStep1Season] || ['三春', '初春', '仲春', '晩春'];
         jikiKeys.forEach(jKey => {
-            const group = parents.filter(p => p.detailSeason === jKey);
-            if (group.length > 0) {
+            const jikiGroup = parents.filter(p => p.detailSeason === jKey);
+            if (jikiGroup.length > 0) {
                 renderSectionHeader(`【${jKey}】`);
-                sortKana(group).forEach(renderItem);
+                BUNRUI_ORDER.forEach(bKey => {
+                    const catGroup = jikiGroup.filter(p => p.category === bKey);
+                    if (catGroup.length > 0) {
+                        renderSectionHeader(`〔${bKey}〕`);
+                        sortKana(catGroup).forEach(renderItem);
+                    }
+                });
+                const othersInJiki = jikiGroup.filter(p => !BUNRUI_ORDER.includes(p.category));
+                if (othersInJiki.length > 0) {
+                    renderSectionHeader('〔その他〕');
+                    sortKana(othersInJiki).forEach(renderItem);
+                }
             }
         });
         const others = parents.filter(p => !jikiKeys.includes(p.detailSeason));
-        if (others.length > 0) {
-            renderSectionHeader('【その他】');
-            sortKana(others).forEach(renderItem);
-        }
-    } else if (currentStep1Mode === 'bunrui') {
-        // 【分類別】モード
-        BUNRUI_ORDER.forEach(bKey => {
-            const group = parents.filter(p => p.category === bKey);
-            if (group.length > 0) {
-                renderSectionHeader(`【${bKey}】`);
-                sortKana(group).forEach(renderItem);
-            }
-        });
-        const others = parents.filter(p => !BUNRUI_ORDER.includes(p.category));
         if (others.length > 0) {
             renderSectionHeader('【その他】');
             sortKana(others).forEach(renderItem);

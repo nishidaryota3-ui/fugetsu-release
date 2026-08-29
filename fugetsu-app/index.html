@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.31">
+    <link rel="stylesheet" href="style.css?v=2.0.32">
 </head>
 <body>
 
@@ -232,13 +232,11 @@
                 <span id="stabShinnen" class="text-tab" onclick="switchSaijikiSeason('shinnen')">新年</span>
             </div>
 
-            <!-- 並び順切り替えスイッチ（五十音順・時期別・分類別） -->
+            <!-- 並び順切り替えスイッチ（五十音順・時候順） -->
             <div class="saijiki-mode-switch">
                 <span id="smodeGojuon" class="mode-tab active" onclick="switchSaijikiMode('gojuon')">五十音順</span>
                 <span class="mode-tab-divider">・</span>
-                <span id="smodeJiki" class="mode-tab" onclick="switchSaijikiMode('jiki')">時期別</span>
-                <span class="mode-tab-divider">・</span>
-                <span id="smodeBunrui" class="mode-tab" onclick="switchSaijikiMode('bunrui')">分類別</span>
+                <span id="smodeJikou" class="mode-tab" onclick="switchSaijikiMode('jikou')">時候順</span>
             </div>
         </div>
 
@@ -441,9 +439,7 @@
                     <div class="step1-mode-switch">
                         <span id="stmodeGojuon" class="mode-tab active" onclick="switchStep1Mode('gojuon')">五十音順</span>
                         <span class="mode-tab-divider">・</span>
-                        <span id="stmodeJiki" class="mode-tab" onclick="switchStep1Mode('jiki')">時期別</span>
-                        <span class="mode-tab-divider">・</span>
-                        <span id="stmodeBunrui" class="mode-tab" onclick="switchStep1Mode('bunrui')">分類別</span>
+                        <span id="stmodeJikou" class="mode-tab" onclick="switchStep1Mode('jikou')">時候順</span>
                     </div>
                     <!-- 季語リスト（タップで季語カードを開く） -->
                     <div id="step1KigoList" class="horizontal-scroll-container step1-kigo-scroll-list">
@@ -594,6 +590,6 @@
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.31"></script>
+    <script src="app.js?v=2.0.32"></script>
 </body>
 </html>
