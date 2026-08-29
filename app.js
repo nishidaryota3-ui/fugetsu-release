@@ -59,7 +59,8 @@ let userSettings = {
     authorKana: 'ふうげつ',
     initialized: false,
     startupOmikuji: false,
-    homeKiyose: false
+    homeKiyose: false,
+    fontSizeMode: 'normal' // 'normal' | 'large'
 };
 
 let currentHaikuData = {
@@ -193,6 +194,15 @@ function applyUserSettingsToUI() {
         kiyoseBlock.classList.toggle('hidden', isHide);
         kiyoseBlock.style.display = isHide ? 'none' : 'flex';
     }
+
+    // 文字サイズモードの適用
+    const isLarge = userSettings.fontSizeMode === 'large';
+    document.body.classList.toggle('large-text-mode', isLarge);
+
+    const normalBtn = document.getElementById('fontSizeNormalBtn');
+    const largeBtn = document.getElementById('fontSizeLargeBtn');
+    if (normalBtn) normalBtn.classList.toggle('active', !isLarge);
+    if (largeBtn) largeBtn.classList.toggle('active', isLarge);
 }
 
 function updateHeaderTitle() {
@@ -1480,6 +1490,12 @@ function onSettingCheckboxChanged() {
     if (startupChk) userSettings.startupOmikuji = startupChk.checked;
     if (hideHomeKiyoseChk) userSettings.hideHomeKiyose = hideHomeKiyoseChk.checked;
 
+    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
+    applyUserSettingsToUI();
+}
+
+function setFontSizeMode(mode) {
+    userSettings.fontSizeMode = mode;
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
     applyUserSettingsToUI();
 }

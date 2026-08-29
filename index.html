@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.36">
+    <link rel="stylesheet" href="style.css?v=2.0.37">
 </head>
 <body>
 
@@ -359,14 +359,23 @@
 
             <div class="settings-divider"></div>
 
-            <!-- 三、 その他 -->
+            <!-- 三、 表示・各種設定 -->
             <div class="menu-pillar-section">
                 <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection3')">
-                    <span class="pillar-section-title">三、 その他</span>
+                    <span class="pillar-section-title">三、 表示・各種設定</span>
                     <span id="settingArrow3" class="pillar-accordion-arrow">▿</span>
                 </div>
                 <div id="settingSection3" class="pillar-accordion-body hidden">
-                    <div class="settings-checkbox-group" style="padding-top: 4px;">
+                    <div class="settings-form" style="width: 100%; margin-top: 4px;">
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label class="form-label" style="margin-bottom: 6px;">文字サイズ</label>
+                            <div class="font-size-switch-group">
+                                <button type="button" id="fontSizeNormalBtn" class="font-size-btn active" onclick="setFontSizeMode('normal')">標準</button>
+                                <button type="button" id="fontSizeLargeBtn" class="font-size-btn" onclick="setFontSizeMode('large')">大文字</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-checkbox-group" style="padding-top: 2px;">
                         <label class="settings-checkbox-row">
                             <input type="checkbox" id="settingStartupOmikuji" onchange="onSettingCheckboxChanged()">
                             <span>起動時におみ句じを表示</span>
@@ -601,6 +610,6 @@
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.36"></script>
+    <script src="app.js?v=2.0.37"></script>
 </body>
 </html>

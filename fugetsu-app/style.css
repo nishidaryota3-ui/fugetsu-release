@@ -989,3 +989,125 @@ body, html {
     letter-spacing: 0.02em !important;
 }
 
+/* ========================================================
+   🔤 文字サイズ切り替えスイッチ（設定モーダル内）
+   ======================================================== */
+.font-size-switch-group {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    margin-top: 4px;
+}
+.font-size-btn {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 0.88rem;
+    font-family: inherit;
+    border: 1px solid #d0cbc2;
+    background: #f8f6f0;
+    color: #6a6458;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.font-size-btn:hover {
+    background: #eae5dc;
+}
+.font-size-btn.active {
+    background: #4a4439;
+    color: #ffffff;
+    border-color: #4a4439;
+    font-weight: 600;
+}
+
+/* ========================================================
+   👓 大文字シンプルモード（.large-text-mode）
+   ======================================================== */
+/* 季寄せ画面の季語・ルビ・見出し */
+body.large-text-mode .saijiki-kigo-text {
+    font-size: min(3.4vh, 30px) !important;
+    letter-spacing: 0.24em;
+    font-weight: 500;
+}
+body.large-text-mode .saijiki-kigo-text rt {
+    font-size: 0.52em !important;
+    color: #555555 !important;
+}
+body.large-text-mode .saijiki-hb-timing {
+    font-size: 1.25rem !important;
+    margin-bottom: 14px !important;
+}
+body.large-text-mode .saijiki-hb-cat {
+    font-size: 0.95rem !important;
+}
+body.large-text-mode .saijiki-mode-switch .mode-tab {
+    font-size: 0.96rem !important;
+    padding: 4px 6px !important;
+}
+body.large-text-mode .read-header-inner .text-tab {
+    font-size: 1.1rem !important;
+    padding: 4px 8px !important;
+}
+body.large-text-mode .gojuon-jump-bar {
+    font-size: 0.92rem !important;
+    max-width: 440px !important;
+}
+
+/* 作句画面（Step1〜4） */
+body.large-text-mode #inputPhrase {
+    font-size: min(4.2vh, 36px) !important;
+    line-height: 1.6 !important;
+}
+body.large-text-mode .step1-kigo-item {
+    font-size: 1.05rem !important;
+    padding: 6px 4px !important;
+}
+body.large-text-mode .step1-kigo-item.long-kigo {
+    font-size: 0.9rem !important;
+}
+body.large-text-mode .step1-kigo-item.extra-long-kigo {
+    font-size: 0.8rem !important;
+}
+body.large-text-mode .step-title {
+    font-size: 1.25rem !important;
+}
+body.large-text-mode .btn {
+    font-size: 1.05rem !important;
+    padding: 12px 24px !important;
+}
+
+/* 句帳（読む画面）の短冊・文字 */
+body.large-text-mode .haiku-card-phrase {
+    font-size: min(3.8vh, 34px) !important;
+    line-height: 1.6 !important;
+    font-weight: 500;
+}
+body.large-text-mode .haiku-card-author {
+    font-size: 0.98rem !important;
+}
+body.large-text-mode .haiku-card-kigo-tag {
+    font-size: 0.92rem !important;
+    padding: 4px 8px !important;
+}
+
+/* 季語解説ポップアップカード */
+body.large-text-mode .kigo-card-parent-title {
+    font-size: 2rem !important;
+}
+body.large-text-mode .kigo-card-desc {
+    font-size: 1.1rem !important;
+    line-height: 1.85 !important;
+}
+body.large-text-mode .kigo-card-example-phrase {
+    font-size: 1.15rem !important;
+}
+body.large-text-mode .kigo-card-child-pill {
+    font-size: 0.95rem !important;
+    padding: 6px 12px !important;
+}
+
+/* おみ句じ */
+body.large-text-mode .omikuji-phrase {
+    font-size: min(4.2vh, 38px) !important;
+}
+
