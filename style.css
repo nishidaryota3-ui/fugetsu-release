@@ -544,12 +544,45 @@ body, html {
     border-radius: 4px;
     user-select: none;
 }
-.saijiki-section-title {
-    font-size: 0.85rem;
+/* 五十音クイックジャンプバー */
+.gojuon-jump-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(6px, 2.5vw, 14px);
+    width: 100%;
+    margin-top: 10px;
+    z-index: 30;
+    font-family: "游明朝", "Yu Mincho", "ヒラギノ明朝 ProN", "Hiragino Mincho ProN", "Shippori Mincho", "MS P明朝", serif;
+    font-size: 0.8rem;
+    color: #8c8476;
+    user-select: none;
+}
+.gojuon-jump-bar.hidden {
+    display: none !important;
+}
+.jump-tab {
+    cursor: pointer;
+    padding: 3px 4px;
+    border-radius: 4px;
+    transition: color 0.15s, transform 0.1s;
+}
+.jump-tab:hover {
+    color: #2b2b2b;
     font-weight: 600;
-    letter-spacing: 0.25em;
-    color: #5a5449;
-    white-space: nowrap;
+}
+.jump-tab:active {
+    transform: scale(0.9);
+}
+.jump-tab-dot {
+    color: #d8d4cd;
+    font-size: 0.65em;
+    pointer-events: none;
+}
+.step1-jump-bar {
+    font-size: 0.72rem;
+    gap: 4px;
+    margin-top: 4px;
 }
 
 .saijiki-kigo-scroll-list {

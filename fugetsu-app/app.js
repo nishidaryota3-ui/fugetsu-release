@@ -606,6 +606,40 @@ function clearSaijikiSearch(event) {
     renderSaijikiKigoList();
 }
 
+function getGojuonRowChar(kana) {
+    if (!kana) return 'あ';
+    const c = kana.charAt(0);
+    if ('あいうえおぁぃぅぇぉ'.includes(c)) return 'あ';
+    if ('かきくけこがぎぐげご'.includes(c)) return 'か';
+    if ('さしすせそざじずぜぞ'.includes(c)) return 'さ';
+    if ('たちつてとだぢづでどっ'.includes(c)) return 'た';
+    if ('なにぬねの'.includes(c)) return 'な';
+    if ('はひふへほばびぶべぼぱぴぷぺぽ'.includes(c)) return 'は';
+    if ('まみむめも'.includes(c)) return 'ま';
+    if ('やゆよゃゅょ'.includes(c)) return 'や';
+    if ('らりるれろ'.includes(c)) return 'ら';
+    if ('わをん'.includes(c)) return 'わ';
+    return 'あ';
+}
+
+function jumpToGojuon(rowChar) {
+    const container = document.getElementById('saijikiKigoList');
+    if (!container) return;
+    const target = container.querySelector(`[data-row="${rowChar}"]`);
+    if (target) {
+        target.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+}
+
+function jumpToStep1Gojuon(rowChar) {
+    const container = document.getElementById('step1KigoList');
+    if (!container) return;
+    const target = container.querySelector(`[data-row="${rowChar}"]`);
+    if (target) {
+        target.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+}
+
 // 季寄せ季語一覧の描画（右から左へ並ぶ縦書きリスト ＋ 句数バッジ ＋ 3WAY切り替え）
 function renderSaijikiKigoList() {
     const container = document.getElementById('saijikiKigoList');
@@ -613,6 +647,12 @@ function renderSaijikiKigoList() {
     container.innerHTML = '';
 
     const query = document.getElementById('saijikiSearchInput') ? document.getElementById('saijikiSearchInput').value.trim().toLowerCase() : '';
+
+    // ジャンプバーの表示/非表示（五十音モードかつ非検索時のみ表示）
+    const jumpBar = document.getElementById('saijikiGojuonBar');
+    if (jumpBar) {
+        jumpBar.classList.toggle('hidden', currentSaijikiMode !== 'gojuon' || query !== '');
+    }
 
     // 1. 作品データベースから季語ごとの句数を集計
     const kigoWorkMap = new Map();
@@ -675,9 +715,11 @@ function renderSaijikiKigoList() {
     const renderItem = (pData) => {
         const works = kigoWorkMap.get(pData.parentKigo) || [];
         const workCount = works.length;
+        const rowChar = getGojuonRowChar(pData.parentKana || pData.parentKigo);
 
         const itemEl = document.createElement('div');
         itemEl.className = 'saijiki-kigo-item';
+        itemEl.setAttribute('data-row', rowChar);
         itemEl.onclick = () => openKigoCard(pData.parentKigo);
 
         let rubyHtml = escapeHtml(pData.parentKigo);
@@ -976,6 +1018,11 @@ function renderStep1KigoList() {
         });
     }
 
+    const jumpBar = document.getElementById('step1GojuonBar');
+    if (jumpBar) {
+        jumpBar.classList.toggle('hidden', currentStep1Mode !== 'gojuon' || query !== '');
+    }
+
     if (parents.length === 0) {
         container.innerHTML = '<div style="writing-mode: vertical-rl; color: #888; font-size: 0.88rem; margin: auto; letter-spacing: 0.2em;">該当する季語がありません</div>';
         return;
@@ -986,11 +1033,13 @@ function renderStep1KigoList() {
     const renderItem = (pData) => {
         const itemEl = document.createElement('div');
         const len = (pData.parentKigo || '').length;
+        const rowChar = getGojuonRowChar(pData.parentKana || pData.parentKigo);
         let extraClass = '';
         if (len >= 8) extraClass = ' extra-long-kigo';
         else if (len >= 6) extraClass = ' long-kigo';
 
         itemEl.className = `step1-kigo-item${extraClass}`;
+        itemEl.setAttribute('data-row', rowChar);
         // タップで季語カードを開く（step1コンテキスト）
         itemEl.onclick = () => openKigoCard(pData.parentKigo, 'step1');
         itemEl.textContent = pData.parentKigo;
