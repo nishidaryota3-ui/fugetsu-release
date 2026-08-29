@@ -1021,7 +1021,7 @@ body, html {
 }
 
 /* ========================================================
-   👓 大文字シンプルモード（.large-text-mode）完全対応
+   👓 大文字シンプルモード（.large-text-mode）完全対応・上下切れ防止設計
    ======================================================== */
 
 /* 1. パンくずリスト（全画面共通） */
@@ -1063,7 +1063,10 @@ body.large-text-mode .cal-line.sub-info {
     line-height: 1.4 !important;
 }
 
-/* 3. 俳句を読む（句帳画面・階層・短冊） */
+/* 3. 俳句を読む（句帳画面・階層・短冊） - 上下切れ完全防止 */
+body.large-text-mode #readScreen .horizontal-scroll-container {
+    height: 70vh !important;
+}
 body.large-text-mode .read-title-center {
     font-size: 1.35rem !important;
 }
@@ -1082,34 +1085,35 @@ body.large-text-mode .read-tab-text-group .text-tab-divider {
     font-size: 1.1rem !important;
 }
 body.large-text-mode .date-divider-card {
-    font-size: 1.1rem !important;
-    letter-spacing: 0.25em !important;
-    padding: 14px 6px !important;
+    font-size: 1.05rem !important;
+    letter-spacing: 0.2em !important;
+    padding: 10px 6px !important;
     font-weight: 600 !important;
     color: #3a342a !important;
 }
 body.large-text-mode .saijiki-haiku-card .saijiki-phrase {
-    font-size: min(3.8vh, 32px) !important;
-    letter-spacing: 0.25em !important;
-    line-height: 1.55 !important;
+    font-size: min(3.0vh, 26px) !important;
+    letter-spacing: 0.12em !important;
+    line-height: 1.35 !important;
     font-weight: 500 !important;
 }
 body.large-text-mode #modalPhrase {
-    font-size: min(4.2vh, 36px) !important;
-    line-height: 1.6 !important;
+    font-size: min(3.4vh, 30px) !important;
+    line-height: 1.4 !important;
+    letter-spacing: 0.14em !important;
 }
 body.large-text-mode .text-action-btn {
     font-size: 1.05rem !important;
     padding: 8px 14px !important;
 }
 
-/* 4. おみ句じ（鑑賞画面） */
+/* 4. おみ句じ（鑑賞画面） - 上下切れ完全防止 */
 body.large-text-mode #omikujiPhrase,
 body.large-text-mode #blindPhrase,
 body.large-text-mode .phrase {
-    font-size: min(4.5vh, 38px) !important;
-    line-height: 1.6 !important;
-    letter-spacing: 0.28em !important;
+    font-size: min(3.3vh, 29px) !important;
+    line-height: 1.35 !important;
+    letter-spacing: 0.14em !important;
 }
 body.large-text-mode .nav-arrow {
     font-size: 1.4rem !important;
@@ -1125,21 +1129,27 @@ body.large-text-mode #omikujiInfoKigo {
 }
 
 /* 5. 季寄せ画面の季語・ルビ・見出し */
+body.large-text-mode #saijikiScreen .horizontal-scroll-container {
+    height: 68vh !important;
+}
 body.large-text-mode .saijiki-kigo-text {
-    font-size: min(3.4vh, 30px) !important;
-    letter-spacing: 0.24em !important;
+    font-size: min(3.1vh, 27px) !important;
+    letter-spacing: 0.20em !important;
     font-weight: 500 !important;
 }
 body.large-text-mode .saijiki-kigo-text rt {
-    font-size: 0.52em !important;
+    font-size: 0.50em !important;
     color: #555555 !important;
 }
+body.large-text-mode .saijiki-heading-set {
+    margin-top: 4px !important;
+}
 body.large-text-mode .saijiki-hb-timing {
-    font-size: 1.25rem !important;
-    margin-bottom: 14px !important;
+    font-size: 1.2rem !important;
+    margin-bottom: 10px !important;
 }
 body.large-text-mode .saijiki-hb-cat {
-    font-size: 0.95rem !important;
+    font-size: 0.92rem !important;
 }
 body.large-text-mode .saijiki-mode-switch .mode-tab {
     font-size: 0.98rem !important;
@@ -1156,8 +1166,9 @@ body.large-text-mode .gojuon-jump-bar {
 
 /* 6. 作句画面（Step1〜4） */
 body.large-text-mode #inputPhrase {
-    font-size: min(4.2vh, 36px) !important;
-    line-height: 1.6 !important;
+    font-size: min(3.3vh, 28px) !important;
+    line-height: 1.4 !important;
+    letter-spacing: 0.12em !important;
 }
 body.large-text-mode .step1-kigo-item {
     font-size: 1.05rem !important;
