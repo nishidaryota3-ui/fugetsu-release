@@ -640,21 +640,21 @@ function jumpToStep1Gojuon(rowChar) {
     }
 }
 
-// 時候順リアルタイム現在地バッジの更新
+// 🌸 和モダン 透かしフロート見出し（ウォーターマーク）の更新
 function updateSaijikiCurrentIndicator() {
     const container = document.getElementById('saijikiKigoList');
-    const indicator = document.getElementById('saijikiCurrentIndicator');
-    const elTiming = document.getElementById('curIndicatorTiming');
-    const elCat = document.getElementById('curIndicatorCat');
-    if (!container || !indicator || !elTiming || !elCat) return;
+    const watermark = document.getElementById('saijikiWatermark');
+    const elTiming = document.getElementById('wmTiming');
+    const elCat = document.getElementById('wmCat');
+    if (!container || !watermark || !elTiming || !elCat) return;
 
     const query = document.getElementById('saijikiSearchInput') ? document.getElementById('saijikiSearchInput').value.trim() : '';
 
     if (currentSaijikiMode !== 'jikou' || query !== '') {
-        indicator.classList.add('hidden');
+        watermark.classList.add('hidden');
         return;
     }
-    indicator.classList.remove('hidden');
+    watermark.classList.remove('hidden');
 
     const rect = container.getBoundingClientRect();
     const targetX = rect.left + rect.width * 0.55;
@@ -676,25 +676,25 @@ function updateSaijikiCurrentIndicator() {
     if (closestItem) {
         const t = closestItem.getAttribute('data-timing');
         const c = closestItem.getAttribute('data-cat');
-        if (t) elTiming.textContent = t;
-        if (c) elCat.textContent = c;
+        if (t && elTiming.textContent !== t) elTiming.textContent = t;
+        if (c && elCat.textContent !== c) elCat.textContent = c;
     }
 }
 
 function updateStep1CurrentIndicator() {
     const container = document.getElementById('step1KigoList');
-    const indicator = document.getElementById('step1CurrentIndicator');
-    const elTiming = document.getElementById('stCurIndicatorTiming');
-    const elCat = document.getElementById('stCurIndicatorCat');
-    if (!container || !indicator || !elTiming || !elCat) return;
+    const watermark = document.getElementById('step1Watermark');
+    const elTiming = document.getElementById('stWmTiming');
+    const elCat = document.getElementById('stWmCat');
+    if (!container || !watermark || !elTiming || !elCat) return;
 
     const query = document.getElementById('step1SearchInput') ? document.getElementById('step1SearchInput').value.trim() : '';
 
     if (currentStep1Mode !== 'jikou' || query !== '') {
-        indicator.classList.add('hidden');
+        watermark.classList.add('hidden');
         return;
     }
-    indicator.classList.remove('hidden');
+    watermark.classList.remove('hidden');
 
     const rect = container.getBoundingClientRect();
     const targetX = rect.left + rect.width * 0.55;
@@ -716,8 +716,8 @@ function updateStep1CurrentIndicator() {
     if (closestItem) {
         const t = closestItem.getAttribute('data-timing');
         const c = closestItem.getAttribute('data-cat');
-        if (t) elTiming.textContent = t;
-        if (c) elCat.textContent = c;
+        if (t && elTiming.textContent !== t) elTiming.textContent = t;
+        if (c && elCat.textContent !== c) elCat.textContent = c;
     }
 }
 

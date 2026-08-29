@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.34">
+    <link rel="stylesheet" href="style.css?v=2.0.35">
 </head>
 <body>
 
@@ -238,13 +238,12 @@
                 <span class="mode-tab-divider">・</span>
                 <span id="smodeJikou" class="mode-tab" onclick="switchSaijikiMode('jikou')">時候順</span>
             </div>
+        </div>
 
-            <!-- 時候順リアルタイム現在地バッジ -->
-            <div id="saijikiCurrentIndicator" class="saijiki-current-indicator hidden">
-                <span id="curIndicatorTiming">三春</span>
-                <span class="cur-indicator-sep">・</span>
-                <span id="curIndicatorCat">時候</span>
-            </div>
+        <!-- 🌸 和モダン 透かしフロート見出し（ウォーターマーク） -->
+        <div id="saijikiWatermark" class="saijiki-watermark hidden">
+            <span id="wmTiming" class="wm-timing">三春</span>
+            <span id="wmCat" class="wm-cat">時候</span>
         </div>
 
         <!-- 季語横スクロールコンテナ（右から左へ並ぶ縦書き季語） -->
@@ -448,11 +447,10 @@
                         <span class="mode-tab-divider">・</span>
                         <span id="stmodeJikou" class="mode-tab" onclick="switchStep1Mode('jikou')">時候順</span>
                     </div>
-                    <!-- トレイ内時候順現在地バッジ -->
-                    <div id="step1CurrentIndicator" class="saijiki-current-indicator step1-current-indicator hidden">
-                        <span id="stCurIndicatorTiming">三春</span>
-                        <span class="cur-indicator-sep">・</span>
-                        <span id="stCurIndicatorCat">時候</span>
+                    <!-- トレイ内透かし見出し -->
+                    <div id="step1Watermark" class="saijiki-watermark step1-watermark hidden">
+                        <span id="stWmTiming" class="wm-timing">三春</span>
+                        <span id="stWmCat" class="wm-cat">時候</span>
                     </div>
                     <!-- 季語リスト（タップで季語カードを開く） -->
                     <div id="step1KigoList" class="horizontal-scroll-container step1-kigo-scroll-list">
@@ -603,6 +601,6 @@
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.34"></script>
+    <script src="app.js?v=2.0.35"></script>
 </body>
 </html>
