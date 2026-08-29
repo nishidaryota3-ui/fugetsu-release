@@ -823,19 +823,22 @@ function renderSaijikiKigoList() {
         container.appendChild(itemEl);
     };
 
-    // 大見出し（時期：三春・初春など - 格調高い章扉デザイン）
-    const renderMajorHeader = (title) => {
+    // 🌸 一段上に掲げるワンセット見出し（時期＋分類、または分類単独）
+    const renderHeadingSet = (timingText, catText) => {
         const sep = document.createElement('div');
-        sep.className = 'saijiki-major-heading';
-        sep.innerHTML = `<span class="saijiki-major-title">${escapeHtml(title)}</span>`;
-        container.appendChild(sep);
-    };
-
-    // 小見出し（分類：時候・天文など - 上詰め小ぶりデザイン）
-    const renderMinorHeader = (title) => {
-        const sep = document.createElement('div');
-        sep.className = 'saijiki-minor-heading';
-        sep.innerHTML = `<span class="saijiki-minor-title">${escapeHtml(title)}</span>`;
+        sep.className = 'saijiki-heading-set';
+        if (timingText) {
+            sep.classList.add('with-timing');
+            sep.innerHTML = `
+                <span class="saijiki-hb-timing">${escapeHtml(timingText)}</span>
+                <span class="saijiki-hb-cat">${escapeHtml(catText)}</span>
+            `;
+        } else {
+            sep.classList.add('only-cat');
+            sep.innerHTML = `
+                <span class="saijiki-hb-cat">${escapeHtml(catText)}</span>
+            `;
+        }
         container.appendChild(sep);
     };
 
@@ -848,14 +851,18 @@ function renderSaijikiKigoList() {
         jikiKeys.forEach(jKey => {
             const jikiGroup = parents.filter(p => p.detailSeason === jKey);
             if (jikiGroup.length > 0) {
-                // 時期の大見出し
-                renderMajorHeader(`【${jKey}】`);
+                let isFirstCatInJiki = true;
                 
                 // 時期内の7大分類
                 BUNRUI_ORDER.forEach(bKey => {
                     const catGroup = jikiGroup.filter(p => p.category === bKey);
                     if (catGroup.length > 0) {
-                        renderMinorHeader(`〔${bKey}〕`);
+                        if (isFirstCatInJiki) {
+                            renderHeadingSet(jKey, bKey);
+                            isFirstCatInJiki = false;
+                        } else {
+                            renderHeadingSet(null, bKey);
+                        }
                         sortKana(catGroup).forEach(renderItem);
                     }
                 });
@@ -863,7 +870,7 @@ function renderSaijikiKigoList() {
                 // 未分類があれば
                 const othersInJiki = jikiGroup.filter(p => !BUNRUI_ORDER.includes(p.category));
                 if (othersInJiki.length > 0) {
-                    renderMinorHeader('〔その他〕');
+                    renderHeadingSet(isFirstCatInJiki ? jKey : null, 'その他');
                     sortKana(othersInJiki).forEach(renderItem);
                 }
             }
@@ -872,7 +879,7 @@ function renderSaijikiKigoList() {
         // 定義外の時期があれば末尾に
         const others = parents.filter(p => !jikiKeys.includes(p.detailSeason));
         if (others.length > 0) {
-            renderMajorHeader('【その他】');
+            renderHeadingSet('その他', 'その他');
             sortKana(others).forEach(renderItem);
         }
     }
@@ -1147,21 +1154,21 @@ function renderStep1KigoList() {
         container.appendChild(itemEl);
     };
 
-    const renderMajorHeader = (title) => {
+    const renderHeadingSet = (timingText, catText) => {
         const sep = document.createElement('div');
-        sep.className = 'saijiki-major-heading';
-        sep.style.margin = '0 1rem';
-        sep.style.padding = '12px 6px';
-        sep.innerHTML = `<span class="saijiki-major-title" style="font-size: 0.92rem;">${escapeHtml(title)}</span>`;
-        container.appendChild(sep);
-    };
-
-    const renderMinorHeader = (title) => {
-        const sep = document.createElement('div');
-        sep.className = 'saijiki-minor-heading';
-        sep.style.margin = '0 0.6rem';
-        sep.style.padding = '6px 3px 10px';
-        sep.innerHTML = `<span class="saijiki-minor-title" style="font-size: 0.75rem;">${escapeHtml(title)}</span>`;
+        sep.className = 'saijiki-heading-set';
+        if (timingText) {
+            sep.classList.add('with-timing');
+            sep.innerHTML = `
+                <span class="saijiki-hb-timing">${escapeHtml(timingText)}</span>
+                <span class="saijiki-hb-cat">${escapeHtml(catText)}</span>
+            `;
+        } else {
+            sep.classList.add('only-cat');
+            sep.innerHTML = `
+                <span class="saijiki-hb-cat">${escapeHtml(catText)}</span>
+            `;
+        }
         container.appendChild(sep);
     };
 
@@ -1174,24 +1181,29 @@ function renderStep1KigoList() {
         jikiKeys.forEach(jKey => {
             const jikiGroup = parents.filter(p => p.detailSeason === jKey);
             if (jikiGroup.length > 0) {
-                renderMajorHeader(`【${jKey}】`);
+                let isFirstCatInJiki = true;
                 BUNRUI_ORDER.forEach(bKey => {
                     const catGroup = jikiGroup.filter(p => p.category === bKey);
                     if (catGroup.length > 0) {
-                        renderMinorHeader(`〔${bKey}〕`);
+                        if (isFirstCatInJiki) {
+                            renderHeadingSet(jKey, bKey);
+                            isFirstCatInJiki = false;
+                        } else {
+                            renderHeadingSet(null, bKey);
+                        }
                         sortKana(catGroup).forEach(renderItem);
                     }
                 });
                 const othersInJiki = jikiGroup.filter(p => !BUNRUI_ORDER.includes(p.category));
                 if (othersInJiki.length > 0) {
-                    renderMinorHeader('〔その他〕');
+                    renderHeadingSet(isFirstCatInJiki ? jKey : null, 'その他');
                     sortKana(othersInJiki).forEach(renderItem);
                 }
             }
         });
         const others = parents.filter(p => !jikiKeys.includes(p.detailSeason));
         if (others.length > 0) {
-            renderMajorHeader('【その他】');
+            renderHeadingSet('その他', 'その他');
             sortKana(others).forEach(renderItem);
         }
     }
