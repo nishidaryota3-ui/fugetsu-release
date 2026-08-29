@@ -640,6 +640,87 @@ function jumpToStep1Gojuon(rowChar) {
     }
 }
 
+// 時候順リアルタイム現在地バッジの更新
+function updateSaijikiCurrentIndicator() {
+    const container = document.getElementById('saijikiKigoList');
+    const indicator = document.getElementById('saijikiCurrentIndicator');
+    const elTiming = document.getElementById('curIndicatorTiming');
+    const elCat = document.getElementById('curIndicatorCat');
+    if (!container || !indicator || !elTiming || !elCat) return;
+
+    const query = document.getElementById('saijikiSearchInput') ? document.getElementById('saijikiSearchInput').value.trim() : '';
+
+    if (currentSaijikiMode !== 'jikou' || query !== '') {
+        indicator.classList.add('hidden');
+        return;
+    }
+    indicator.classList.remove('hidden');
+
+    const rect = container.getBoundingClientRect();
+    const targetX = rect.left + rect.width * 0.55;
+
+    const items = container.querySelectorAll('.saijiki-kigo-item[data-timing]');
+    let closestItem = null;
+    let minDiff = Infinity;
+
+    items.forEach(item => {
+        const iRect = item.getBoundingClientRect();
+        const centerX = iRect.left + iRect.width / 2;
+        const diff = Math.abs(centerX - targetX);
+        if (diff < minDiff) {
+            minDiff = diff;
+            closestItem = item;
+        }
+    });
+
+    if (closestItem) {
+        const t = closestItem.getAttribute('data-timing');
+        const c = closestItem.getAttribute('data-cat');
+        if (t) elTiming.textContent = t;
+        if (c) elCat.textContent = c;
+    }
+}
+
+function updateStep1CurrentIndicator() {
+    const container = document.getElementById('step1KigoList');
+    const indicator = document.getElementById('step1CurrentIndicator');
+    const elTiming = document.getElementById('stCurIndicatorTiming');
+    const elCat = document.getElementById('stCurIndicatorCat');
+    if (!container || !indicator || !elTiming || !elCat) return;
+
+    const query = document.getElementById('step1SearchInput') ? document.getElementById('step1SearchInput').value.trim() : '';
+
+    if (currentStep1Mode !== 'jikou' || query !== '') {
+        indicator.classList.add('hidden');
+        return;
+    }
+    indicator.classList.remove('hidden');
+
+    const rect = container.getBoundingClientRect();
+    const targetX = rect.left + rect.width * 0.55;
+
+    const items = container.querySelectorAll('.step1-kigo-item[data-timing]');
+    let closestItem = null;
+    let minDiff = Infinity;
+
+    items.forEach(item => {
+        const iRect = item.getBoundingClientRect();
+        const centerX = iRect.left + iRect.width / 2;
+        const diff = Math.abs(centerX - targetX);
+        if (diff < minDiff) {
+            minDiff = diff;
+            closestItem = item;
+        }
+    });
+
+    if (closestItem) {
+        const t = closestItem.getAttribute('data-timing');
+        const c = closestItem.getAttribute('data-cat');
+        if (t) elTiming.textContent = t;
+        if (c) elCat.textContent = c;
+    }
+}
+
 // 季寄せ季語一覧の描画（右から左へ並ぶ縦書きリスト ＋ 句数バッジ ＋ 3WAY切り替え）
 function renderSaijikiKigoList() {
     const container = document.getElementById('saijikiKigoList');
@@ -720,6 +801,8 @@ function renderSaijikiKigoList() {
         const itemEl = document.createElement('div');
         itemEl.className = 'saijiki-kigo-item';
         itemEl.setAttribute('data-row', rowChar);
+        itemEl.setAttribute('data-timing', pData.detailSeason || '');
+        itemEl.setAttribute('data-cat', pData.category || '');
         itemEl.onclick = () => openKigoCard(pData.parentKigo);
 
         let rubyHtml = escapeHtml(pData.parentKigo);
@@ -740,10 +823,19 @@ function renderSaijikiKigoList() {
         container.appendChild(itemEl);
     };
 
-    const renderSectionHeader = (title) => {
+    // 大見出し（時期：三春・初春など - 格調高い章扉デザイン）
+    const renderMajorHeader = (title) => {
         const sep = document.createElement('div');
-        sep.className = 'saijiki-section-separator';
-        sep.innerHTML = `<span class="saijiki-section-title">${escapeHtml(title)}</span>`;
+        sep.className = 'saijiki-major-heading';
+        sep.innerHTML = `<span class="saijiki-major-title">${escapeHtml(title)}</span>`;
+        container.appendChild(sep);
+    };
+
+    // 小見出し（分類：時候・天文など - 上詰め小ぶりデザイン）
+    const renderMinorHeader = (title) => {
+        const sep = document.createElement('div');
+        sep.className = 'saijiki-minor-heading';
+        sep.innerHTML = `<span class="saijiki-minor-title">${escapeHtml(title)}</span>`;
         container.appendChild(sep);
     };
 
@@ -756,14 +848,14 @@ function renderSaijikiKigoList() {
         jikiKeys.forEach(jKey => {
             const jikiGroup = parents.filter(p => p.detailSeason === jKey);
             if (jikiGroup.length > 0) {
-                // 時期の先頭見出し
-                renderSectionHeader(`【${jKey}】`);
+                // 時期の大見出し
+                renderMajorHeader(`【${jKey}】`);
                 
                 // 時期内の7大分類
                 BUNRUI_ORDER.forEach(bKey => {
                     const catGroup = jikiGroup.filter(p => p.category === bKey);
                     if (catGroup.length > 0) {
-                        renderSectionHeader(`〔${bKey}〕`);
+                        renderMinorHeader(`〔${bKey}〕`);
                         sortKana(catGroup).forEach(renderItem);
                     }
                 });
@@ -771,7 +863,7 @@ function renderSaijikiKigoList() {
                 // 未分類があれば
                 const othersInJiki = jikiGroup.filter(p => !BUNRUI_ORDER.includes(p.category));
                 if (othersInJiki.length > 0) {
-                    renderSectionHeader('〔その他〕');
+                    renderMinorHeader('〔その他〕');
                     sortKana(othersInJiki).forEach(renderItem);
                 }
             }
@@ -780,12 +872,13 @@ function renderSaijikiKigoList() {
         // 定義外の時期があれば末尾に
         const others = parents.filter(p => !jikiKeys.includes(p.detailSeason));
         if (others.length > 0) {
-            renderSectionHeader('【その他】');
+            renderMajorHeader('【その他】');
             sortKana(others).forEach(renderItem);
         }
     }
 
     container.scrollLeft = 0;
+    updateSaijikiCurrentIndicator();
 }
 
 // ========================================================
@@ -1046,18 +1139,29 @@ function renderStep1KigoList() {
 
         itemEl.className = `step1-kigo-item${extraClass}`;
         itemEl.setAttribute('data-row', rowChar);
+        itemEl.setAttribute('data-timing', pData.detailSeason || '');
+        itemEl.setAttribute('data-cat', pData.category || '');
         // タップで季語カードを開く（step1コンテキスト）
         itemEl.onclick = () => openKigoCard(pData.parentKigo, 'step1');
         itemEl.textContent = pData.parentKigo;
         container.appendChild(itemEl);
     };
 
-    const renderSectionHeader = (title) => {
+    const renderMajorHeader = (title) => {
         const sep = document.createElement('div');
-        sep.className = 'saijiki-section-separator';
-        sep.style.margin = '0 0.8rem';
-        sep.style.padding = '8px 4px';
-        sep.innerHTML = `<span class="saijiki-section-title" style="font-size: 0.78rem;">${escapeHtml(title)}</span>`;
+        sep.className = 'saijiki-major-heading';
+        sep.style.margin = '0 1rem';
+        sep.style.padding = '12px 6px';
+        sep.innerHTML = `<span class="saijiki-major-title" style="font-size: 0.92rem;">${escapeHtml(title)}</span>`;
+        container.appendChild(sep);
+    };
+
+    const renderMinorHeader = (title) => {
+        const sep = document.createElement('div');
+        sep.className = 'saijiki-minor-heading';
+        sep.style.margin = '0 0.6rem';
+        sep.style.padding = '6px 3px 10px';
+        sep.innerHTML = `<span class="saijiki-minor-title" style="font-size: 0.75rem;">${escapeHtml(title)}</span>`;
         container.appendChild(sep);
     };
 
@@ -1070,29 +1174,30 @@ function renderStep1KigoList() {
         jikiKeys.forEach(jKey => {
             const jikiGroup = parents.filter(p => p.detailSeason === jKey);
             if (jikiGroup.length > 0) {
-                renderSectionHeader(`【${jKey}】`);
+                renderMajorHeader(`【${jKey}】`);
                 BUNRUI_ORDER.forEach(bKey => {
                     const catGroup = jikiGroup.filter(p => p.category === bKey);
                     if (catGroup.length > 0) {
-                        renderSectionHeader(`〔${bKey}〕`);
+                        renderMinorHeader(`〔${bKey}〕`);
                         sortKana(catGroup).forEach(renderItem);
                     }
                 });
                 const othersInJiki = jikiGroup.filter(p => !BUNRUI_ORDER.includes(p.category));
                 if (othersInJiki.length > 0) {
-                    renderSectionHeader('〔その他〕');
+                    renderMinorHeader('〔その他〕');
                     sortKana(othersInJiki).forEach(renderItem);
                 }
             }
         });
         const others = parents.filter(p => !jikiKeys.includes(p.detailSeason));
         if (others.length > 0) {
-            renderSectionHeader('【その他】');
+            renderMajorHeader('【その他】');
             sortKana(others).forEach(renderItem);
         }
     }
 
     container.scrollLeft = 0;
+    updateStep1CurrentIndicator();
 }
 
 // カーソル位置へ季語をスマート挿入
@@ -2230,4 +2335,27 @@ function renderKoyomiFromLocal() {
             infoBtn.classList.add('hidden');
         }
     }
+}
+
+// 季寄せスクロール連動リスナーの登録
+function initSaijikiScrollWatchers() {
+    const saijikiList = document.getElementById('saijikiKigoList');
+    if (saijikiList) {
+        saijikiList.addEventListener('scroll', () => {
+            requestAnimationFrame(updateSaijikiCurrentIndicator);
+        });
+    }
+
+    const step1List = document.getElementById('step1KigoList');
+    if (step1List) {
+        step1List.addEventListener('scroll', () => {
+            requestAnimationFrame(updateStep1CurrentIndicator);
+        });
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSaijikiScrollWatchers);
+} else {
+    initSaijikiScrollWatchers();
 }

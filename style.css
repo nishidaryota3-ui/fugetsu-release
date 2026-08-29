@@ -527,8 +527,35 @@ body, html {
     user-select: none;
 }
 
-/* 縦書きの時期・分類セクション見出し */
-.saijiki-section-separator {
+/* 時候順リアルタイム現在地バッジ */
+.saijiki-current-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin: -4px 0 10px;
+    font-size: 0.82rem;
+    letter-spacing: 0.15em;
+    color: #5a5449;
+    font-family: "游明朝", "Yu Mincho", "ヒラギノ明朝 ProN", "Hiragino Mincho ProN", "Shippori Mincho", "MS P明朝", serif;
+    font-weight: 500;
+    animation: fadeInIndicator 0.2s ease;
+    user-select: none;
+}
+.saijiki-current-indicator.hidden { display: none !important; }
+.cur-indicator-sep { color: #b5b0a6; font-size: 0.7em; }
+.step1-current-indicator {
+    font-size: 0.75rem;
+    margin: 2px 0 4px;
+}
+
+@keyframes fadeInIndicator {
+    from { opacity: 0; transform: translateY(-2px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 縦書き大見出し（時期：三春・初春など - 和綴じの章扉のような格調） */
+.saijiki-major-heading {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -536,19 +563,45 @@ body, html {
     writing-mode: vertical-rl;
     -webkit-writing-mode: vertical-rl;
     flex-shrink: 0;
-    margin: 0 1.2rem;
-    padding: 14px 6px;
-    background: rgba(0, 0, 0, 0.025);
-    border-right: 1px dashed rgba(0, 0, 0, 0.12);
-    border-left: 1px dashed rgba(0, 0, 0, 0.12);
+    margin: 0 1.6rem 0 1.2rem;
+    padding: 20px 8px;
+    background: rgba(140, 132, 118, 0.08);
+    border-right: 2px solid #5a5449;
+    border-left: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
     user-select: none;
 }
-.saijiki-section-title {
-    font-size: 0.85rem;
+.saijiki-major-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    color: #2b2b2b;
+    white-space: nowrap;
+    font-family: "游明朝", "Yu Mincho", "ヒラギノ明朝 ProN", "Hiragino Mincho ProN", "Shippori Mincho", "MS P明朝", serif;
+}
+
+/* 縦書き小見出し（分類：時候・天文など - 上詰め小ぶり） */
+.saijiki-minor-heading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    writing-mode: vertical-rl;
+    -webkit-writing-mode: vertical-rl;
+    flex-shrink: 0;
+    margin: 0 1rem 0 0.8rem;
+    padding: 10px 4px 14px;
+    border-right: 1px dashed rgba(0, 0, 0, 0.16);
+    user-select: none;
+    align-self: flex-start;
+    margin-top: 15px;
+}
+.saijiki-minor-title {
+    font-size: 0.8rem;
     font-weight: 500;
     letter-spacing: 0.2em;
-    color: #4a4439;
+    color: #6a6458;
     white-space: nowrap;
     font-family: "游明朝", "Yu Mincho", "ヒラギノ明朝 ProN", "Hiragino Mincho ProN", "Shippori Mincho", "MS P明朝", serif;
 }
