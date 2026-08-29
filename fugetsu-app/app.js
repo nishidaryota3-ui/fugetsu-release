@@ -1808,6 +1808,17 @@ function clearKigoFilter(event) {
 // ========================================================
 // 句帳一覧の描画（作者フィルタ対応 & 安全なDOM構築）
 // ========================================================
+function applyPhraseLengthClass(element, text) {
+    if (!element) return;
+    const len = (text || '').length;
+    element.classList.remove('long-phrase', 'extra-long-phrase');
+    if (len >= 22) {
+        element.classList.add('extra-long-phrase');
+    } else if (len >= 18) {
+        element.classList.add('long-phrase');
+    }
+}
+
 function renderYomuList() {
     const container = document.getElementById('readHaikuList');
     if (!container) return;
@@ -1882,6 +1893,7 @@ function renderYomuList() {
         const phraseDiv = document.createElement('div');
         phraseDiv.className = 'saijiki-phrase';
         phraseDiv.textContent = item.phrase;
+        applyPhraseLengthClass(phraseDiv, item.phrase);
         card.appendChild(phraseDiv);
         
         container.appendChild(card);
@@ -1892,7 +1904,9 @@ function renderYomuList() {
 
 window.onHaikuCardClicked = function(haikuObj) {
     activeSelectedHaiku = haikuObj;
-    document.getElementById('modalPhrase').textContent = haikuObj.phrase;
+    const modalPhraseEl = document.getElementById('modalPhrase');
+    modalPhraseEl.textContent = haikuObj.phrase;
+    applyPhraseLengthClass(modalPhraseEl, haikuObj.phrase);
     const actionsContainer = document.getElementById('modalActions');
 
     if (haikuObj.status === '完成句') {
@@ -1996,7 +2010,9 @@ function changeOmikujiHaiku(direction) {
 
 function renderOmikujiDisplay() {
     const cur = omikujiPool[omikujiIndex];
-    document.getElementById('omikujiPhrase').textContent = cur.phrase;
+    const phraseEl = document.getElementById('omikujiPhrase');
+    phraseEl.textContent = cur.phrase;
+    applyPhraseLengthClass(phraseEl, cur.phrase);
     document.getElementById('prevBtn').classList.toggle('disabled', omikujiIndex === 0);
     document.getElementById('nextBtn').classList.toggle('disabled', omikujiIndex === omikujiPool.length - 1);
 
@@ -2188,7 +2204,9 @@ function goToStep3() {
     currentHaikuData.authorKana = document.getElementById('authorKanaInput').value.trim() || userSettings.authorKana || 'ふうげつ';
     currentHaikuData.sakkuDate = getFormattedSakkuDateFromFields();
 
-    document.getElementById('previewPhrase').textContent = currentHaikuData.phrase;
+    const previewPhraseEl = document.getElementById('previewPhrase');
+    previewPhraseEl.textContent = currentHaikuData.phrase;
+    applyPhraseLengthClass(previewPhraseEl, currentHaikuData.phrase);
     document.getElementById('previewAuthor').textContent = currentHaikuData.author;
     let seasonJa = {'haru':'春', 'natsu':'夏', 'aki':'秋', 'huyu':'冬', 'shinnen':'新年', 'muki':'無季'}[currentHaikuData.season] || currentHaikuData.season;
     let detailSuffix = currentHaikuData.detailSeason ? `（${currentHaikuData.detailSeason}）` : '';

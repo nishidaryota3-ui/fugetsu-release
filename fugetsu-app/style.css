@@ -1211,3 +1211,34 @@ body.large-text-mode .kigo-card-child-pill {
     padding: 6px 12px !important;
 }
 
+/* ========================================================
+   🪶 字余り（18〜21文字）・長句（22文字以上）自動収まり設計
+   ======================================================== */
+/* 通常モード */
+.saijiki-phrase.long-phrase,
+.phrase.long-phrase,
+.modal-phrase-single-line.long-phrase {
+    font-size: min(2.2vh, 19px) !important;
+    letter-spacing: 0.08em !important;
+}
+.saijiki-phrase.extra-long-phrase,
+.phrase.extra-long-phrase,
+.modal-phrase-single-line.extra-long-phrase {
+    font-size: min(1.8vh, 15px) !important;
+    letter-spacing: 0.03em !important;
+}
+
+/* 大文字モード */
+body.large-text-mode .saijiki-phrase.long-phrase,
+body.large-text-mode .phrase.long-phrase,
+body.large-text-mode #modalPhrase.long-phrase {
+    font-size: min(2.5vh, 22px) !important;
+    letter-spacing: 0.08em !important;
+}
+body.large-text-mode .saijiki-phrase.extra-long-phrase,
+body.large-text-mode .phrase.extra-long-phrase,
+body.large-text-mode #modalPhrase.extra-long-phrase {
+    font-size: min(2.0vh, 17px) !important;
+    letter-spacing: 0.03em !important;
+}
+
