@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.42">
+    <link rel="stylesheet" href="style.css?v=2.0.43">
 </head>
 <body>
 
@@ -183,16 +183,16 @@
                     <span id="pillarArrow3" class="pillar-accordion-arrow">▿</span>
                 </div>
                 <div id="pillarSection3" class="pillar-accordion-body hidden">
-                    <div class="print-setting-row" style="margin-bottom: 10px;">
-                        <span style="font-size: 0.84rem; color: #555; white-space: nowrap;">印刷形式</span>
-                        <div class="font-size-switch-group" style="width: 175px; margin-top: 0;">
-                            <button type="button" id="printModeSingleBtn" class="font-size-btn active" onclick="setPrintMode('single')">片面手折り</button>
-                            <button type="button" id="printModeBookletBtn" class="font-size-btn" onclick="setPrintMode('booklet')">両面小冊子</button>
+                    <div class="print-setting-row" style="margin-bottom: 12px; margin-top: 4px;">
+                        <span class="print-setting-label">印刷形式</span>
+                        <div class="print-mode-switch-group">
+                            <button type="button" id="printModeSingleBtn" class="print-mode-btn active" onclick="setPrintMode('single')">片面手折り</button>
+                            <button type="button" id="printModeBookletBtn" class="print-mode-btn" onclick="setPrintMode('booklet')">両面小冊子</button>
                         </div>
                     </div>
-                    <div class="print-setting-row" style="margin-bottom: 10px;">
-                        <span style="font-size: 0.84rem; color: #555; white-space: nowrap;">1ページの句数</span>
-                        <select id="printLinesPerPage" class="text-input print-select-box" style="width: 175px;">
+                    <div class="print-setting-row" style="margin-bottom: 12px;">
+                        <span class="print-setting-label">1ページの句数</span>
+                        <select id="printLinesPerPage" class="text-input print-select-box">
                             <option value="1">1句（ゆったり）</option>
                             <option value="2">2句</option>
                             <option value="3" selected>3句（標準）</option>
@@ -617,6 +617,6 @@
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.42"></script>
+    <script src="app.js?v=2.0.43"></script>
 </body>
 </html>

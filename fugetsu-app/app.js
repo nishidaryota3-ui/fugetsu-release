@@ -1311,10 +1311,13 @@ function printSelectedBooklet() {
     printIframe = document.createElement('iframe');
     printIframe.id = 'fugetsu_print_iframe';
     printIframe.style.position = 'fixed';
-    printIframe.style.top = '-9999px';
-    printIframe.style.left = '-9999px';
-    printIframe.style.width = '0px';
-    printIframe.style.height = '0px';
+    printIframe.style.top = '0px';
+    printIframe.style.left = '0px';
+    printIframe.style.width = '297mm';
+    printIframe.style.height = '210mm';
+    printIframe.style.opacity = '0';
+    printIframe.style.pointerEvents = 'none';
+    printIframe.style.zIndex = '-9999';
     printIframe.style.border = 'none';
     document.body.appendChild(printIframe);
 
@@ -1481,11 +1484,21 @@ function printSelectedBooklet() {
             <title>${escapeHtml(bookletTitle)}</title>
             <style>
                 @page {
+                    size: landscape;
                     size: A4 landscape;
+                    margin: 0;
+                }
+                @page :left {
+                    size: landscape;
+                    margin: 0;
+                }
+                @page :right {
+                    size: landscape;
                     margin: 0;
                 }
                 @media print {
                     @page {
+                        size: landscape;
                         size: A4 landscape;
                         margin: 0;
                     }

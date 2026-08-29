@@ -1,3 +1,15 @@
+@page {
+    size: A4 landscape;
+    size: landscape;
+    margin: 0;
+}
+@media print {
+    @page {
+        size: A4 landscape;
+        size: landscape;
+        margin: 0;
+    }
+}
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 body, html {
     background-color: #faf9f6; color: #2b2b2b;
@@ -226,8 +238,50 @@ body, html {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.8rem;
-    color: #666;
+    font-size: 0.82rem;
+    color: #444;
+    gap: 12px;
+}
+.print-setting-label {
+    font-size: 0.82rem;
+    color: #555;
+    white-space: nowrap;
+    min-width: 62px;
+}
+.print-mode-switch-group {
+    display: flex;
+    gap: 5px;
+    width: 150px;
+}
+.print-mode-btn {
+    flex: 1;
+    padding: 5px 3px;
+    font-size: 0.72rem;
+    font-family: inherit;
+    border: 1px solid #d0cbc2;
+    background: #f8f6f0;
+    color: #6a6458;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    text-align: center;
+    letter-spacing: 0.01em;
+}
+.print-mode-btn:hover {
+    background: #eae5dc;
+}
+.print-mode-btn.active {
+    background: #4a4439;
+    color: #ffffff;
+    border-color: #4a4439;
+    font-weight: 600;
+}
+.print-select-box {
+    width: 150px !important;
+    padding: 5px 8px !important;
+    font-size: 0.80rem !important;
+    border-radius: 4px !important;
 }
 
 /* 作者名サジェストボックス */
