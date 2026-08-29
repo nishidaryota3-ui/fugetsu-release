@@ -765,7 +765,14 @@ function openKigoCard(parentKigoName, fromContext = null) {
         worksCol.innerHTML = worksHtml;
         worksCol.style.display = 'flex';
     } else {
-        // 季寄せ画面から開いた場合
+        // 季寄せ画面から開いた場合：常に「この季語で詠む」ボタンを表示（下詰め）
+        worksHtml += `
+            <div class="kigo-work-single-col action-only-col">
+                <div class="kigo-compose-action" onclick="composeWithKigo('${escapeHtml(resolvedParentName)}')">
+                    この季語で詠む ➔
+                </div>
+            </div>
+        `;
         if (works.length > 0) {
             works.forEach(w => {
                 const author = w.author || (userSettings.authorName || '風月');
@@ -775,19 +782,9 @@ function openKigoCard(parentKigoName, fromContext = null) {
                     </div>
                 `;
             });
-            worksCol.innerHTML = worksHtml;
-            worksCol.style.display = 'flex';
-        } else {
-            worksHtml = `
-                <div class="kigo-work-single-col action-only-col">
-                    <div class="kigo-compose-action" onclick="composeWithKigo('${escapeHtml(resolvedParentName)}')">
-                        この季語で詠む ➔
-                    </div>
-                </div>
-            `;
-            worksCol.innerHTML = worksHtml;
-            worksCol.style.display = 'flex';
         }
+        worksCol.innerHTML = worksHtml;
+        worksCol.style.display = 'flex';
     }
 
     overlay.classList.remove('hidden');

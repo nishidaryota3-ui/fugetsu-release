@@ -622,16 +622,17 @@ body, html {
     font-size: clamp(1.05rem, 3.2vw, 1.25rem);
     color: #2b2b2b;
     flex-shrink: 0;
-    height: 100% !important;
-    min-height: 52vh !important;
+    height: auto;
     max-height: 68vh;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: flex-start !important;
-    align-items: center !important;
+    display: inline-block !important;
 }
 .kigo-work-single-col.action-only-col {
+    display: flex !important;
+    flex-direction: column !important;
     justify-content: flex-end !important;
+    align-items: center !important;
+    height: 100% !important;
+    min-height: 52vh !important;
 }
 .kigo-work-author {
     font-size: 0.78em;
