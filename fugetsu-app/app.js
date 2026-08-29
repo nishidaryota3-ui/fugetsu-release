@@ -306,7 +306,7 @@ async function loadInternalDatabases() {
     }
 
     try {
-        const respSaijiki = await fetch('data/saijiki.json?v=2.0.45');
+        const respSaijiki = await fetch('data/saijiki.json?v=2.0.46');
         if (respSaijiki.ok) {
             saijikiDatabase = await respSaijiki.json();
         }
