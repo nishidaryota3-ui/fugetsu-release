@@ -1770,9 +1770,74 @@ function goToStep(stepNumber) {
     document.getElementById(`step${stepNumber}`).classList.add('active');
 }
 
+// レーベンシュタイン距離による文字列類似度（0.0 〜 1.0）
+function calculateHaikuSimilarity(str1, str2) {
+    if (!str1 || !str2) return 0.0;
+    const s1 = str1.replace(/[\s、。！？!?,.・]/g, '');
+    const s2 = str2.replace(/[\s、。！？!?,.・]/g, '');
+    if (!s1 || !s2) return 0.0;
+    if (s1 === s2) return 1.0;
+
+    const len1 = s1.length;
+    const len2 = s2.length;
+    let prevRow = Array.from({ length: len2 + 1 }, (_, i) => i);
+
+    for (let i = 0; i < len1; i++) {
+        const curRow = [i + 1];
+        for (let j = 0; j < len2; j++) {
+            const cost = s1[i] === s2[j] ? 0 : 1;
+            curRow.push(Math.min(
+                curRow[j] + 1,       // 挿入
+                prevRow[j + 1] + 1,   // 削除
+                prevRow[j] + cost     // 置換
+            ));
+        }
+        prevRow = curRow;
+    }
+
+    const dist = prevRow[len2];
+    const maxLen = Math.max(len1, len2);
+    return 1.0 - (dist / maxLen);
+}
+
+// 登録済みの句の中から類似句（85%以上一致）を探す
+function findSimilarExistingHaiku(phrase, excludePhrase = '') {
+    if (!haikuHistory || haikuHistory.length === 0) return null;
+    let highestMatch = null;
+    let maxSim = 0;
+
+    for (const h of haikuHistory) {
+        if (!h.phrase) continue;
+        if (excludePhrase && h.phrase === excludePhrase) continue; // 編集中の自分自身は除外
+
+        const sim = calculateHaikuSimilarity(phrase, h.phrase);
+        if (sim >= 0.85 && sim > maxSim) {
+            maxSim = sim;
+            highestMatch = {
+                phrase: h.phrase,
+                similarity: sim,
+                status: h.status,
+                author: h.author
+            };
+        }
+    }
+    return highestMatch;
+}
+
 function goToStep2() {
     const phraseInput = document.getElementById('inputPhrase').value.trim();
     if (!phraseInput) { alert('句を入力してください。'); return; }
+
+    // 85%以上の類似句（または同じ句）が既に登録されているかチェック
+    const similar = findSimilarExistingHaiku(phraseInput, currentHaikuData.oldPhrase);
+    if (similar) {
+        const matchPercent = Math.round(similar.similarity * 100);
+        const confirmMsg = `既に似た俳句（または同じ俳句）が登録されています：\n\n「${similar.phrase}」\n（一致率: ${matchPercent}%）\n\nこのまま進んで登録を続けますか？`;
+        if (!confirm(confirmMsg)) {
+            return; // キャンセルされたら入力画面に留まる
+        }
+    }
+
     currentHaikuData.phrase = phraseInput;
     detectKigo(phraseInput);
     goToStep(2);
