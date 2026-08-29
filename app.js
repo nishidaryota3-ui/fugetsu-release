@@ -678,32 +678,44 @@ function openKigoCard(parentKigoName, fromContext = null) {
     const overlay = document.getElementById('kigoCardOverlay');
     if (!overlay) return;
 
-    // 季語データの特定
-    const items = saijikiDatabase.filter(it => (it.parentKigo === parentKigoName || it.kigo === parentKigoName));
-    if (items.length === 0) return;
+    // 季語データの特定（親季語グループの一致を最優先）
+    let parentItems = saijikiDatabase.filter(it => it.parentKigo === parentKigoName);
+    let resolvedParentName = parentKigoName;
 
-    const baseItem = items[0];
+    if (parentItems.length === 0) {
+        // 親季語として見つからない場合、子季語としての一致から親季語を特定
+        const childMatch = saijikiDatabase.find(it => it.kigo === parentKigoName);
+        if (childMatch && childMatch.parentKigo) {
+            resolvedParentName = childMatch.parentKigo;
+            parentItems = saijikiDatabase.filter(it => it.parentKigo === resolvedParentName);
+        }
+    }
+
+    if (parentItems.length === 0) return;
+
+    // 親季語自身のエントリ（parentKigo === kigo）を優先して基本情報・ルビを取得
+    const baseItem = parentItems.find(it => it.kigo === resolvedParentName) || parentItems[0];
     const parentKana = baseItem.parentKana || '';
     const detailSeason = baseItem.detailSeason || '';
     const desc = baseItem.desc || '解説はありません。';
 
     // 傍題（子季語）一覧
     const childSet = new Set();
-    items.forEach(it => {
-        if (it.kigo && it.kigo !== parentKigoName) {
+    parentItems.forEach(it => {
+        if (it.kigo && it.kigo !== resolvedParentName) {
             childSet.add(it.kigo);
         }
     });
     const childList = Array.from(childSet);
 
     // 自作句・登録句の取得
-    const works = haikuHistory.filter(h => h.status === '完成句' && (h.parentKigo === parentKigoName || h.kigo === parentKigoName));
+    const works = haikuHistory.filter(h => h.status === '完成句' && (h.parentKigo === resolvedParentName || h.kigo === resolvedParentName));
 
     // 1. 親季語カラム
     const parentCol = document.getElementById('cardParentKigo');
-    let rubyHtml = escapeHtml(parentKigoName);
-    if (parentKana && parentKana !== parentKigoName) {
-        rubyHtml = `<ruby>${escapeHtml(parentKigoName)}<rt>${escapeHtml(parentKana)}</rt></ruby>`;
+    let rubyHtml = escapeHtml(resolvedParentName);
+    if (parentKana && parentKana !== resolvedParentName) {
+        rubyHtml = `<ruby>${escapeHtml(resolvedParentName)}<rt>${escapeHtml(parentKana)}</rt></ruby>`;
     }
     parentCol.innerHTML = `
         <div>${rubyHtml}</div>
@@ -735,7 +747,7 @@ function openKigoCard(parentKigoName, fromContext = null) {
         // 作句中（ステップ1）から開いた場合：この季語を入力ボタンを表示（下詰め）
         worksHtml += `
             <div class="kigo-work-single-col action-only-col">
-                <div class="kigo-insert-action" onclick="insertKigoToInput('${escapeHtml(parentKigoName)}')">
+                <div class="kigo-insert-action" onclick="insertKigoToInput('${escapeHtml(resolvedParentName)}')">
                     この季語を入力 ➔
                 </div>
             </div>
@@ -768,7 +780,7 @@ function openKigoCard(parentKigoName, fromContext = null) {
         } else {
             worksHtml = `
                 <div class="kigo-work-single-col action-only-col">
-                    <div class="kigo-compose-action" onclick="composeWithKigo('${escapeHtml(parentKigoName)}')">
+                    <div class="kigo-compose-action" onclick="composeWithKigo('${escapeHtml(resolvedParentName)}')">
                         この季語で詠む ➔
                     </div>
                 </div>
