@@ -286,7 +286,7 @@ function saveLocalHaikus() {
 
 async function loadInternalDatabases() {
     try {
-        const respKoyomi = await fetch('data/koyomi.json');
+        const respKoyomi = await fetch('data/koyomi.json?v=2.0.33');
         if (respKoyomi.ok) {
             koyomiDatabase = await respKoyomi.json();
             renderKoyomiFromLocal();
@@ -296,7 +296,7 @@ async function loadInternalDatabases() {
     }
 
     try {
-        const respSaijiki = await fetch('data/saijiki.json');
+        const respSaijiki = await fetch('data/saijiki.json?v=2.0.33');
         if (respSaijiki.ok) {
             saijikiDatabase = await respSaijiki.json();
         }
@@ -784,6 +784,8 @@ function renderSaijikiKigoList() {
             sortKana(others).forEach(renderItem);
         }
     }
+
+    container.scrollLeft = 0;
 }
 
 // ========================================================
@@ -1089,6 +1091,8 @@ function renderStep1KigoList() {
             sortKana(others).forEach(renderItem);
         }
     }
+
+    container.scrollLeft = 0;
 }
 
 // カーソル位置へ季語をスマート挿入
