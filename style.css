@@ -549,12 +549,13 @@ body, html {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: clamp(6px, 2.5vw, 14px);
-    width: 100%;
-    margin-top: 10px;
+    gap: 3px;
+    width: 95%;
+    max-width: 380px;
+    margin: 2px auto 8px;
     z-index: 30;
     font-family: "游明朝", "Yu Mincho", "ヒラギノ明朝 ProN", "Hiragino Mincho ProN", "Shippori Mincho", "MS P明朝", serif;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: #8c8476;
     user-select: none;
 }
@@ -563,7 +564,7 @@ body, html {
 }
 .jump-tab {
     cursor: pointer;
-    padding: 3px 4px;
+    padding: 2px 3px;
     border-radius: 4px;
     transition: color 0.15s, transform 0.1s;
 }
@@ -575,14 +576,14 @@ body, html {
     transform: scale(0.9);
 }
 .jump-tab-dot {
-    color: #d8d4cd;
-    font-size: 0.65em;
+    color: #dedad4;
+    font-size: 0.6em;
     pointer-events: none;
 }
 .step1-jump-bar {
     font-size: 0.72rem;
-    gap: 4px;
-    margin-top: 4px;
+    gap: 2px;
+    margin: 2px auto 4px;
 }
 
 .saijiki-kigo-scroll-list {
