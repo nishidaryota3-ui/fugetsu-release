@@ -529,6 +529,14 @@ function selectAuthorFilter(author) {
 // ========================================================
 // 🌸 季寄せ・歳時記 大画面（マイ歳時記ハイブリッド）
 // ========================================================
+function openSaijikiScreenFromMenu() {
+    closeAuthorSelectModal();
+    document.querySelectorAll('.step-screen').forEach(el => el.classList.remove('active'));
+    document.getElementById('saijikiScreen').classList.add('active');
+    updateCatVisibility(false);
+    switchSaijikiSeason(currentSaijikiSeason || 'haru');
+}
+
 let currentSaijikiMode = 'gojuon'; // 'gojuon' | 'jiki' | 'bunrui'
 let currentStep1Mode = 'gojuon';
 
