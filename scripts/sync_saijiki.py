@@ -131,9 +131,15 @@ print("\n[5/5] GitHubへ自動配信（Push）中...")
 now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 commit_msg = f"Auto-sync saijiki database from spreadsheet ({now_str})"
 
-subprocess.run(['git', 'add', '.'], check=True)
-subprocess.run(['git', 'commit', '-m', commit_msg], check=True)
-subprocess.run(['git', 'push', 'origin', 'main'], check=True)
+# 変更があるか確認
+status_res = subprocess.run(['git', 'status', '--porcelain'], capture_output=True, text=True)
+if not status_res.stdout.strip():
+    print("  -> データに変更がありませんでした（既に最新版です）。")
+else:
+    subprocess.run(['git', 'add', '.'], check=True)
+    subprocess.run(['git', 'commit', '-m', commit_msg], check=True)
+    subprocess.run(['git', 'push', 'origin', 'main'], check=True)
+    print("  -> GitHubへのPushが完了しました！")
 
 print("\n" + "=" * 60)
 print("🎉 歳時記の更新・配信がすべて完了いたしました！")
