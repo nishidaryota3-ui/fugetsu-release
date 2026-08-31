@@ -188,6 +188,9 @@ window.onload = function() {
 
     // クラウドからの自動双方向同期チェック
     setTimeout(fetchHaikusFromCloud, 800);
+
+    // 暗号キーのリアルタイムリスナー起動
+    initSyncKeyListener();
 };
 
 function loadUserSettings() {
@@ -2100,7 +2103,73 @@ function closeCloudGuideModal() {
     if (modal) modal.classList.add('hidden');
 }
 
-// 🔑 暗号キー接続（手軽）
+// 🔑 暗号キー接続（手軽・リアルタイム中継）
+let syncEventSource = null;
+const myClientId = 'cli_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+
+function initSyncKeyListener() {
+    if (!userSettings.syncKey) return;
+    if (syncEventSource) {
+        try { syncEventSource.close(); } catch(e) {}
+        syncEventSource = null;
+    }
+
+    const cleanKey = userSettings.syncKey.replace(/[^a-zA-Z0-9]/g, '');
+    if (!cleanKey) return;
+
+    try {
+        syncEventSource = new EventSource(`https://ntfy.sh/fugetsu-sync-${cleanKey}/sse`);
+        syncEventSource.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data && data.message) {
+                    const payload = JSON.parse(data.message);
+                    handleIncomingSyncPayload(payload);
+                }
+            } catch (e) {}
+        };
+        syncEventSource.onerror = () => {
+            // 自動再接続待機
+        };
+    } catch (e) {
+        console.warn('SyncKey listener start error:', e);
+    }
+}
+
+function broadcastSyncKeyPayload(payload) {
+    if (!userSettings.syncKey) return;
+    const cleanKey = userSettings.syncKey.replace(/[^a-zA-Z0-9]/g, '');
+    if (!cleanKey) return;
+
+    payload.senderClientId = myClientId;
+    payload.timestamp = Date.now();
+
+    try {
+        fetch(`https://ntfy.sh/fugetsu-sync-${cleanKey}`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        }).catch(e => console.warn('SyncKey broadcast silent fallback:', e));
+    } catch (e) {}
+}
+
+function handleIncomingSyncPayload(payload) {
+    if (!payload || payload.senderClientId === myClientId) return; // 自分が送ったものは無視
+
+    if (payload.type === 'NEW_HAIKU' && payload.haiku) {
+        const item = payload.haiku;
+        if (item.phrase && !haikuHistory.some(h => h.phrase === item.phrase)) {
+            haikuHistory.unshift(item);
+            saveLocalHaikus();
+            if (document.getElementById('readScreen').classList.contains('active')) {
+                renderYomuList();
+            }
+            showToast(`✨ 他の端末から【${item.phrase}】が届きました！`);
+        }
+    } else if (payload.type === 'HELLO') {
+        showToast('🔗 他の端末と接続しました！');
+    }
+}
+
 function updateSyncStatusUI() {
     const statusText = document.getElementById('syncStatusText');
     const inputEl = document.getElementById('inputSyncKey');
@@ -2124,6 +2193,8 @@ function generateSyncKey() {
     userSettings.syncKey = newKey;
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
     updateSyncStatusUI();
+    initSyncKeyListener();
+    broadcastSyncKeyPayload({ type: 'HELLO' });
     showToast(`合言葉【${newKey}】を発行しました`);
 }
 
@@ -2138,7 +2209,9 @@ function connectSyncKey() {
     userSettings.syncKey = key;
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
     updateSyncStatusUI();
-    alert(`合言葉【${key}】を登録しました。`);
+    initSyncKeyListener();
+    broadcastSyncKeyPayload({ type: 'HELLO' });
+    alert(`合言葉【${key}】で接続を開始しました！\n別の端末で句を詠むと自動で届きます。`);
 }
 
 // ☁️ クラウド自動同期（Googleスプレッドシート等への二重保存 ＆ 双方向受信）
@@ -3294,6 +3367,7 @@ function submitHaiku(statusType) {
     
     saveLocalHaikus();
     syncHaikuToCloud(newHaiku, 'save', currentHaikuData.oldPhrase);
+    broadcastSyncKeyPayload({ type: 'NEW_HAIKU', haiku: newHaiku });
     goToStep(4);
 }
 
