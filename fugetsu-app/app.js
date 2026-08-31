@@ -2028,8 +2028,10 @@ function renderTrashList() {
         textSpan.textContent = item.phrase;
         
         const restoreBtn = document.createElement('button');
+        restoreBtn.type = 'button';
         restoreBtn.className = 'trash-restore-btn';
-        restoreBtn.textContent = '元に戻す';
+        restoreBtn.title = '句帳に復元';
+        restoreBtn.innerHTML = '↩︎';
         restoreBtn.onclick = () => restoreFromTrash(item.phrase);
 
         row.appendChild(textSpan);
