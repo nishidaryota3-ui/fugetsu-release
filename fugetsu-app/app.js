@@ -356,7 +356,7 @@ async function loadInternalDatabases() {
     }
 
     try {
-        const respSaijiki = await fetch('data/saijiki.json?v=2.0.54');
+        const respSaijiki = await fetch('data/saijiki.json?v=2.0.55');
         if (respSaijiki.ok) {
             saijikiDatabase = await respSaijiki.json();
         }
@@ -2064,17 +2064,21 @@ async function fetchHaikusFromCloud() {
     try {
         // 通常のGoogleスプレッドシートURL（docs.google.com/spreadsheets/d/...）の場合
         if (rawUrl.includes('docs.google.com/spreadsheets/d/')) {
-            const match = rawUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-            if (match && match[1]) {
-                const sheetId = match[1];
-                const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+            const sheetIdMatch = rawUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+            if (sheetIdMatch && sheetIdMatch[1]) {
+                const sheetId = sheetIdMatch[1];
+                const gidMatch = rawUrl.match(/[#&?]gid=([0-9]+)/);
+                const gid = gidMatch ? gidMatch[1] : '0';
+                
+                // GViz API エンドポイント（CORS許可・gid対応）
+                const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}`;
                 const resp = await fetch(csvUrl);
                 if (resp.ok) {
                     const csvText = await resp.text();
                     parseAndMergeCsvHaikus(csvText);
+                    return;
                 }
             }
-            return;
         }
 
         // Web App URL（JSON返却形式）の場合
@@ -2103,44 +2107,86 @@ async function fetchHaikusFromCloud() {
     }
 }
 
-// 📄 CSV文字列から俳句を抽出してローカル句帳にマージするヘルパー
+// 📄 CSV文字列（引用符対応）をパースしてローカル句帳にマージする高度パーサー
 function parseAndMergeCsvHaikus(csvText) {
     if (!csvText) return;
-    const lines = csvText.split(/\r?\n/);
-    let mergedCount = 0;
-    const defaultAuthor = userSettings.authorName || '風月';
+    const lines = parseCSVRows(csvText);
+    if (lines.length < 2) return;
 
-    lines.forEach((line, idx) => {
-        if (!line.trim()) return;
-        // 簡易CSVパース（カンマ区切り）
-        const cols = line.split(',').map(c => c.replace(/^["']|["']$/g, '').trim());
-        const phrase = cols[0];
-        if (!phrase || phrase === '俳句' || phrase === 'phrase') return; // 見出しスキップ
+    // 1行目のヘッダー行から各列のインデックスを自動検出
+    const headers = lines[0].map(h => h.trim());
+    let phraseIdx = headers.findIndex(h => /^(俳句|句|phrase)$/i.test(h));
+    if (phraseIdx === -1) phraseIdx = 0; // デフォルト1列目
+
+    let authorIdx = headers.findIndex(h => /^(作者|作者名|author)$/i.test(h));
+    let authorKanaIdx = headers.findIndex(h => /^(作者よみがな|作者カナ|authorKana)$/i.test(h));
+    let kigoIdx = headers.findIndex(h => /^(季語|kigo)$/i.test(h));
+    let parentKigoIdx = headers.findIndex(h => /^(親季語|parentKigo)$/i.test(h));
+    let parentKanaIdx = headers.findIndex(h => /^(季語よみがな|季語カナ|親季語よみがな|parentKana)$/i.test(h));
+    let seasonIdx = headers.findIndex(h => /^(季節|season)$/i.test(h));
+    let detailSeasonIdx = headers.findIndex(h => /^(詳細季節|時候|detailSeason)$/i.test(h));
+    let statusIdx = headers.findIndex(h => /^(状態|ステータス|status)$/i.test(h));
+    let sakkuDateIdx = headers.findIndex(h => /^(作句日|日付|date|sakkuDate)$/i.test(h));
+
+    const defaultAuthor = userSettings.authorName || '風月';
+    const defaultKana = userSettings.authorKana || 'ふうげつ';
+    let mergedCount = 0;
+
+    const seasonMap = {
+        '春': 'haru', '夏': 'natsu', '秋': 'aki', '冬': 'huyu', '新年': 'shinnen', '無季': 'muki',
+        'haru': 'haru', 'natsu': 'natsu', 'aki': 'aki', 'huyu': 'huyu', 'shinnen': 'shinnen', 'muki': 'muki'
+    };
+
+    for (let i = 1; i < lines.length; i++) {
+        const row = lines[i];
+        if (!row || row.length === 0) continue;
+        const phrase = (row[phraseIdx] || '').trim();
+        if (!phrase) continue;
 
         if (!haikuHistory.some(h => h.phrase === phrase)) {
-            const kigo = cols[1] || '無季';
-            const season = cols[2] || 'muki';
-            const author = cols[3] || defaultAuthor;
-            const status = cols[4] || '完成句';
-            const sakkuDate = cols[5] || '';
+            let author = (authorIdx !== -1 && row[authorIdx]) ? row[authorIdx].trim() : defaultAuthor;
+            let authorKana = (authorKanaIdx !== -1 && row[authorKanaIdx]) ? row[authorKanaIdx].trim() : (author === defaultAuthor ? defaultKana : '');
+            let kigo = (kigoIdx !== -1 && row[kigoIdx]) ? row[kigoIdx].trim() : '';
+            let parentKigo = (parentKigoIdx !== -1 && row[parentKigoIdx]) ? row[parentKigoIdx].trim() : (kigo || '無季');
+            let parentKana = (parentKanaIdx !== -1 && row[parentKanaIdx]) ? row[parentKanaIdx].trim() : '';
+            let rawSeason = (seasonIdx !== -1 && row[seasonIdx]) ? row[seasonIdx].trim() : '';
+            let season = seasonMap[rawSeason] || (rawSeason ? rawSeason : 'muki');
+            let detailSeason = (detailSeasonIdx !== -1 && row[detailSeasonIdx]) ? row[detailSeasonIdx].trim() : '';
+            let status = (statusIdx !== -1 && row[statusIdx]) ? row[statusIdx].trim() : '完成句';
+            let sakkuDate = (sakkuDateIdx !== -1 && row[sakkuDateIdx]) ? row[sakkuDateIdx].trim() : '';
+
+            // 季語が空欄なら歳時記DBから自動補完
+            if (!kigo && saijikiDatabase && saijikiDatabase.length > 0) {
+                let longestMatchLen = 0;
+                for (const item of saijikiDatabase) {
+                    if (item.kigo && phrase.includes(item.kigo) && item.kigo.length > longestMatchLen) {
+                        longestMatchLen = item.kigo.length;
+                        kigo = item.kigo;
+                        parentKigo = item.kigo;
+                        parentKana = item.kana || '';
+                        season = item.season || 'muki';
+                        detailSeason = item.detailSeason || '';
+                    }
+                }
+            }
 
             haikuHistory.push({
-                id: 'h-sheet-' + Date.now() + '-' + idx,
+                id: 'h-sheet-' + Date.now() + '-' + i,
                 phrase: phrase,
-                author: author,
-                authorKana: '',
-                kigo: kigo,
-                parentKigo: kigo,
-                parentKana: '',
-                season: season,
-                detailSeason: '',
-                status: status,
+                author: author || defaultAuthor,
+                authorKana: authorKana,
+                kigo: kigo || '無季',
+                parentKigo: parentKigo || '無季',
+                parentKana: parentKana,
+                season: season || 'muki',
+                detailSeason: detailSeason,
+                status: status || '完成句',
                 sakkuDate: sakkuDate,
-                createdAt: Date.now()
+                createdAt: Date.now() - (lines.length - i)
             });
             mergedCount++;
         }
-    });
+    }
 
     if (mergedCount > 0) {
         saveLocalHaikus();
@@ -2148,7 +2194,34 @@ function parseAndMergeCsvHaikus(csvText) {
             renderYomuList();
         }
         showToast(`☁️ スプレッドシートから ${mergedCount}句 を同期しました！`);
+    } else {
+        showToast('☁️ スプレッドシートと同期完了（最新の状態です）');
     }
+}
+
+// 引用符（ダブルクォーテーション）対応の完全なCSV行パーサー
+function parseCSVRows(text) {
+    const p = [[]];
+    let row = p[0], s = true;
+    let value = '';
+    for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        const next = text[i + 1];
+        if (c === '"') {
+            if (s && next === '"') { value += '"'; i++; }
+            else { s = !s; }
+        } else if (c === ',' && s) {
+            row.push(value); value = '';
+        } else if ((c === '\r' || c === '\n') && s) {
+            if (c === '\r' && next === '\n') i++;
+            row.push(value); value = '';
+            row = []; p.push(row);
+        } else {
+            value += c;
+        }
+    }
+    if (value || row.length > 0) row.push(value);
+    return p.filter(r => r.length > 0 && r.some(cell => cell.trim()));
 }
 
 // 💡 定期バックアップ案内
