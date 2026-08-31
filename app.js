@@ -591,17 +591,73 @@ function openAuthorSelectModal() {
         scrollGroup.className = 'author-select-scroll-group';
 
         otherAuthors.forEach(author => {
+            const row = document.createElement('div');
+            row.className = 'author-select-row';
+
             const item = document.createElement('div');
             item.className = `author-select-item ${currentAuthorFilter === author ? 'active' : ''}`;
+            item.style.flex = '1';
             item.onclick = () => selectAuthorFilter(author);
             item.innerHTML = `<span>${escapeHtml(author)} 句集</span><span class="author-count-badge">${authorCounts[author]}句</span>`;
-            scrollGroup.appendChild(item);
+            
+            const delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'author-delete-btn';
+            delBtn.title = `作者「${author}」の句をすべて削除`;
+            delBtn.innerHTML = `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+            `;
+            delBtn.onclick = (e) => deleteAuthorHaikus(author, authorCounts[author], e);
+
+            row.appendChild(item);
+            row.appendChild(delBtn);
+            scrollGroup.appendChild(row);
         });
 
         listEl.appendChild(scrollGroup);
     }
 
     document.getElementById('authorSelectModal').classList.remove('hidden');
+}
+
+function deleteAuthorHaikus(author, count, event) {
+    if (event) event.stopPropagation();
+
+    const ok = confirm(`作者「${author}」の全 ${count}句 をごみ箱に移動しますか？\n\n※30日以内であれば設定メニューの「ごみ箱」からいつでも復元できます。`);
+    if (!ok) return;
+
+    // 対象の句をごみ箱に移動
+    const targetHaikus = haikuHistory.filter(h => (h.author || userSettings.authorName || '風月') === author);
+    targetHaikus.forEach(h => {
+        trashHistory.unshift({
+            ...h,
+            deletedAt: Date.now()
+        });
+        syncHaikuToCloud(h, 'delete', h.phrase);
+    });
+
+    // 句帳から除外
+    haikuHistory = haikuHistory.filter(h => (h.author || userSettings.authorName || '風月') !== author);
+
+    saveLocalHaikus();
+    saveTrashList();
+
+    // 削除した作者が現在選択中なら自作句帳に戻す
+    if (currentAuthorFilter === author) {
+        currentAuthorFilter = null;
+        updateHeaderTitle();
+    }
+
+    // 作者選択モーダルを更新
+    openAuthorSelectModal();
+    if (document.getElementById('readScreen').classList.contains('active')) {
+        renderYomuList();
+    }
+
+    showToast(`作者「${author}」の ${count}句 をごみ箱に移動しました`);
 }
 
 function closeAuthorSelectModal() {
@@ -3121,12 +3177,14 @@ window.onHaikuCardClicked = function(haikuObj) {
             <span class="text-action-btn primary" onclick="editSelectedHaiku()">修正</span>
             <span class="action-divider">|</span>
             <span class="text-action-btn" onclick="changeHaikuStatus('下書き')">下書きへ</span>
+            <span class="action-divider">|</span>
+            <span class="text-action-btn danger" onclick="deleteSelectedDraft()">削除</span>
         `;
     } else {
         actionsContainer.innerHTML = `
-            <span class="text-action-btn primary" onclick="changeHaikuStatus('完成句')">完成句へ</span>
+            <span class="text-action-btn primary" onclick="editSelectedHaiku()">修正</span>
             <span class="action-divider">|</span>
-            <span class="text-action-btn" onclick="editSelectedHaiku()">修正</span>
+            <span class="text-action-btn" onclick="changeHaikuStatus('完成句')">完成句へ</span>
             <span class="action-divider">|</span>
             <span class="text-action-btn danger" onclick="deleteSelectedDraft()">削除</span>
         `;
