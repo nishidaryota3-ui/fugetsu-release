@@ -356,9 +356,11 @@ async function loadInternalDatabases() {
     }
 
     try {
-        const respSaijiki = await fetch('data/saijiki.json?v=2.0.58');
+        const respSaijiki = await fetch('data/saijiki.json?v=2.0.59');
         if (respSaijiki.ok) {
             saijikiDatabase = await respSaijiki.json();
+            renderSaijikiKigoList();
+            renderStep1KigoList();
         }
     } catch (e) {
         console.warn('Saijiki load offline fallback:', e);
@@ -2125,7 +2127,7 @@ async function connectSyncKey() {
     const inputEl = document.getElementById('inputSyncKey');
     const key = inputEl ? inputEl.value.trim() : '';
 
-    if (!key || key.length < 5) {
+    if (!key || key.length < 4) {
         alert('合言葉を正しく入力してください（例：829-104）');
         return;
     }
@@ -2135,7 +2137,10 @@ async function connectSyncKey() {
     updateSyncStatusUI();
 
     showToast(`🔄 合言葉【${key}】で接続中...`);
-    await fetchHaikusFromCloud();
+    const count = await fetchHaikusFromCloud();
+    // 接続完了後、ローカルの句も合言葉部屋へ統合送信
+    await pushAllHaikusToCloud();
+    alert(`✅ 合言葉【${key}】で接続しました！\n${count}句 を新しく同期しました。`);
 }
 
 // 全句をクラウドに送信（合言葉部屋にアップロード）
@@ -2171,9 +2176,10 @@ function syncHaikuToCloud(haikuObj) {
 
 // 📥 クラウド（合言葉部屋）から最新データを双方向受信・マージ
 async function fetchHaikusFromCloud() {
-    if (!userSettings.syncKey) return;
+    if (!userSettings.syncKey) return 0;
     const keyClean = userSettings.syncKey.replace(/[^0-9a-zA-Z]/g, '');
     const topic = `fugetsu-sync-${keyClean}`;
+    let mergedCount = 0;
 
     try {
         const resp = await fetch(`https://ntfy.sh/${topic}/json?poll=1`);
@@ -2196,7 +2202,6 @@ async function fetchHaikusFromCloud() {
             }
 
             if (latestPayload && Array.isArray(latestPayload.haikus)) {
-                let mergedCount = 0;
                 latestPayload.haikus.forEach(cloudHaiku => {
                     if (cloudHaiku.phrase && !haikuHistory.some(h => h.phrase === cloudHaiku.phrase)) {
                         haikuHistory.push(cloudHaiku);
@@ -2209,18 +2214,14 @@ async function fetchHaikusFromCloud() {
                     if (document.getElementById('readScreen').classList.contains('active')) {
                         renderYomuList();
                     }
-                    showToast(`☁️ クラウドから ${mergedCount}句 を同期しました！`);
-                } else {
-                    showToast('☁️ クラウドと同期完了（最新の状態です）');
                 }
                 updateSyncStatusUI();
-            } else {
-                showToast('☁️ クラウドにまだデータがありません');
             }
         }
     } catch (e) {
         console.warn('Sync fetch fallback:', e);
     }
+    return mergedCount;
 }
 
 // 📄 CSV文字列（引用符対応）をパースしてローカル句帳にマージする高度パーサー
