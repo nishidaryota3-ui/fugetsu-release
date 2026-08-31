@@ -1668,246 +1668,255 @@ body.large-text-mode #previewPhrase.extra-long-phrase {
 }
 
 /* ==========================================================================
-   🌙 墨黒（ダークテーマ）和モダン配色ルール
+   🌙 墨黒（ダークテーマ）和モダン配色ルール（クッキリ高視認性）
    ========================================================================== */
 body.dark-theme,
 body.dark-theme html {
     background-color: #171614 !important;
-    color: #ece8df !important;
+    color: #ffffff !important;
 }
 
 body.dark-theme .step-screen {
     background-color: #171614 !important;
-    color: #ece8df !important;
+    color: #ffffff !important;
 }
 
 /* ヘッダー・パンくず */
 body.dark-theme .read-header {
     background-color: #171614 !important;
-    border-bottom: 1px solid #2e2b26 !important;
+    border-bottom: 1px solid #332f28 !important;
 }
 body.dark-theme .read-header-inner {
     background: transparent !important;
 }
 body.dark-theme .breadcrumb .link {
-    color: #a8a39a !important;
+    color: #dedad2 !important;
 }
 body.dark-theme .breadcrumb .current {
-    color: #ece8df !important;
+    color: #ffffff !important;
+    font-weight: 500 !important;
 }
 body.dark-theme .breadcrumb .separator {
-    color: #5c574e !important;
+    color: #7a7469 !important;
 }
 body.dark-theme .author-badge {
-    background: #282520 !important;
-    color: #dcd7cc !important;
-    border: 1px solid #423d34 !important;
+    background: #2b2822 !important;
+    color: #ffffff !important;
+    border: 1px solid #4a453c !important;
 }
 
 /* ホーム画面 */
 body.dark-theme .start-title {
-    color: #ece8df !important;
+    color: #ffffff !important;
 }
 body.dark-theme .start-subtitle {
-    color: #9e988e !important;
+    color: #dedad2 !important;
 }
 body.dark-theme .home-category-title {
-    color: #ece8df !important;
+    color: #ffffff !important;
 }
 body.dark-theme .home-category-desc {
-    color: #9e988e !important;
+    color: #cccccc !important;
 }
 body.dark-theme .home-kiyose-block {
     background: #24211c !important;
-    border: 1px solid #38342b !important;
+    border: 1px solid #3d3930 !important;
 }
 body.dark-theme .home-kiyose-title {
-    color: #ece8df !important;
+    color: #ffffff !important;
 }
 body.dark-theme .home-kiyose-sub {
-    color: #9e988e !important;
+    color: #cccccc !important;
+}
+
+/* ホーム猫ちゃん */
+body.dark-theme .home-lucky-cat-dock {
+    filter: drop-shadow(0 2px 10px rgba(255, 255, 255, 0.18));
 }
 
 /* ボタン・UIコンポーネント */
 body.dark-theme .btn {
     background-color: #38342d !important;
-    color: #ece8df !important;
-    border-color: #4a453c !important;
+    color: #ffffff !important;
+    border-color: #554f44 !important;
 }
 body.dark-theme .btn:hover {
-    background-color: #454037 !important;
+    background-color: #4a453c !important;
 }
 body.dark-theme .btn-outline {
     background-color: transparent !important;
-    color: #ece8df !important;
-    border-color: #524c42 !important;
+    color: #ffffff !important;
+    border-color: #665f52 !important;
 }
 body.dark-theme .btn-outline:hover {
-    background-color: rgba(255, 255, 255, 0.06) !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
 }
 body.dark-theme .flat-icon-btn {
-    color: #ece8df !important;
+    color: #ffffff !important;
 }
 body.dark-theme .nav-arrow {
-    color: #635d53 !important;
+    color: #8c8578 !important;
 }
 body.dark-theme .nav-arrow:hover {
-    color: #ece8df !important;
+    color: #ffffff !important;
 }
 
 /* 俳句カード・短冊・色紙 */
 body.dark-theme .haiku-card,
 body.dark-theme .haiku-tanzaku,
 body.dark-theme .haiku-shikishi {
-    background: #22201b !important;
-    border-color: #38342b !important;
-    color: #ece8df !important;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+    background: #24221d !important;
+    border-color: #3d3930 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5) !important;
 }
 body.dark-theme .phrase {
-    color: #ece8df !important;
+    color: #ffffff !important;
 }
 body.dark-theme .haiku-author {
-    color: #a8a39a !important;
+    color: #e0ded8 !important;
 }
 body.dark-theme .kigo-tag {
-    background: #2d2923 !important;
-    color: #b8b3a8 !important;
+    background: #33302a !important;
+    color: #ffffff !important;
+    border: 1px solid #4a453c !important;
 }
 body.dark-theme .kigo-season-label {
-    color: #8c867b !important;
+    color: #cccccc !important;
 }
 
 /* 季寄せ・歳時記 */
 body.dark-theme .saijiki-mode-switch {
-    background: #22201b !important;
-    border-color: #38342b !important;
+    background: #24221d !important;
+    border-color: #3d3930 !important;
 }
 body.dark-theme .saijiki-mode-switch .mode-tab {
-    color: #9e988e !important;
+    color: #cccccc !important;
 }
 body.dark-theme .saijiki-mode-switch .mode-tab.active {
-    background: #38342d !important;
-    color: #ece8df !important;
+    background: #3d3932 !important;
+    color: #ffffff !important;
 }
 body.dark-theme .gojuon-jump-bar {
     background: #1c1b18 !important;
-    border-bottom: 1px solid #332f28 !important;
+    border-bottom: 1px solid #38342d !important;
 }
 body.dark-theme .gojuon-jump-btn {
-    color: #9e988e !important;
+    color: #cccccc !important;
 }
 body.dark-theme .gojuon-jump-btn.active {
-    color: #ece8df !important;
-    background: #38342d !important;
+    color: #ffffff !important;
+    background: #3d3932 !important;
+    font-weight: bold !important;
 }
 body.dark-theme .kigo-item {
-    border-color: #2c2924 !important;
-    color: #ece8df !important;
+    border-color: #302d26 !important;
+    color: #ffffff !important;
 }
 body.dark-theme .kigo-name {
-    color: #ece8df !important;
+    color: #ffffff !important;
 }
 body.dark-theme .kigo-kana {
-    color: #8c867b !important;
+    color: #cfcac0 !important;
 }
 
 /* 作句画面（Step1〜4） */
 body.dark-theme #inputPhrase,
 body.dark-theme .dock-input {
-    background: #22201b !important;
-    color: #ece8df !important;
-    border-color: #3d3932 !important;
+    background: #24221d !important;
+    color: #ffffff !important;
+    border-color: #4a453c !important;
 }
 body.dark-theme .step1-kigo-item {
-    background: #22201b !important;
-    color: #ece8df !important;
-    border-color: #38342b !important;
+    background: #24221d !important;
+    color: #ffffff !important;
+    border-color: #3d3930 !important;
 }
 body.dark-theme .step1-kigo-item.active {
     background: #3d3932 !important;
     color: #ffffff !important;
-    border-color: #5c564c !important;
+    border-color: #665f52 !important;
 }
 body.dark-theme .step-title {
-    color: #ece8df !important;
+    color: #ffffff !important;
 }
 body.dark-theme .form-label {
-    color: #b8b3a8 !important;
+    color: #ffffff !important;
 }
 
 /* モーダル・ダイアログ */
 body.dark-theme .card-overlay {
-    background: rgba(0, 0, 0, 0.75) !important;
+    background: rgba(0, 0, 0, 0.78) !important;
 }
 body.dark-theme .modal-card-content {
     background: #24221d !important;
-    color: #ece8df !important;
-    border: 1px solid #3d3932 !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7) !important;
+    color: #ffffff !important;
+    border: 1px solid #454036 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8) !important;
 }
 body.dark-theme .modal-title {
-    color: #ece8df !important;
+    color: #ffffff !important;
 }
 body.dark-theme .modal-close-corner {
-    color: #8c867b !important;
+    color: #b8b3a8 !important;
 }
 body.dark-theme .modal-close-corner:hover {
-    color: #ece8df !important;
+    color: #ffffff !important;
 }
 body.dark-theme .settings-desc,
 body.dark-theme .settings-sub-note {
-    color: #9e988e !important;
+    color: #dedad2 !important;
 }
 body.dark-theme .pillar-accordion-header {
     background: #2b2822 !important;
-    color: #ece8df !important;
-    border-color: #38342b !important;
+    color: #ffffff !important;
+    border-color: #3d3930 !important;
 }
 body.dark-theme .pillar-section-title {
-    color: #ece8df !important;
+    color: #ffffff !important;
 }
 body.dark-theme .settings-divider {
-    border-color: #332f28 !important;
+    border-color: #38342d !important;
 }
 body.dark-theme .text-input,
 body.dark-theme textarea,
 body.dark-theme select,
 body.dark-theme .batch-import-textarea {
     background: #1c1b17 !important;
-    color: #ece8df !important;
-    border-color: #3d3932 !important;
+    color: #ffffff !important;
+    border-color: #4a453c !important;
 }
 body.dark-theme .trash-haiku-item {
     background: #2b2822 !important;
-    color: #ece8df !important;
+    color: #ffffff !important;
 }
 body.dark-theme .trash-restore-btn {
-    color: #a8a39a !important;
+    color: #dedad2 !important;
 }
 body.dark-theme .trash-restore-btn:hover {
-    color: #ece8df !important;
-    background: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.12) !important;
 }
 body.dark-theme .font-size-switch-group {
     background: #1c1b17 !important;
-    border-color: #38342b !important;
+    border-color: #3d3930 !important;
 }
 body.dark-theme .font-size-btn {
-    color: #9e988e !important;
+    color: #b8b3a8 !important;
 }
 body.dark-theme .font-size-btn.active {
     background: #3d3932 !important;
-    color: #ece8df !important;
+    color: #ffffff !important;
+    font-weight: 500 !important;
 }
 body.dark-theme .pillar-text-link {
-    color: #c4beb3 !important;
+    color: #dedad2 !important;
 }
 body.dark-theme .pillar-text-link:hover {
     color: #ffffff !important;
 }
 body.dark-theme .settings-checkbox-row {
-    color: #ece8df !important;
+    color: #ffffff !important;
 }
 
 /* おみくじ画面 */
@@ -1915,23 +1924,23 @@ body.dark-theme #omikujiRoomScreen {
     background: #171614 !important;
 }
 body.dark-theme #omikujiPhrase {
-    color: #ece8df !important;
+    color: #ffffff !important;
 }
 body.dark-theme .omikuji-info-author {
-    color: #ece8df !important;
+    color: #ffffff !important;
 }
 
 /* 季語解説カード（うてなモデル） */
 body.dark-theme .kigo-card-popup {
     background: #24221d !important;
-    color: #ece8df !important;
-    border-color: #3d3932 !important;
+    color: #ffffff !important;
+    border-color: #454036 !important;
 }
 body.dark-theme .kigo-card-parent-title {
-    color: #ece8df !important;
+    color: #ffffff !important;
 }
 body.dark-theme .kigo-card-body-text {
-    color: #cfcac0 !important;
+    color: #dedad2 !important;
 }
 
 /* 🖨️ 印刷時は必ず白背景・黒文字（プリンター保護ガード） */
