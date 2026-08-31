@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.89">
+    <link rel="stylesheet" href="style.css?v=2.0.90">
 </head>
 <body>
 
@@ -433,6 +433,13 @@
                 <div id="settingSection6" class="pillar-accordion-body hidden">
                     <div class="settings-form" style="width: 100%; margin-top: 4px;">
                         <div class="form-group" style="margin-bottom: 10px;">
+                            <label class="form-label" style="margin-bottom: 4px;">背景色</label>
+                            <div class="font-size-switch-group">
+                                <button type="button" id="themeLightBtn" class="font-size-btn active" onclick="setAppTheme('light')">白（生成り）</button>
+                                <button type="button" id="themeDarkBtn" class="font-size-btn" onclick="setAppTheme('dark')">黒（墨黒）</button>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 10px;">
                             <label class="form-label" style="margin-bottom: 4px;">文字サイズ</label>
                             <div class="font-size-switch-group">
                                 <button type="button" id="fontSizeNormalBtn" class="font-size-btn active" onclick="setFontSizeMode('normal')">標準</button>
@@ -821,6 +828,6 @@ function doGet() {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.89"></script>
+    <script src="app.js?v=2.0.90"></script>
 </body>
 </html>

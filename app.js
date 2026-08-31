@@ -67,6 +67,7 @@ let userSettings = {
     homeKiyose: false,
     fontSizeMode: 'normal', // 'normal' | 'large'
     fontFamily: 'mincho',   // 'mincho' | 'gothic'
+    theme: 'light',         // 'light' | 'dark'
     cloudSyncUrl: ''        // Googleスプレッドシート/クラウド同期URL
 };
 
@@ -212,6 +213,15 @@ function applyUserSettingsToUI() {
         kiyoseBlock.classList.toggle('hidden', isHide);
         kiyoseBlock.style.display = isHide ? 'none' : 'flex';
     }
+
+    // 背景色モードの適用（白: light / 墨黒: dark）
+    const isDark = userSettings.theme === 'dark';
+    document.body.classList.toggle('dark-theme', isDark);
+
+    const themeLightBtn = document.getElementById('themeLightBtn');
+    const themeDarkBtn = document.getElementById('themeDarkBtn');
+    if (themeLightBtn) themeLightBtn.classList.toggle('active', !isDark);
+    if (themeDarkBtn) themeDarkBtn.classList.toggle('active', isDark);
 
     // 文字サイズモードの適用
     const isLarge = userSettings.fontSizeMode === 'large';
@@ -2865,6 +2875,10 @@ function onSettingCheckboxChanged() {
     if (startupChk) userSettings.startupOmikuji = startupChk.checked;
     if (hideHomeKiyoseChk) userSettings.hideHomeKiyose = hideHomeKiyoseChk.checked;
 
+    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
+    applyUserSettingsToUI();
+function setAppTheme(theme) {
+    userSettings.theme = theme;
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
     applyUserSettingsToUI();
 }
