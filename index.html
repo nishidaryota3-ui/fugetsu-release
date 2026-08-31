@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.87">
+    <link rel="stylesheet" href="style.css?v=2.0.88">
 </head>
 <body>
 
@@ -395,7 +395,10 @@
                 </div>
                 <div id="settingSectionTrash" class="pillar-accordion-body hidden">
                     <div id="trashHaikuList" class="trash-haiku-list" style="width: 100%;"></div>
-                    <div class="settings-sub-note" style="font-size: 0.70rem; white-space: nowrap; margin-top: 6px; letter-spacing: -0.01em;">※削除から30日以内であれば元に戻せます</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 6px;">
+                        <div class="settings-sub-note" style="font-size: 0.70rem; white-space: nowrap; letter-spacing: -0.01em;">※削除から30日以内であれば元に戻せます</div>
+                        <button type="button" id="emptyTrashBtn" onclick="emptyTrashList()" style="font-size: 0.70rem; color: #a94442; background: none; border: none; cursor: pointer; text-decoration: underline; padding: 0 2px; white-space: nowrap;">ゴミ箱を空にする</button>
+                    </div>
                 </div>
             </div>
 
@@ -818,6 +821,6 @@ function doGet() {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.87"></script>
+    <script src="app.js?v=2.0.88"></script>
 </body>
 </html>

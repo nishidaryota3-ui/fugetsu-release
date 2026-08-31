@@ -2011,13 +2011,17 @@ function restoreFromTrash(phraseToRestore) {
 
 function renderTrashList() {
     const container = document.getElementById('trashHaikuList');
+    const emptyBtn = document.getElementById('emptyTrashBtn');
     if (!container) return;
     container.innerHTML = '';
 
     if (trashList.length === 0) {
         container.innerHTML = '<div class="trash-empty-msg">ごみ箱は空です</div>';
+        if (emptyBtn) emptyBtn.style.display = 'none';
         return;
     }
+
+    if (emptyBtn) emptyBtn.style.display = 'inline-block';
 
     trashList.forEach(item => {
         const row = document.createElement('div');
@@ -2031,13 +2035,33 @@ function renderTrashList() {
         restoreBtn.type = 'button';
         restoreBtn.className = 'trash-restore-btn';
         restoreBtn.title = '句帳に復元';
-        restoreBtn.innerHTML = '↩︎';
+        restoreBtn.innerHTML = `
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 14 4 9 9 4"></polyline>
+                <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+            </svg>
+        `;
         restoreBtn.onclick = () => restoreFromTrash(item.phrase);
 
         row.appendChild(textSpan);
         row.appendChild(restoreBtn);
         container.appendChild(row);
     });
+}
+
+function emptyTrashList() {
+    if (!trashList || trashList.length === 0) {
+        alert('ごみ箱はすでに空です。');
+        return;
+    }
+
+    const ok = confirm(`ごみ箱内の全 ${trashList.length}句 を完全に削除しますか？\n\n※この操作は取り消せません。`);
+    if (!ok) return;
+
+    trashList = [];
+    saveTrashList();
+    renderTrashList();
+    showToast('ゴミ箱を空にしました');
 }
 
 // 📝 テキスト一括取り込み機能（超インテリジェント・パーサー）
