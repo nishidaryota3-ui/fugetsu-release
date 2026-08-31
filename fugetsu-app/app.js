@@ -3073,7 +3073,7 @@ function updateCatVisibility(show) {
 }
 
 function goToStartScreen() {
-    updateCatVisibility(false);
+    updateCatVisibility(true);
     document.querySelectorAll('.step-screen').forEach(el => el.classList.remove('active'));
     document.getElementById('startScreen').classList.add('active');
 }
