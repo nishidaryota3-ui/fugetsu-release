@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fugetsu-release-v61';
+const CACHE_NAME = 'fugetsu-release-v62';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -12,8 +12,7 @@ const ASSETS_TO_CACHE = [
   './icon_top_output.png',
   './kiyose.png',
   './data/koyomi.json',
-  './data/saijiki.json',
-  'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js'
+  './data/saijiki.json'
 ];
 
 self.addEventListener('install', (event) => {

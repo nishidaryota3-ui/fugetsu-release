@@ -635,11 +635,16 @@ function selectAuthorFilter(author) {
 // ========================================================
 // 🌸 季寄せ・歳時記 大画面（マイ歳時記ハイブリッド）
 // ========================================================
-function openSaijikiScreenFromMenu() {
+async function openSaijikiScreenFromMenu() {
+    closeMenuModal();
+    closeSettingsModal();
     closeAuthorSelectModal();
     document.querySelectorAll('.step-screen').forEach(el => el.classList.remove('active'));
     document.getElementById('saijikiScreen').classList.add('active');
     updateCatVisibility(false);
+    if (!saijikiDatabase || saijikiDatabase.length === 0) {
+        await loadInternalDatabases();
+    }
     switchSaijikiSeason(currentSaijikiSeason || 'haru');
 }
 
