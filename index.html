@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.65">
+    <link rel="stylesheet" href="style.css?v=2.0.66">
 </head>
 <body>
 
@@ -319,11 +319,11 @@
         </div>
     </div>
 
-    <!-- ⚙️ 設定・バックアップモーダル（三本柱アコーディオン） -->
+    <!-- ⚙️ 設定・バックアップモーダル -->
     <div id="settingsModal" class="card-overlay hidden" onclick="closeSettingsModal()">
         <div class="modal-card-content menu-accordion-modal settings-modal-content" onclick="event.stopPropagation()">
             <span class="modal-close-corner" onclick="closeSettingsModal()">✕</span>
-            <h3 class="modal-title" style="margin-bottom: 5px;">句帳の設定</h3>
+            <h3 class="modal-title" style="margin-bottom: 8px;">句帳の設定</h3>
             
             <!-- 一、 俳号の変更 -->
             <div class="menu-pillar-section">
@@ -333,75 +333,88 @@
                 </div>
                 <div id="settingSection1" class="pillar-accordion-body hidden">
                     <div class="settings-form" style="margin-top: 4px; width: 100%;">
-                        <div class="form-group">
-                            <label class="form-label">あなたの俳号（作者名）</label>
-                            <input type="text" id="settingAuthorName" class="text-input" placeholder="例：芭蕉、風月">
+                        <div class="form-group" style="margin-bottom: 6px;">
+                            <label class="form-label">作者名</label>
+                            <input type="text" id="settingAuthorName" class="text-input" placeholder="例：風月">
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">俳号のよみがな</label>
-                            <input type="text" id="settingAuthorKana" class="text-input" placeholder="例：ばしょう、ふうげつ">
+                        <div class="form-group" style="margin-bottom: 8px;">
+                            <label class="form-label">よみがな</label>
+                            <input type="text" id="settingAuthorKana" class="text-input" placeholder="例：ふうげつ">
                         </div>
-                        <button class="btn pillar-action-btn gothic-btn" style="margin: 6px auto 0;" onclick="saveAuthorSettings()">保存する</button>
+                        <button class="btn pillar-action-btn gothic-btn" style="margin: 0 auto;" onclick="saveAuthorSettings()">変更を保存</button>
                     </div>
                 </div>
             </div>
 
             <div class="settings-divider"></div>
 
-            <!-- 二、 過去句のまとめて登録 -->
+            <!-- 二、 過去句の取り込み -->
             <div class="menu-pillar-section">
                 <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection2')">
-                    <span class="pillar-section-title">二、 過去句のまとめて登録</span>
+                    <span class="pillar-section-title">二、 過去句の取り込み</span>
                     <span id="settingArrow2" class="pillar-accordion-arrow">▿</span>
                 </div>
                 <div id="settingSection2" class="pillar-accordion-body hidden">
-                    <p class="settings-desc" style="margin-bottom: 8px;">パソコンのメモ帳やWord、Excelにある過去の句をコピペで一発登録できます。</p>
-                    <div style="width: 100%; display: flex; justify-content: center;">
-                        <button class="btn btn-outline batch-import-open-btn" onclick="openBatchImportModal()">
-                            <span>📝 テキストを貼り付けて登録</span>
-                        </button>
-                    </div>
+                    <p class="settings-desc" style="margin-bottom: 8px;">メモ帳やExcelにある過去の句を一括登録します。</p>
+                    <button class="btn btn-outline pillar-action-btn" style="width: 100%; font-size: 0.82rem;" onclick="openBatchImportModal()">
+                        テキストを貼り付けて登録
+                    </button>
                 </div>
             </div>
 
             <div class="settings-divider"></div>
 
-            <!-- 三、 他の端末（PC・スマホ）と繋ぐ -->
+            <!-- 三、 他の端末と同期 -->
             <div class="menu-pillar-section">
                 <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection3')">
-                    <span class="pillar-section-title">三、 他の端末（PC・スマホ）と繋ぐ</span>
+                    <span class="pillar-section-title">三、 他の端末と同期</span>
                     <span id="settingArrow3" class="pillar-accordion-arrow">▿</span>
                 </div>
                 <div id="settingSection3" class="pillar-accordion-body hidden">
-                    <div class="settings-form" style="width: 100%;">
-                        <div class="form-group" style="margin-bottom: 4px;">
-                            <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
-                                <span>スプレッドシート自動同期</span>
-                                <span style="display: flex; gap: 6px; align-items: center;">
-                                    <span class="guide-link-btn" onclick="openCloudGuideModal()">使い方</span>
-                                    <span id="cloudSyncStatusBadge" class="cloud-status-badge">未設定</span>
-                                </span>
-                            </label>
-                            <input type="url" id="settingCloudSyncUrl" class="text-input sync-url-input" placeholder="スプレッドシートの共有URLを貼り付け">
+                    <!-- ① 暗号キー接続（手軽） -->
+                    <div class="sync-pillar-card">
+                        <div class="sync-card-header">
+                            <span class="sync-card-title">① 暗号キー接続（手軽）</span>
+                            <button type="button" class="guide-link-btn" onclick="openSyncKeyHelpModal()">詳細</button>
                         </div>
-                        <div class="settings-sub-note" style="margin-top: 2px;">※シートのURLを貼るだけで全端末が自動同期</div>
-                        <button class="btn btn-outline cloud-save-btn" onclick="saveCloudSyncSettings()">同期URLを保存</button>
+                        <p class="settings-sub-note" style="margin: 4px 0 8px;">合言葉を入力するだけで端末同士を接続。</p>
+                        <div style="display: flex; gap: 6px; margin-bottom: 6px;">
+                            <button type="button" class="btn btn-outline" style="flex: 1; padding: 6px 0; font-size: 0.78rem;" onclick="generateSyncKey()">合言葉を発行</button>
+                        </div>
+                        <div style="display: flex; gap: 6px;">
+                            <input type="text" id="inputSyncKey" class="text-input" style="flex: 1; text-align: center; font-size: 0.88rem;" placeholder="合言葉を入力">
+                            <button type="button" class="btn" style="padding: 0 12px; font-size: 0.78rem;" onclick="connectSyncKey()">接続</button>
+                        </div>
+                        <div id="syncStatusContainer" class="sync-status-box" style="margin-top: 6px; padding: 4px;">
+                            <div id="syncStatusText" class="sync-status-text" style="font-size: 0.75rem;">未接続</div>
+                        </div>
+                    </div>
+
+                    <!-- ② スプレッドシート同期（高度） -->
+                    <div class="sync-pillar-card" style="margin-top: 8px;">
+                        <div class="sync-card-header">
+                            <span class="sync-card-title">② スプレッドシート同期（恒久保存）</span>
+                            <button type="button" class="guide-link-btn" onclick="openCloudGuideModal()">詳細</button>
+                        </div>
+                        <p class="settings-sub-note" style="margin: 4px 0 8px;">水没や故障でも句を守るGoogle自動二重保存。</p>
+                        <div style="display: flex; gap: 6px;">
+                            <input type="url" id="settingCloudSyncUrl" class="text-input" style="flex: 1; font-size: 0.8rem;" placeholder="共有URL / GAS URL">
+                            <button type="button" class="btn btn-outline" style="padding: 0 12px; font-size: 0.78rem;" onclick="saveCloudSyncSettings()">保存</button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div class="settings-divider"></div>
 
-            <!-- 四、 ごみ箱（最近削除した句の復元） -->
+            <!-- 四、 ごみ箱（削除した句の復元） -->
             <div class="menu-pillar-section">
                 <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSectionTrash')">
-                    <span class="pillar-section-title">四、 ごみ箱（削除した句の復元）</span>
+                    <span class="pillar-section-title">四、 ごみ箱（削除した句）</span>
                     <span id="settingArrowTrash" class="pillar-accordion-arrow">▿</span>
                 </div>
                 <div id="settingSectionTrash" class="pillar-accordion-body hidden">
-                    <div id="trashHaikuList" class="trash-haiku-list">
-                        <!-- ごみ箱アイテムが動的に描画されます -->
-                    </div>
+                    <div id="trashHaikuList" class="trash-haiku-list"></div>
                     <div class="settings-sub-note">※削除から30日以内であればワンタップで元に戻せます</div>
                 </div>
             </div>
@@ -416,15 +429,15 @@
                 </div>
                 <div id="settingSection5" class="pillar-accordion-body hidden">
                     <div class="settings-form" style="width: 100%; margin-top: 4px;">
-                        <div class="form-group" style="margin-bottom: 12px;">
-                            <label class="form-label" style="margin-bottom: 6px;">文字サイズ</label>
+                        <div class="form-group" style="margin-bottom: 10px;">
+                            <label class="form-label" style="margin-bottom: 4px;">文字サイズ</label>
                             <div class="font-size-switch-group">
                                 <button type="button" id="fontSizeNormalBtn" class="font-size-btn active" onclick="setFontSizeMode('normal')">標準</button>
                                 <button type="button" id="fontSizeLargeBtn" class="font-size-btn" onclick="setFontSizeMode('large')">大文字</button>
                             </div>
                         </div>
-                        <div class="form-group" style="margin-bottom: 12px;">
-                            <label class="form-label" style="margin-bottom: 6px;">フォント形式</label>
+                        <div class="form-group" style="margin-bottom: 10px;">
+                            <label class="form-label" style="margin-bottom: 4px;">フォント形式</label>
                             <div class="font-size-switch-group">
                                 <button type="button" id="fontMinchoBtn" class="font-size-btn active" onclick="setFontFamilyMode('mincho')">明朝</button>
                                 <button type="button" id="fontGothicBtn" class="font-size-btn" onclick="setFontFamilyMode('gothic')">ゴシック</button>
@@ -504,29 +517,68 @@
         </div>
     </div>
 
-    <!-- 📊 スプレッドシート連携ガイドモーダル -->
-    <div id="cloudGuideModal" class="card-overlay hidden" onclick="closeCloudGuideModal()">
+    <!-- 🔑 暗号キー接続ヘルプモーダル -->
+    <div id="syncKeyHelpModal" class="card-overlay hidden" onclick="closeSyncKeyHelpModal()">
         <div class="modal-card-content" style="max-width: 345px; text-align: left;" onclick="event.stopPropagation()">
-            <span class="modal-close-corner" onclick="closeCloudGuideModal()">✕</span>
-            <h3 class="modal-title" style="font-size: 1.1rem; text-align: center; margin-bottom: 8px;">スプレッドシート連携ガイド</h3>
+            <span class="modal-close-corner" onclick="closeSyncKeyHelpModal()">✕</span>
+            <h3 class="modal-title" style="font-size: 1.05rem; text-align: center; margin-bottom: 8px;">暗号キー接続の仕組み</h3>
             
             <div class="cloud-guide-step-box">
-                <div class="guide-step-title">1. 列の並び順（A列に貼るだけ！）</div>
-                <p class="guide-step-desc">A列に俳句を貼り付けます。季語や季節は空欄でもアプリが自動判定します。</p>
-                <table class="guide-sample-table">
-                    <thead>
-                        <tr><th>A列（俳句）</th><th>B列（季語）</th><th>D列（作者）</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>春風や闘志...</td><td>（空欄可）</td><td>（空欄可）</td></tr>
-                        <tr><td>閑さや岩にし...</td><td>蝉</td><td>松尾芭蕉</td></tr>
-                    </tbody>
-                </table>
+                <div class="guide-step-title">1. 特徴とメリット</div>
+                <p class="guide-step-desc">
+                  ・Googleアカウントや設定は一切不要。<br>
+                  ・合言葉を教え合うだけで、端末同士が直接通信して同期します。
+                </p>
             </div>
 
-            <div class="cloud-guide-step-box" style="margin-top: 10px;">
-                <div class="guide-step-title">2. 通常のシート共有URLを貼るだけ！</div>
-                <p class="guide-step-desc">スプレッドシートの「共有」で「リンクを知っている全員が閲覧可」にし、シートのURLを設定欄に貼り付けるだけで自動同期されます。</p>
+            <div class="cloud-guide-step-box" style="margin-top: 8px; border-left: 3px solid #8c8476;">
+                <div class="guide-step-title">2. ⚠️ ご利用上の注意点</div>
+                <p class="guide-step-desc">
+                  ・<b>両方の端末でアプリを開いている時</b>に同期されます。<br>
+                  ・クラウド上に保管されないため、<b>スマホ水没・故障時のバックアップにはなりません</b>（水没対策には「②スプレッドシート同期」または「バックアップ保存」をご利用ください）。
+                </p>
+            </div>
+
+            <button class="btn" style="width: 100%; margin-top: 12px; padding: 8px 0; font-size: 0.85rem;" onclick="closeSyncKeyHelpModal()">閉じる</button>
+        </div>
+    </div>
+
+    <!-- 📊 スプレッドシート連携ガイドモーダル -->
+    <div id="cloudGuideModal" class="card-overlay hidden" onclick="closeCloudGuideModal()">
+        <div class="modal-card-content" style="max-width: 355px; text-align: left; max-height: 85vh; overflow-y: auto;" onclick="event.stopPropagation()">
+            <span class="modal-close-corner" onclick="closeCloudGuideModal()">✕</span>
+            <h3 class="modal-title" style="font-size: 1.05rem; text-align: center; margin-bottom: 8px;">スプレッドシート同期ガイド</h3>
+            
+            <div class="cloud-guide-step-box">
+                <div class="guide-step-title">【方法A】 共有URLを貼る（手軽・読込）</div>
+                <p class="guide-step-desc">
+                  1. スプレッドシートの「共有」で「リンクを知っている全員が閲覧可」に設定。<br>
+                  2. シートのURLを設定欄に貼り付けるだけで句を同期・復元できます。
+                </p>
+            </div>
+
+            <div class="cloud-guide-step-box" style="margin-top: 8px;">
+                <div class="guide-step-title">【方法B】 GASによる完全双方向同期（高度）</div>
+                <p class="guide-step-desc">
+                  アプリで詠んだ句が自動でシートに追記される完全同期です。<br>
+                  スプレッドシートの「拡張機能 ➔ Apps Script」に以下のコードを貼り付けて「ウェブアプリとしてデプロイ」してください。
+                </p>
+                <div style="position: relative; margin-top: 6px;">
+                    <textarea id="gasScriptCodeBlock" readonly class="gas-code-textarea" style="width: 100%; height: 90px; font-family: monospace; font-size: 0.72rem; padding: 6px; border: 1px solid #ddd; border-radius: 4px; background: #f8f8f8; resize: none;">function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  if (data.haiku) {
+    sheet.appendRow([data.haiku.phrase, data.haiku.author, data.haiku.kigo, data.haiku.season, data.haiku.sakkuDate]);
+  }
+  return ContentService.createTextOutput(JSON.stringify({status: 'ok'})).setMimeType(ContentService.MimeType.JSON);
+}
+function doGet() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var rows = sheet.getDataRange().getValues();
+  return ContentService.createTextOutput(JSON.stringify({rows: rows})).setMimeType(ContentService.MimeType.JSON);
+}</textarea>
+                    <button type="button" class="btn btn-outline" style="position: absolute; right: 6px; top: 6px; padding: 2px 8px; font-size: 0.7rem; background: #fff;" onclick="copyGasCode()">コピー</button>
+                </div>
             </div>
 
             <button class="btn" style="width: 100%; margin-top: 12px; padding: 8px 0; font-size: 0.85rem;" onclick="closeCloudGuideModal()">閉じる</button>
@@ -735,6 +787,6 @@
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.65"></script>
+    <script src="app.js?v=2.0.66"></script>
 </body>
 </html>

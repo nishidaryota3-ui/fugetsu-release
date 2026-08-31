@@ -1793,6 +1793,7 @@ function openSettingsModal() {
     const cloudInput = document.getElementById('settingCloudSyncUrl');
     if (cloudInput) cloudInput.value = userSettings.cloudSyncUrl || '';
     updateCloudStatusBadge();
+    updateSyncStatusUI();
 
     renderTrashList();
     document.getElementById('settingsModal').classList.remove('hidden');
@@ -2037,6 +2038,29 @@ function executeBatchImport() {
 }
 
 // 📊 スプレッドシート連携ガイド
+function openSyncKeyHelpModal() {
+    const modal = document.getElementById('syncKeyHelpModal');
+    if (modal) modal.classList.remove('hidden');
+}
+
+function closeSyncKeyHelpModal() {
+    const modal = document.getElementById('syncKeyHelpModal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function copyGasCode() {
+    const codeBlock = document.getElementById('gasScriptCodeBlock');
+    if (codeBlock) {
+        navigator.clipboard.writeText(codeBlock.value).then(() => {
+            showToast('📋 GASコードをコピーしました！');
+        }).catch(() => {
+            codeBlock.select();
+            document.execCommand('copy');
+            showToast('📋 GASコードをコピーしました！');
+        });
+    }
+}
+
 function openCloudGuideModal() {
     const modal = document.getElementById('cloudGuideModal');
     if (modal) modal.classList.remove('hidden');
@@ -2045,6 +2069,47 @@ function openCloudGuideModal() {
 function closeCloudGuideModal() {
     const modal = document.getElementById('cloudGuideModal');
     if (modal) modal.classList.add('hidden');
+}
+
+// 🔑 暗号キー接続（手軽）
+function updateSyncStatusUI() {
+    const statusText = document.getElementById('syncStatusText');
+    const inputEl = document.getElementById('inputSyncKey');
+    if (!statusText) return;
+
+    if (userSettings.syncKey) {
+        statusText.textContent = `🟢 接続中（合言葉: ${userSettings.syncKey}）`;
+        statusText.style.color = '#2e7d32';
+        if (inputEl) inputEl.value = userSettings.syncKey;
+    } else {
+        statusText.textContent = '未接続';
+        statusText.style.color = '#888';
+    }
+}
+
+function generateSyncKey() {
+    const num1 = Math.floor(100 + Math.random() * 900);
+    const num2 = Math.floor(100 + Math.random() * 900);
+    const newKey = `${num1}-${num2}`;
+
+    userSettings.syncKey = newKey;
+    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
+    updateSyncStatusUI();
+    showToast(`合言葉【${newKey}】を発行しました`);
+}
+
+function connectSyncKey() {
+    const inputEl = document.getElementById('inputSyncKey');
+    const key = inputEl ? inputEl.value.trim() : '';
+    if (!key || key.length < 4) {
+        alert('合言葉を正しく入力してください');
+        return;
+    }
+
+    userSettings.syncKey = key;
+    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
+    updateSyncStatusUI();
+    alert(`合言葉【${key}】を登録しました。`);
 }
 
 // ☁️ クラウド自動同期（Googleスプレッドシート等への二重保存 ＆ 双方向受信）

@@ -231,6 +231,31 @@ body.font-gothic-mode * {
 
 .app-version-note { font-size: 0.72rem; color: #aaa; margin-top: 2px; font-family: sans-serif; }
 
+/* 📱 同期セクションの統一サブカード */
+.sync-pillar-card {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #e0dcd5;
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: left;
+    transition: border-color 0.2s;
+}
+.sync-pillar-card:hover {
+    border-color: #b5b0a6;
+}
+.sync-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.sync-card-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #2b2b2b;
+    letter-spacing: 0.04em;
+}
+
 /* 作者選択モーダル（スリム＆洗練された文字リスト） */
 .author-select-list { width: 100%; max-width: 270px; display: flex; flex-direction: column; margin: 4px auto 0; }
 .author-select-fixed-group { display: flex; flex-direction: column; gap: 5px; width: 100%; }
