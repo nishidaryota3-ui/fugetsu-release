@@ -356,7 +356,7 @@ async function loadInternalDatabases() {
     }
 
     try {
-        const respSaijiki = await fetch('data/saijiki.json?v=2.0.52');
+        const respSaijiki = await fetch('data/saijiki.json?v=2.0.53');
         if (respSaijiki.ok) {
             saijikiDatabase = await respSaijiki.json();
         }
@@ -1987,7 +1987,7 @@ function executeBatchImport() {
             season: detectedSeason,
             detailSeason: detectedDetail,
             status: '完成句',
-            sakkuDate: getTodayDateString(),
+            sakkuDate: '', // 一括取り込み時は日付不詳（空欄）とする
             createdAt: Date.now() - (lines.length - idx)
         };
 
@@ -2022,7 +2022,7 @@ function closeCloudGuideModal() {
 // ☁️ クラウド自動同期（Googleスプレッドシート等への二重保存 ＆ 双方向受信）
 function saveCloudSyncSettings() {
     const urlInput = document.getElementById('settingCloudSyncUrl');
-    const url = urlInput ? urlInput.value.trim() : '';
+    let url = urlInput ? urlInput.value.trim() : '';
     userSettings.cloudSyncUrl = url;
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
     updateCloudStatusBadge();
@@ -2042,21 +2042,42 @@ function updateCloudStatusBadge() {
 
 function syncHaikuToCloud(haikuObj) {
     if (!userSettings.cloudSyncUrl || !userSettings.cloudSyncUrl.startsWith('http')) return;
-    try {
-        fetch(userSettings.cloudSyncUrl, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(haikuObj)
-        }).catch(e => console.warn('Cloud sync background error:', e));
-    } catch (e) {}
+    // Web App URLの場合のみPOST送信
+    if (userSettings.cloudSyncUrl.includes('script.google.com')) {
+        try {
+            fetch(userSettings.cloudSyncUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(haikuObj)
+            }).catch(e => console.warn('Cloud sync background error:', e));
+        } catch (e) {}
+    }
 }
 
 // 📥 クラウド（スプレッドシート）から最新データを双方向受信・マージ
 async function fetchHaikusFromCloud() {
-    if (!userSettings.cloudSyncUrl || !userSettings.cloudSyncUrl.startsWith('http')) return;
+    let rawUrl = userSettings.cloudSyncUrl;
+    if (!rawUrl || !rawUrl.startsWith('http')) return;
+
     try {
-        const resp = await fetch(userSettings.cloudSyncUrl, { method: 'GET' });
+        // 通常のGoogleスプレッドシートURL（docs.google.com/spreadsheets/d/...）の場合
+        if (rawUrl.includes('docs.google.com/spreadsheets/d/')) {
+            const match = rawUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+            if (match && match[1]) {
+                const sheetId = match[1];
+                const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+                const resp = await fetch(csvUrl);
+                if (resp.ok) {
+                    const csvText = await resp.text();
+                    parseAndMergeCsvHaikus(csvText);
+                }
+            }
+            return;
+        }
+
+        // Web App URL（JSON返却形式）の場合
+        const resp = await fetch(rawUrl, { method: 'GET' });
         if (resp.ok) {
             const cloudHaikus = await resp.json();
             if (Array.isArray(cloudHaikus) && cloudHaikus.length > 0) {
@@ -2077,8 +2098,55 @@ async function fetchHaikusFromCloud() {
             }
         }
     } catch (e) {
-        // オフラインまたはCORS制限時は手元データで静かに動作
         console.warn('Cloud fetch silent fallback:', e);
+    }
+}
+
+// 📄 CSV文字列から俳句を抽出してローカル句帳にマージするヘルパー
+function parseAndMergeCsvHaikus(csvText) {
+    if (!csvText) return;
+    const lines = csvText.split(/\r?\n/);
+    let mergedCount = 0;
+    const defaultAuthor = userSettings.authorName || '風月';
+
+    lines.forEach((line, idx) => {
+        if (!line.trim()) return;
+        // 簡易CSVパース（カンマ区切り）
+        const cols = line.split(',').map(c => c.replace(/^["']|["']$/g, '').trim());
+        const phrase = cols[0];
+        if (!phrase || phrase === '俳句' || phrase === 'phrase') return; // 見出しスキップ
+
+        if (!haikuHistory.some(h => h.phrase === phrase)) {
+            const kigo = cols[1] || '無季';
+            const season = cols[2] || 'muki';
+            const author = cols[3] || defaultAuthor;
+            const status = cols[4] || '完成句';
+            const sakkuDate = cols[5] || '';
+
+            haikuHistory.push({
+                id: 'h-sheet-' + Date.now() + '-' + idx,
+                phrase: phrase,
+                author: author,
+                authorKana: '',
+                kigo: kigo,
+                parentKigo: kigo,
+                parentKana: '',
+                season: season,
+                detailSeason: '',
+                status: status,
+                sakkuDate: sakkuDate,
+                createdAt: Date.now()
+            });
+            mergedCount++;
+        }
+    });
+
+    if (mergedCount > 0) {
+        saveLocalHaikus();
+        if (document.getElementById('readScreen').classList.contains('active')) {
+            renderYomuList();
+        }
+        showToast(`☁️ スプレッドシートから ${mergedCount}句 を同期しました！`);
     }
 }
 

@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.52">
+    <link rel="stylesheet" href="style.css?v=2.0.53">
 </head>
 <body>
 
@@ -348,10 +348,10 @@
 
             <div class="settings-divider"></div>
 
-            <!-- 二、 データのバックアップ・復元 ＆ クラウド同期 -->
+            <!-- 二、 データの保存・移行 ＆ 同期 -->
             <div class="menu-pillar-section">
                 <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection2')">
-                    <span class="pillar-section-title">二、 バックアップ・クラウド同期</span>
+                    <span class="pillar-section-title">二、 データ移行・クラウド同期</span>
                     <span id="settingArrow2" class="pillar-accordion-arrow">▿</span>
                 </div>
                 <div id="settingSection2" class="pillar-accordion-body hidden">
@@ -360,16 +360,16 @@
                         <button class="btn btn-outline settings-action-btn" onclick="triggerImportFileInput()">データ復元</button>
                         <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="importHaikuData(event)">
                     </div>
-                    <div class="settings-sub-note">※端末内にJSON形式で保存 / 復元</div>
 
                     <div style="margin-top: 10px; width: 100%; display: flex; justify-content: center;">
                         <button class="btn btn-outline batch-import-open-btn" onclick="openBatchImportModal()">
                             <span>📝 テキストから一括取り込み</span>
                         </button>
                     </div>
-                    <div class="settings-sub-note">※メモ帳やExcelの句をまとめて登録</div>
 
-                    <div class="settings-form" style="margin-top: 12px; width: 100%;">
+                    <div class="settings-divider" style="margin: 12px 0 8px;"></div>
+
+                    <div class="settings-form" style="width: 100%;">
                         <div class="form-group" style="margin-bottom: 4px;">
                             <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
                                 <span>スプレッドシート自動同期</span>
@@ -378,9 +378,9 @@
                                     <span id="cloudSyncStatusBadge" class="cloud-status-badge">未設定</span>
                                 </span>
                             </label>
-                            <input type="url" id="settingCloudSyncUrl" class="text-input sync-url-input" placeholder="Web App URLを貼り付け">
+                            <input type="url" id="settingCloudSyncUrl" class="text-input sync-url-input" placeholder="スプレッドシートのURLを貼り付け">
                         </div>
-                        <div class="settings-sub-note" style="margin-top: 2px;">※URLを設定すると全端末で自動双方向同期</div>
+                        <div class="settings-sub-note" style="margin-top: 2px;">※シートURLを貼るだけで全端末で自動同期</div>
                         <button class="btn btn-outline cloud-save-btn" onclick="saveCloudSyncSettings()">同期URLを保存</button>
                     </div>
                 </div>
@@ -440,7 +440,7 @@
                 </div>
             </div>
             
-            <div class="settings-footer-action-area" style="margin-top: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+            <div class="settings-footer-action-area" style="margin-top: 14px; display: flex; flex-direction: column; align-items: center; gap: 4px;">
                 <button type="button" class="safe-update-btn" onclick="checkForAppUpdate()">最新版を確認・更新</button>
                 <div class="app-version-note">おみ句じ句帳 - 風月 v2.0</div>
             </div>
@@ -516,16 +516,8 @@
             </div>
 
             <div class="cloud-guide-step-box" style="margin-top: 10px;">
-                <div class="guide-step-title">2. ひな形スプレッドシート</div>
-                <p class="guide-step-desc">以下のボタンから、正しい列が揃ったテンプレートシートを自分のGoogleドライブに複製できます。</p>
-                <a href="https://docs.google.com/spreadsheets/d/1EOmZn53hFA8GpVdcn--aU-lj9uHjGQpnSZ1o9jbnsYs/copy" target="_blank" rel="noopener noreferrer" class="btn btn-outline guide-template-btn">
-                    📁 ひな形シートを自分のGoogleにコピー
-                </a>
-            </div>
-
-            <div class="cloud-guide-step-box" style="margin-top: 10px;">
-                <div class="guide-step-title">3. Web App URLの取得</div>
-                <p class="guide-step-desc">シートの「拡張機能」➔「Apps Script」でデプロイしたWeb App URLをコピーして設定欄に貼り付けてください。</p>
+                <div class="guide-step-title">2. 通常のシート共有URLを貼るだけ！</div>
+                <p class="guide-step-desc">スプレッドシートの「共有」で「リンクを知っている全員が閲覧可」にし、シートのURLを設定欄に貼り付けるだけで自動同期されます。</p>
             </div>
 
             <button class="btn" style="width: 100%; margin-top: 12px; padding: 8px 0; font-size: 0.85rem;" onclick="closeCloudGuideModal()">閉じる</button>
@@ -734,6 +726,6 @@
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.52"></script>
+    <script src="app.js?v=2.0.53"></script>
 </body>
 </html>
