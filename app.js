@@ -556,18 +556,57 @@ function openAuthorSelectModal() {
     fixedGroup.className = 'author-select-fixed-group';
 
     // 1. 自分の句帳（登録者）
+    const myCount = authorCounts[myName] || 0;
+    const myRow = document.createElement('div');
+    myRow.className = 'author-select-row';
+
     const myItem = document.createElement('div');
     myItem.className = `author-select-item ${isMyActive ? 'active' : ''}`;
+    myItem.style.flex = '1';
     myItem.onclick = () => selectAuthorFilter(null);
-    myItem.innerHTML = `<span>${escapeHtml(myName)} 句帳（自作）</span><span class="author-count-badge">${authorCounts[myName] || 0}句</span>`;
-    fixedGroup.appendChild(myItem);
+    myItem.innerHTML = `<span>${escapeHtml(myName)} 句帳（自作）</span><span class="author-count-badge">${myCount}句</span>`;
+
+    const myDelBtn = document.createElement('button');
+    myDelBtn.type = 'button';
+    myDelBtn.className = 'author-delete-btn';
+    myDelBtn.title = `「${myName}」の句をすべて削除`;
+    myDelBtn.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+    `;
+    myDelBtn.onclick = (e) => deleteAuthorHaikus(myName, myCount, e);
+
+    myRow.appendChild(myItem);
+    myRow.appendChild(myDelBtn);
+    fixedGroup.appendChild(myRow);
 
     // 2. すべての作品（全句帳）
+    const allRow = document.createElement('div');
+    allRow.className = 'author-select-row';
+
     const allItem = document.createElement('div');
     allItem.className = `author-select-item ${isAllActive ? 'active' : ''}`;
+    allItem.style.flex = '1';
     allItem.onclick = () => selectAuthorFilter('ALL');
     allItem.innerHTML = `<span>全句帳（すべての作者）</span><span class="author-count-badge">${totalCount}句</span>`;
-    fixedGroup.appendChild(allItem);
+
+    const allDelBtn = document.createElement('button');
+    allDelBtn.type = 'button';
+    allDelBtn.className = 'author-delete-btn';
+    allDelBtn.title = 'すべての句をごみ箱に移動';
+    allDelBtn.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+    `;
+    allDelBtn.onclick = (e) => deleteAllHaikus(totalCount, e);
+
+    allRow.appendChild(allItem);
+    allRow.appendChild(allDelBtn);
+    fixedGroup.appendChild(allRow);
 
     listEl.appendChild(fixedGroup);
 
@@ -658,6 +697,39 @@ function deleteAuthorHaikus(author, count, event) {
     }
 
     showToast(`作者「${author}」の ${count}句 をごみ箱に移動しました`);
+}
+
+function deleteAllHaikus(count, event) {
+    if (event) event.stopPropagation();
+    if (!count || count === 0) {
+        alert('削除できる句がありません。');
+        return;
+    }
+
+    const ok = confirm(`句帳内の全 ${count}句 をすべてごみ箱に移動しますか？\n\n※30日以内であれば設定メニューの「ごみ箱」からいつでも復元できます。`);
+    if (!ok) return;
+
+    // 全句をごみ箱に移動
+    haikuHistory.forEach(h => {
+        trashHistory.unshift({
+            ...h,
+            deletedAt: Date.now()
+        });
+        syncHaikuToCloud(h, 'delete', h.phrase);
+    });
+
+    haikuHistory = [];
+    saveLocalHaikus();
+    saveTrashList();
+
+    currentAuthorFilter = null;
+    updateHeaderTitle();
+    openAuthorSelectModal();
+    if (document.getElementById('readScreen').classList.contains('active')) {
+        renderYomuList();
+    }
+
+    showToast(`全 ${count}句 をごみ箱に移動しました`);
 }
 
 function closeAuthorSelectModal() {
