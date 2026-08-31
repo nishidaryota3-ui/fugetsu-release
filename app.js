@@ -2572,11 +2572,11 @@ function syncHaikuToCloud(haikuObj, action = 'save', oldPhrase = '') {
                 params.append('sakkuDate', haikuObj.sakkuDate || '');
             }
 
-            fetch(userSettings.cloudSyncUrl, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: params.toString()
+            // GETリクエストで送信（ブラウザのPOST/CORS遮断・リダイレクト消失を完全回避）
+            const syncUrl = `${userSettings.cloudSyncUrl}?${params.toString()}`;
+            fetch(syncUrl, {
+                method: 'GET',
+                mode: 'no-cors'
             }).catch(e => console.warn('Cloud sync background error:', e));
         } catch (e) {
             console.warn('Cloud sync error:', e);

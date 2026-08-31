@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <title>風月 - おみ句じ句帳</title>
+    <title>句帳風月</title>
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="風月">
-    <meta name="application-name" content="風月">
+    <meta name="apple-mobile-web-app-title" content="句帳風月">
+    <meta name="application-name" content="句帳風月">
     <meta name="theme-color" content="#faf9f6">
     
     <link rel="icon" type="image/png" sizes="192x192" href="icon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.97">
+    <link rel="stylesheet" href="style.css?v=2.0.98">
 </head>
 <body>
 
@@ -572,30 +572,33 @@
                     <span style="font-size: 0.76rem; font-weight: 600; color: #555;">GASスクリプトコード</span>
                     <button type="button" class="btn btn-outline" style="padding: 2px 8px; font-size: 0.70rem;" onclick="copyGasCode()">コードをコピー</button>
                 </div>
-                <textarea id="gasScriptCodeBlock" readonly class="gas-code-textarea" style="width: 100%; height: 95px; font-family: monospace; font-size: 0.70rem; padding: 6px; border: 1px solid #ddd; border-radius: 4px; background: #f8f8f8; resize: none;">function doPost(e) {
+                <textarea id="gasScriptCodeBlock" readonly class="gas-code-textarea" style="width: 100%; height: 95px; font-family: monospace; font-size: 0.70rem; padding: 6px; border: 1px solid #ddd; border-radius: 4px; background: #f8f8f8; resize: none;">function doGet(e) {
+  if (e && e.parameter && e.parameter.action) return handleRequest(e);
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName('俳句集成') || ss.getSheets()[0];
-  var p = e.parameter;
-  var action = p.action || 'save';
-  var oldPhrase = p.oldPhrase || '';
-  var targetRow = 0;
+  return ContentService.createTextOutput(JSON.stringify({rows: sheet.getDataRange().getValues()})).setMimeType(ContentService.MimeType.JSON);
+}
+function doPost(e) { return handleRequest(e); }
+function handleRequest(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName('俳句集成') || ss.getSheets()[0];
+  var p = e.parameter, action = p.action || 'save', oldPhrase = p.oldPhrase || '', targetRow = 0;
   if (oldPhrase !== '') {
     var cell = sheet.getRange("A:A").createTextFinder(oldPhrase).matchEntireCell(true).findNext();
     if (cell) targetRow = cell.getRow();
   }
-  if (action === 'delete' && targetRow > 1) {
-    sheet.deleteRow(targetRow);
+  if (action === 'delete') {
+    if (targetRow > 1) sheet.deleteRow(targetRow);
     return ContentService.createTextOutput(JSON.stringify({status:'deleted'})).setMimeType(ContentService.MimeType.JSON);
   }
-  var rowData = [p.phrase||'', p.author||'', p.authorKana||'', p.kigo||'', p.parentKigo||'', p.parentKana||'', p.season||'', p.detailSeason||'', '', '', p.status||'完成句', p.sakkuDate||''];
+  if (action === 'changeStatus') {
+    if (targetRow > 1) sheet.getRange(targetRow, 11).setValue(p.status || '下書き');
+    return ContentService.createTextOutput(JSON.stringify({status:'status_changed'})).setMimeType(ContentService.MimeType.JSON);
+  }
+  var rowData = [p.phrase||'', p.author||'風月', p.authorKana||'ふうげつ', p.kigo||'', p.parentKigo||'', p.parentKana||'', p.season||'', p.detailSeason||'', '', '', p.status||'完成句', p.sakkuDate||''];
   if (targetRow > 1) sheet.getRange(targetRow, 1, 1, rowData.length).setValues([rowData]);
   else sheet.appendRow(rowData);
-  return ContentService.createTextOutput(JSON.stringify({status:'saved'})).setMimeType(ContentService.MimeType.JSON);
-}
-function doGet() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('俳句集成') || SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
-  var rows = sheet.getDataRange().getValues();
-  return ContentService.createTextOutput(JSON.stringify({rows: rows})).setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(JSON.stringify({status:'success'})).setMimeType(ContentService.MimeType.JSON);
 }</textarea>
             </div>
         </div>
@@ -803,6 +806,6 @@ function doGet() {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.97"></script>
+    <script src="app.js?v=2.0.98"></script>
 </body>
 </html>
