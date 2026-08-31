@@ -4,6 +4,11 @@
 
 const STORAGE_KEY_HAIKU = 'fugetsu_release_haikus';
 const STORAGE_KEY_SETTINGS = 'fugetsu_release_settings';
+const STORAGE_KEY_TRASH = 'fugetsu_release_trash';
+const STORAGE_KEY_SNAPSHOTS = 'fugetsu_release_snapshots';
+const STORAGE_KEY_LAST_BACKUP = 'fugetsu_last_backup_time';
+
+let trashList = [];
 
 // 代表的な歴代俳人マスター（入力補完用）
 const FAMOUS_AUTHORS_MASTER = [
@@ -61,7 +66,8 @@ let userSettings = {
     startupOmikuji: false,
     homeKiyose: false,
     fontSizeMode: 'normal', // 'normal' | 'large'
-    fontFamily: 'mincho'    // 'mincho' | 'gothic'
+    fontFamily: 'mincho',   // 'mincho' | 'gothic'
+    cloudSyncUrl: ''        // Googleスプレッドシート/クラウド同期URL
 };
 
 let currentHaikuData = {
@@ -156,7 +162,9 @@ window.onload = function() {
 
     loadUserSettings();
     loadLocalHaikus();
+    loadTrashList();
     loadInternalDatabases();
+    initPersistentStorage();
 
     initSwipeEvents();
     initKeyboardEvents();
@@ -174,6 +182,9 @@ window.onload = function() {
     } else if (userSettings.startupOmikuji) {
         triggerRandomOmikuji();
     }
+
+    // 定期バックアップ案内のチェック
+    setTimeout(checkBackupReminder, 1200);
 };
 
 function loadUserSettings() {
@@ -214,6 +225,13 @@ function applyUserSettingsToUI() {
     const gothicBtn = document.getElementById('fontGothicBtn');
     if (minchoBtn) minchoBtn.classList.toggle('active', !isGothic);
     if (gothicBtn) gothicBtn.classList.toggle('active', isGothic);
+
+    // クラウド同期URLの適用
+    const cloudInput = document.getElementById('settingCloudSyncUrl');
+    if (cloudInput && !cloudInput.value && userSettings.cloudSyncUrl) {
+        cloudInput.value = userSettings.cloudSyncUrl;
+    }
+    updateCloudStatusBadge();
 }
 
 function updateHeaderTitle() {
@@ -302,6 +320,24 @@ function loadLocalHaikus() {
 function saveLocalHaikus() {
     try {
         localStorage.setItem(STORAGE_KEY_HAIKU, JSON.stringify(haikuHistory));
+        saveSnapshotHistory();
+    } catch (e) {
+        console.error('Failed to save haikus:', e);
+    }
+}
+
+function saveSnapshotHistory() {
+    try {
+        let snapshots = [];
+        const saved = localStorage.getItem(STORAGE_KEY_SNAPSHOTS);
+        if (saved) snapshots = JSON.parse(saved);
+        snapshots.unshift({
+            timestamp: Date.now(),
+            count: haikuHistory.length,
+            haikus: haikuHistory
+        });
+        if (snapshots.length > 5) snapshots = snapshots.slice(0, 5);
+        localStorage.setItem(STORAGE_KEY_SNAPSHOTS, JSON.stringify(snapshots));
     } catch (e) {}
 }
 
@@ -317,7 +353,7 @@ async function loadInternalDatabases() {
     }
 
     try {
-        const respSaijiki = await fetch('data/saijiki.json?v=2.0.48');
+        const respSaijiki = await fetch('data/saijiki.json?v=2.0.49');
         if (respSaijiki.ok) {
             saijikiDatabase = await respSaijiki.json();
         }
@@ -1682,28 +1718,35 @@ function toggleSettingsAccordion(sectionId) {
     const isHidden = sectionEl.classList.contains('hidden');
     
     // すべてのセクションを一旦閉じる
-    ['settingSection1', 'settingSection2', 'settingSection3'].forEach((id, idx) => {
+    ['settingSection1', 'settingSection2', 'settingSectionTrash', 'settingSection3'].forEach((id) => {
         const el = document.getElementById(id);
-        const arrow = document.getElementById(`settingArrow${idx + 1}`);
         if (el) el.classList.add('hidden');
+    });
+    ['settingArrow1', 'settingArrow2', 'settingArrowTrash', 'settingArrow3'].forEach(aid => {
+        const arrow = document.getElementById(aid);
         if (arrow) arrow.textContent = '▿';
     });
 
     // クリックされたセクションが閉じていた場合は開く
     if (isHidden) {
         sectionEl.classList.remove('hidden');
-        const num = sectionId.replace('settingSection', '');
-        const arrow = document.getElementById(`settingArrow${num}`);
+        let arrowId = 'settingArrow1';
+        if (sectionId === 'settingSection2') arrowId = 'settingArrow2';
+        else if (sectionId === 'settingSectionTrash') arrowId = 'settingArrowTrash';
+        else if (sectionId === 'settingSection3') arrowId = 'settingArrow3';
+        const arrow = document.getElementById(arrowId);
         if (arrow) arrow.textContent = '▴';
     }
 }
 
 function openSettingsModal() {
     // すべてのアコーディオンを閉じた状態にする
-    ['settingSection1', 'settingSection2', 'settingSection3'].forEach((id, idx) => {
+    ['settingSection1', 'settingSection2', 'settingSectionTrash', 'settingSection3'].forEach((id) => {
         const el = document.getElementById(id);
-        const arrow = document.getElementById(`settingArrow${idx + 1}`);
         if (el) el.classList.add('hidden');
+    });
+    ['settingArrow1', 'settingArrow2', 'settingArrowTrash', 'settingArrow3'].forEach(aid => {
+        const arrow = document.getElementById(aid);
         if (arrow) arrow.textContent = '▿';
     });
 
@@ -1716,11 +1759,190 @@ function openSettingsModal() {
     const hideHomeKiyoseChk = document.getElementById('settingHideHomeKiyose');
     if (hideHomeKiyoseChk) hideHomeKiyoseChk.checked = !!userSettings.hideHomeKiyose;
 
+    const cloudInput = document.getElementById('settingCloudSyncUrl');
+    if (cloudInput) cloudInput.value = userSettings.cloudSyncUrl || '';
+    updateCloudStatusBadge();
+
+    renderTrashList();
     document.getElementById('settingsModal').classList.remove('hidden');
 }
 
 function closeSettingsModal() {
     document.getElementById('settingsModal').classList.add('hidden');
+}
+
+// 🛡️ OSによる勝手なキャッシュ・ストレージ削除をブロック
+function initPersistentStorage() {
+    if (navigator.storage && navigator.storage.persist) {
+        navigator.storage.persist().then(granted => {
+            if (granted) {
+                console.log('🛡️ Persistent storage granted by OS.');
+            }
+        }).catch(() => {});
+    }
+}
+
+// 🔄 ワンタップ安全更新（俳句データを1ミリも消さずにアプリだけ最新化）
+async function checkForAppUpdate() {
+    showToast('🔄 最新版を確認・更新しています...');
+    try {
+        if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (const reg of registrations) {
+                await reg.update();
+                if (reg.waiting) {
+                    reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                }
+            }
+            if (window.caches) {
+                const keys = await caches.keys();
+                for (const key of keys) {
+                    await caches.delete(key);
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('Update warning:', e);
+    }
+    setTimeout(() => {
+        window.location.reload(true);
+    }, 600);
+}
+
+// ♻️ ごみ箱管理（30日間保持 ＆ ワンタップ復元）
+function loadTrashList() {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY_TRASH);
+        if (saved) {
+            trashList = JSON.parse(saved);
+            const now = Date.now();
+            const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+            trashList = trashList.filter(item => (now - (item.deletedAt || 0)) < thirtyDays);
+            saveTrashList();
+        }
+    } catch (e) {}
+    renderTrashList();
+}
+
+function saveTrashList() {
+    try {
+        localStorage.setItem(STORAGE_KEY_TRASH, JSON.stringify(trashList));
+    } catch (e) {}
+}
+
+function restoreFromTrash(phraseToRestore) {
+    const idx = trashList.findIndex(item => item.phrase === phraseToRestore);
+    if (idx !== -1) {
+        const item = trashList.splice(idx, 1)[0];
+        item.status = item.originalStatus || '完成句';
+        delete item.deletedAt;
+        delete item.originalStatus;
+        haikuHistory.unshift(item);
+        saveLocalHaikus();
+        saveTrashList();
+        renderTrashList();
+        if (document.getElementById('readScreen').classList.contains('active')) renderYomuList();
+        showToast('句帳に復元しました！');
+    }
+}
+
+function renderTrashList() {
+    const container = document.getElementById('trashHaikuList');
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (trashList.length === 0) {
+        container.innerHTML = '<div class="trash-empty-msg">ごみ箱は空です</div>';
+        return;
+    }
+
+    trashList.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'trash-haiku-item';
+        
+        const textSpan = document.createElement('span');
+        textSpan.className = 'trash-haiku-text';
+        textSpan.textContent = item.phrase;
+        
+        const restoreBtn = document.createElement('button');
+        restoreBtn.className = 'trash-restore-btn';
+        restoreBtn.textContent = '元に戻す';
+        restoreBtn.onclick = () => restoreFromTrash(item.phrase);
+
+        row.appendChild(textSpan);
+        row.appendChild(restoreBtn);
+        container.appendChild(row);
+    });
+}
+
+// ☁️ クラウド自動同期（Googleスプレッドシート等への二重保存）
+function saveCloudSyncSettings() {
+    const urlInput = document.getElementById('settingCloudSyncUrl');
+    const url = urlInput ? urlInput.value.trim() : '';
+    userSettings.cloudSyncUrl = url;
+    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
+    updateCloudStatusBadge();
+    showToast(url ? '☁️ クラウド同期URLを保存しました' : 'クラウド同期を解除しました');
+}
+
+function updateCloudStatusBadge() {
+    const badge = document.getElementById('cloudSyncStatusBadge');
+    if (!badge) return;
+    const isSet = !!(userSettings.cloudSyncUrl && userSettings.cloudSyncUrl.startsWith('http'));
+    badge.textContent = isSet ? '同期中' : '未設定';
+    badge.classList.toggle('active', isSet);
+}
+
+function syncHaikuToCloud(haikuObj) {
+    if (!userSettings.cloudSyncUrl || !userSettings.cloudSyncUrl.startsWith('http')) return;
+    try {
+        fetch(userSettings.cloudSyncUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(haikuObj)
+        }).catch(e => console.warn('Cloud sync background error:', e));
+    } catch (e) {}
+}
+
+// 💡 定期バックアップ案内
+function checkBackupReminder() {
+    const kanseiCount = haikuHistory.filter(h => h.status === '完成句').length;
+    const lastBackup = parseInt(localStorage.getItem(STORAGE_KEY_LAST_BACKUP) || '0', 10);
+    const daysSinceLastBackup = (Date.now() - lastBackup) / (1000 * 60 * 60 * 24);
+
+    if ((kanseiCount >= 30 && daysSinceLastBackup >= 14) || daysSinceLastBackup >= 30) {
+        const modal = document.getElementById('backupReminderModal');
+        const msg = document.getElementById('backupReminderMsg');
+        if (modal && msg) {
+            msg.innerHTML = `大切な作品が <strong>${kanseiCount}句</strong> 蓄積されています。<br>万が一のスマホ故障や紛失に備えて、端末にバックアップを保存しますか？`;
+            modal.classList.remove('hidden');
+        }
+    }
+}
+
+function acceptBackupReminder() {
+    closeBackupReminderModal();
+    exportHaikuData();
+    localStorage.setItem(STORAGE_KEY_LAST_BACKUP, String(Date.now()));
+    showToast('バックアップを保存しました');
+}
+
+function closeBackupReminderModal() {
+    const modal = document.getElementById('backupReminderModal');
+    if (modal) modal.classList.add('hidden');
+    localStorage.setItem(STORAGE_KEY_LAST_BACKUP, String(Date.now() - (23 * 24 * 60 * 60 * 1000)));
+}
+
+// 🔔 トースト通知ヘルパー
+function showToast(msg) {
+    const toast = document.getElementById('appToast');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.classList.remove('hidden');
+    setTimeout(() => {
+        toast.classList.add('hidden');
+    }, 2800);
 }
 
 function onSettingCheckboxChanged() {
@@ -2189,11 +2411,22 @@ function changeHaikuStatus(targetStatus) {
 
 function deleteSelectedDraft() {
     if (!activeSelectedHaiku) return;
-    if (!confirm('本当に削除しますか？\n（句帳から完全に消去されます）')) return;
+    if (!confirm('この句をごみ箱に移動しますか？\n（30日以内であれば「設定」のごみ箱からいつでも復元できます）')) return;
     closeHaikuDetailModal();
 
-    haikuHistory = haikuHistory.filter(h => h.phrase !== activeSelectedHaiku.phrase);
-    saveLocalHaikus();
+    const targetIndex = haikuHistory.findIndex(h => h.phrase === activeSelectedHaiku.phrase);
+    if (targetIndex !== -1) {
+        const deletedItem = Object.assign({}, haikuHistory[targetIndex], {
+            deletedAt: Date.now(),
+            originalStatus: haikuHistory[targetIndex].status
+        });
+        trashList.unshift(deletedItem);
+        saveTrashList();
+        haikuHistory.splice(targetIndex, 1);
+        saveLocalHaikus();
+        renderTrashList();
+        showToast('句をごみ箱に移動しました（いつでも復元可能）');
+    }
     if (document.getElementById('readScreen').classList.contains('active')) renderYomuList();
 }
 
@@ -2497,6 +2730,7 @@ function submitHaiku(statusType) {
     }
     
     saveLocalHaikus();
+    syncHaikuToCloud(newHaiku);
     goToStep(4);
 }
 

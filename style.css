@@ -1340,3 +1340,109 @@ body.large-text-mode #previewPhrase.extra-long-phrase {
     letter-spacing: 0.02em !important;
 }
 
+/* ========================================================
+   🛡️ 鉄壁のデータ保護・バックアップ用スタイル
+   ======================================================== */
+.safe-update-btn {
+    width: 100%;
+    padding: 9px 0;
+    font-size: 0.85rem;
+    border-radius: 20px;
+    border: 1px solid #c8c2b5;
+    color: #4a453e;
+    background-color: #f7f4ee;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s, transform 0.1s;
+}
+.safe-update-btn:active {
+    transform: scale(0.98);
+    background-color: #ebe6dc;
+}
+
+.cloud-status-badge {
+    font-size: 0.7rem;
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-weight: 500;
+    background: #eee;
+    color: #777;
+}
+.cloud-status-badge.active {
+    background: #e1f5fe;
+    color: #0288d1;
+}
+
+/* ♻️ ごみ箱リスト */
+.trash-haiku-list {
+    max-height: 180px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+    padding-right: 4px;
+}
+.trash-haiku-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    background: #f7f4ee;
+    border-radius: 8px;
+    font-size: 0.86rem;
+    color: #333;
+}
+.trash-haiku-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: 8px;
+}
+.trash-restore-btn {
+    background: #2b2b2b;
+    color: #faf9f6;
+    border: none;
+    border-radius: 12px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+}
+.trash-restore-btn:active {
+    opacity: 0.8;
+}
+.trash-empty-msg {
+    font-size: 0.8rem;
+    color: #999;
+    text-align: center;
+    padding: 12px 0;
+}
+
+/* 🔔 共通トースト通知 */
+.app-toast {
+    position: fixed;
+    bottom: calc(30px + env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(43, 43, 43, 0.92);
+    color: #faf9f6;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 0.88rem;
+    letter-spacing: 0.05em;
+    z-index: 2000;
+    pointer-events: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    text-align: center;
+    white-space: nowrap;
+}
+.app-toast.hidden {
+    opacity: 0;
+    transform: translate(-50%, 15px);
+    display: none;
+}
+

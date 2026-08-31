@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.48">
+    <link rel="stylesheet" href="style.css?v=2.0.49">
 </head>
 <body>
 
@@ -348,10 +348,10 @@
 
             <div class="settings-divider"></div>
 
-            <!-- 二、 データのバックアップ・復元 -->
+            <!-- 二、 データのバックアップ・復元 ＆ クラウド同期 -->
             <div class="menu-pillar-section">
                 <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection2')">
-                    <span class="pillar-section-title">二、 バックアップ・復元</span>
+                    <span class="pillar-section-title">二、 バックアップ・クラウド同期</span>
                     <span id="settingArrow2" class="pillar-accordion-arrow">▿</span>
                 </div>
                 <div id="settingSection2" class="pillar-accordion-body hidden">
@@ -360,16 +360,44 @@
                         <button class="btn btn-outline settings-action-btn gothic-btn" onclick="triggerImportFileInput()">データ復元</button>
                         <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="importHaikuData(event)">
                     </div>
-                    <div class="settings-sub-note">※JSON形式で保存 / 復元</div>
+                    <div class="settings-sub-note">※端末内にJSON形式で保存 / 復元</div>
+
+                    <div class="settings-form" style="margin-top: 12px; width: 100%;">
+                        <div class="form-group" style="margin-bottom: 4px;">
+                            <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>☁️ スプレッドシート自動二重同期</span>
+                                <span id="cloudSyncStatusBadge" class="cloud-status-badge">未設定</span>
+                            </label>
+                            <input type="url" id="settingCloudSyncUrl" class="text-input" placeholder="GoogleスプレッドシートのWeb App URL" style="font-size: 0.78rem;">
+                        </div>
+                        <div class="settings-sub-note" style="margin-top: 2px;">※URLを設定すると作句時にクラウドへ自動二重バックアップ</div>
+                        <button class="btn pillar-action-btn gothic-btn" style="margin: 6px auto 0; padding: 6px 14px; font-size: 0.8rem;" onclick="saveCloudSyncSettings()">同期URLを保存</button>
+                    </div>
                 </div>
             </div>
 
             <div class="settings-divider"></div>
 
-            <!-- 三、 表示・各種設定 -->
+            <!-- 三、 ごみ箱（最近削除した句の復元） -->
+            <div class="menu-pillar-section">
+                <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSectionTrash')">
+                    <span class="pillar-section-title">三、 ごみ箱（削除した句の復元）</span>
+                    <span id="settingArrowTrash" class="pillar-accordion-arrow">▿</span>
+                </div>
+                <div id="settingSectionTrash" class="pillar-accordion-body hidden">
+                    <div id="trashHaikuList" class="trash-haiku-list">
+                        <!-- ごみ箱アイテムが動的に描画されます -->
+                    </div>
+                    <div class="settings-sub-note">※削除から30日以内であればワンタップで元に戻せます</div>
+                </div>
+            </div>
+
+            <div class="settings-divider"></div>
+
+            <!-- 四、 表示・各種設定 -->
             <div class="menu-pillar-section">
                 <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection3')">
-                    <span class="pillar-section-title">三、 表示・各種設定</span>
+                    <span class="pillar-section-title">四、 表示・各種設定</span>
                     <span id="settingArrow3" class="pillar-accordion-arrow">▿</span>
                 </div>
                 <div id="settingSection3" class="pillar-accordion-body hidden">
@@ -402,7 +430,12 @@
                 </div>
             </div>
             
-            <div class="app-version-note" style="margin-top: 2px;">おみ句じ句帳 - 風月 v2.0</div>
+            <div class="settings-footer-action-area" style="margin-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                <button type="button" class="btn btn-outline safe-update-btn" onclick="checkForAppUpdate()">
+                    <span>🔄 最新版に更新（俳句を保護）</span>
+                </button>
+                <div class="app-version-note">おみ句じ句帳 - 風月 v2.0</div>
+            </div>
         </div>
     </div>
 
@@ -420,10 +453,20 @@
                     <label class="form-label">よみがな</label>
                     <input type="text" id="welcomeAuthorKana" class="text-input" placeholder="例：ふうげつ" value="ふうげつ">
                 </div>
-                <button class="btn" style="margin-top: 15px;" onclick="completeWelcomeSetup()">句帳をはじめる</button>
+    <!-- 💡 定期バックアップ案内モーダル -->
+    <div id="backupReminderModal" class="card-overlay hidden">
+        <div class="modal-card-content" style="max-width: 320px; text-align: center;" onclick="event.stopPropagation()">
+            <h3 class="modal-title" style="font-size: 1.15rem; margin-bottom: 8px;">大切な作品のバックアップ</h3>
+            <p id="backupReminderMsg" class="settings-desc" style="margin-bottom: 18px; line-height: 1.6; font-size: 0.88rem;">大切な俳句が蓄積されています。<br>万が一のスマホ故障や紛失に備えて、端末にバックアップを保存しますか？</p>
+            <div class="btn-group" style="flex-direction: column; gap: 8px; width: 100%;">
+                <button class="btn" style="padding: 10px 0; font-size: 0.9rem;" onclick="acceptBackupReminder()">今すぐ端末に保存</button>
+                <button class="btn btn-outline" style="padding: 8px 0; font-size: 0.85rem; border: none; color: #888;" onclick="closeBackupReminderModal()">後で通知する</button>
             </div>
         </div>
     </div>
+
+    <!-- 🔔 共通トースト通知 -->
+    <div id="appToast" class="app-toast hidden"></div>
 
     <!-- 🖋️ ステップ1：句の入力 -->
     <div id="step1" class="step-screen">
@@ -624,6 +667,6 @@
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.48"></script>
+    <script src="app.js?v=2.0.49"></script>
 </body>
 </html>
