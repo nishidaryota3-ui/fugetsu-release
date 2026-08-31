@@ -2162,18 +2162,35 @@ function updateCloudStatusBadge() {
     badge.classList.toggle('active', isSet);
 }
 
-function syncHaikuToCloud(haikuObj) {
+function syncHaikuToCloud(haikuObj, action = 'save', oldPhrase = '') {
     if (!userSettings.cloudSyncUrl || !userSettings.cloudSyncUrl.startsWith('http')) return;
-    // Web App URLの場合のみPOST送信
     if (userSettings.cloudSyncUrl.includes('script.google.com')) {
         try {
+            const params = new URLSearchParams();
+            params.append('action', action);
+            params.append('oldPhrase', oldPhrase || (haikuObj ? haikuObj.phrase : ''));
+            if (haikuObj) {
+                params.append('phrase', haikuObj.phrase || '');
+                params.append('author', haikuObj.author || userSettings.authorName || '西田上酢');
+                params.append('authorKana', haikuObj.authorKana || userSettings.authorKana || '');
+                params.append('kigo', haikuObj.kigo || '');
+                params.append('parentKigo', haikuObj.parentKigo || '');
+                params.append('parentKana', haikuObj.parentKana || '');
+                params.append('season', haikuObj.season || '');
+                params.append('detailSeason', haikuObj.detailSeason || '');
+                params.append('status', haikuObj.status || '完成句');
+                params.append('sakkuDate', haikuObj.sakkuDate || '');
+            }
+
             fetch(userSettings.cloudSyncUrl, {
                 method: 'POST',
                 mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(haikuObj)
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: params.toString()
             }).catch(e => console.warn('Cloud sync background error:', e));
-        } catch (e) {}
+        } catch (e) {
+            console.warn('Cloud sync error:', e);
+        }
     }
 }
 
@@ -2866,6 +2883,7 @@ function changeHaikuStatus(targetStatus) {
     if (idx !== -1) {
         haikuHistory[idx].status = targetStatus;
         saveLocalHaikus();
+        syncHaikuToCloud(haikuHistory[idx], 'changeStatus');
     }
     if (document.getElementById('readScreen').classList.contains('active')) renderYomuList();
 }
@@ -2885,6 +2903,7 @@ function deleteSelectedDraft() {
         saveTrashList();
         haikuHistory.splice(targetIndex, 1);
         saveLocalHaikus();
+        syncHaikuToCloud(deletedItem, 'delete');
         renderTrashList();
         showToast('句をごみ箱に移動しました（いつでも復元可能）');
     }
@@ -3191,7 +3210,7 @@ function submitHaiku(statusType) {
     }
     
     saveLocalHaikus();
-    syncHaikuToCloud(newHaiku);
+    syncHaikuToCloud(newHaiku, 'save', currentHaikuData.oldPhrase);
     goToStep(4);
 }
 
