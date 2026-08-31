@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.96">
+    <link rel="stylesheet" href="style.css?v=2.0.97">
 </head>
 <body>
 
@@ -506,18 +506,23 @@
             <span class="modal-close-corner" onclick="closeExcelImportModal()">✕</span>
             <h3 class="modal-title" style="font-size: 0.90rem; text-align: center; margin-bottom: 8px; white-space: nowrap; letter-spacing: -0.01em;">エクセル／スプレッドシートのURLから取込み</h3>
             
-            <p class="settings-desc" style="font-size: 0.74rem; color: #666; margin-bottom: 6px; line-height: 1.4;">
-                ※「リンクを知っている全員が共有可」の共有URLを取得してください
+            <p class="settings-desc" style="font-size: 0.74rem; color: #666; margin-bottom: 8px; line-height: 1.4;">
+                ※「リンクを知っている全員が閲覧可」の共有URLを貼り付けてください。
             </p>
 
-            <div style="text-align: right; margin-bottom: 10px;">
-                <a href="https://docs.google.com/spreadsheets/d/1m0y8AOJNx1Ad4I44poPheQAQNki1-QQIwi9wSw8jaBg/edit?usp=sharing" target="_blank" rel="noopener" style="font-size: 0.74rem; color: #8c8476; text-decoration: underline;">見本シートを開く</a>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span style="font-size: 0.72rem; color: #888;">列：俳句, 作者, よみがな, 季語, 作句日</span>
+                <button type="button" class="btn btn-outline" style="padding: 3px 8px; font-size: 0.72rem;" onclick="downloadSampleCsv()">見本CSV保存</button>
             </div>
 
             <div style="display: flex; gap: 8px; align-items: center;">
                 <input type="url" id="excelImportUrlInput" class="text-input" style="flex: 2; font-size: 0.82rem; padding: 7px 10px;" placeholder="URLを貼付">
                 <button type="button" class="btn btn-outline" style="flex: 1; padding: 7px 0; font-size: 0.76rem; text-align: center;" onclick="executeExcelImport()">取込む</button>
             </div>
+
+            <p style="font-size: 0.70rem; color: #999; margin-top: 8px; line-height: 1.3;">
+                ※最小限「俳句」列のみでも取り込めます（季語や季節は自動補完）。
+            </p>
         </div>
     </div>
 
@@ -798,6 +803,6 @@ function doGet() {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.96"></script>
+    <script src="app.js?v=2.0.97"></script>
 </body>
 </html>

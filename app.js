@@ -2224,6 +2224,28 @@ function closeExcelImportModal() {
     if (modal) modal.classList.add('hidden');
 }
 
+function downloadSampleCsv() {
+    const csvHeader = '俳句,作者,作者よみがな,季語,作句日\r\n';
+    const sampleRows = [
+        '閑さや岩にしみ入る蝉の声,松尾芭蕉,まつおばしょう,蝉,1689',
+        '古池や蛙飛びこむ水の音,松尾芭蕉,まつおばしょう,蛙,1686',
+        '菜の花や月は東に日は西に,与謝蕪村,よさぶそん,菜の花,1774',
+        '春風や闘志いだきて丘に立つ,高浜虚子,たかはまきょし,春風,'
+    ].join('\r\n');
+
+    // UTF-8 BOM付き（Excel文字化け防止）
+    const blob = new Blob(['\uFEFF' + csvHeader + sampleRows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'fugetsu_sample.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('見本CSVを保存しました');
+}
+
 async function executeExcelImport() {
     const inputEl = document.getElementById('excelImportUrlInput');
     const rawUrl = inputEl ? inputEl.value.trim() : '';
