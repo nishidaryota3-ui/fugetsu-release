@@ -2044,9 +2044,6 @@ function closeCloudGuideModal() {
     if (modal) modal.classList.add('hidden');
 }
 
-// ☁️ クラウド自動同期（Googleスプレッドシート等への二重保存 ＆ 双方向受信）
-function saveCloudSyncSettings() {
-    const urlInput = document.getElementById('settingCloudSyncUrl');
 // 📊 スプレッドシートから句を一括取り込み（データ移行・引っ越し）
 async function executeSheetImport() {
     const urlInput = document.getElementById('settingCloudSyncUrl');
