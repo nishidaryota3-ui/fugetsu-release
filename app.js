@@ -356,7 +356,7 @@ async function loadInternalDatabases() {
     }
 
     try {
-        const respSaijiki = await fetch('data/saijiki.json?v=2.0.57');
+        const respSaijiki = await fetch('data/saijiki.json?v=2.0.58');
         if (respSaijiki.ok) {
             saijikiDatabase = await respSaijiki.json();
         }
@@ -2141,18 +2141,27 @@ async function connectSyncKey() {
 // 全句をクラウドに送信（合言葉部屋にアップロード）
 async function pushAllHaikusToCloud() {
     if (!userSettings.syncKey) return;
+    const keyClean = userSettings.syncKey.replace(/[^0-9a-zA-Z]/g, '');
+    const topic = `fugetsu-sync-${keyClean}`;
+    
+    const payload = {
+        updatedAt: Date.now(),
+        authorName: userSettings.authorName || '風月',
+        haikus: haikuHistory
+    };
+
     try {
-        // 無料の軽量KV/JSON中継サービスを利用
-        await fetch(`https://jsonblob.com/api/jsonBlob/${userSettings.syncKey.replace('-', '')}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                updatedAt: Date.now(),
-                authorName: userSettings.authorName,
-                haikus: haikuHistory
-            })
-        }).catch(() => {});
-    } catch (e) {}
+        await fetch(`https://ntfy.sh/${topic}`, {
+            method: 'POST',
+            headers: {
+                'X-Retain': '1',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+    } catch (e) {
+        console.warn('Sync push fallback:', e);
+    }
 }
 
 function syncHaikuToCloud(haikuObj) {
@@ -2163,15 +2172,32 @@ function syncHaikuToCloud(haikuObj) {
 // 📥 クラウド（合言葉部屋）から最新データを双方向受信・マージ
 async function fetchHaikusFromCloud() {
     if (!userSettings.syncKey) return;
+    const keyClean = userSettings.syncKey.replace(/[^0-9a-zA-Z]/g, '');
+    const topic = `fugetsu-sync-${keyClean}`;
 
     try {
-        const blobId = userSettings.syncKey.replace('-', '');
-        const resp = await fetch(`https://jsonblob.com/api/jsonBlob/${blobId}`);
+        const resp = await fetch(`https://ntfy.sh/${topic}/json?poll=1`);
         if (resp.ok) {
-            const data = await resp.json();
-            if (data && Array.isArray(data.haikus)) {
+            const text = await resp.text();
+            const lines = text.trim().split('\n');
+            let latestPayload = null;
+
+            for (const line of lines) {
+                if (!line.trim()) continue;
+                try {
+                    const item = JSON.parse(line);
+                    if (item.event === 'message' && item.message) {
+                        const parsed = JSON.parse(item.message);
+                        if (parsed && Array.isArray(parsed.haikus)) {
+                            latestPayload = parsed;
+                        }
+                    }
+                } catch (err) {}
+            }
+
+            if (latestPayload && Array.isArray(latestPayload.haikus)) {
                 let mergedCount = 0;
-                data.haikus.forEach(cloudHaiku => {
+                latestPayload.haikus.forEach(cloudHaiku => {
                     if (cloudHaiku.phrase && !haikuHistory.some(h => h.phrase === cloudHaiku.phrase)) {
                         haikuHistory.push(cloudHaiku);
                         mergedCount++;
@@ -2187,10 +2213,13 @@ async function fetchHaikusFromCloud() {
                 } else {
                     showToast('☁️ クラウドと同期完了（最新の状態です）');
                 }
+                updateSyncStatusUI();
+            } else {
+                showToast('☁️ クラウドにまだデータがありません');
             }
         }
     } catch (e) {
-        console.warn('Cloud fetch fallback:', e);
+        console.warn('Sync fetch fallback:', e);
     }
 }
 
