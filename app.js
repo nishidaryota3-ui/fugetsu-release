@@ -60,7 +60,8 @@ let userSettings = {
     initialized: false,
     startupOmikuji: false,
     homeKiyose: false,
-    fontSizeMode: 'normal' // 'normal' | 'large'
+    fontSizeMode: 'normal', // 'normal' | 'large'
+    fontFamily: 'mincho'    // 'mincho' | 'gothic'
 };
 
 let currentHaikuData = {
@@ -203,6 +204,16 @@ function applyUserSettingsToUI() {
     const largeBtn = document.getElementById('fontSizeLargeBtn');
     if (normalBtn) normalBtn.classList.toggle('active', !isLarge);
     if (largeBtn) largeBtn.classList.toggle('active', isLarge);
+
+    // フォント形式モードの適用（明朝 / ゴシック）
+    const isGothic = userSettings.fontFamily === 'gothic';
+    document.body.classList.toggle('font-gothic-mode', isGothic);
+    document.body.classList.toggle('font-mincho-mode', !isGothic);
+
+    const minchoBtn = document.getElementById('fontMinchoBtn');
+    const gothicBtn = document.getElementById('fontGothicBtn');
+    if (minchoBtn) minchoBtn.classList.toggle('active', !isGothic);
+    if (gothicBtn) gothicBtn.classList.toggle('active', isGothic);
 }
 
 function updateHeaderTitle() {
@@ -1725,6 +1736,12 @@ function onSettingCheckboxChanged() {
 
 function setFontSizeMode(mode) {
     userSettings.fontSizeMode = mode;
+    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
+    applyUserSettingsToUI();
+}
+
+function setFontFamilyMode(mode) {
+    userSettings.fontFamily = mode;
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
     applyUserSettingsToUI();
 }

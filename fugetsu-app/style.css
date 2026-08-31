@@ -10,12 +10,29 @@
         margin: 0;
     }
 }
+:root {
+    --app-font-mincho: "游明朝", "Yu Mincho", "ヒラギノ明朝 ProN", "Hiragino Mincho ProN", "Shippori Mincho", "MS P明朝", serif;
+    --app-font-gothic: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
+    --app-current-font: var(--app-font-mincho);
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 body, html {
     background-color: #faf9f6; color: #2b2b2b;
-    font-family: "游明朝", "Yu Mincho", "ヒラギノ明朝 ProN", "Hiragino Mincho ProN", "Shippori Mincho", "MS P明朝", serif;
+    font-family: var(--app-current-font);
     overflow: hidden; height: 100%; width: 100%;
     user-select: none; -webkit-user-select: none;
+}
+
+/* 🖋️ フォント一括統一ルール（明朝 / ゴシック） */
+body.font-mincho-mode,
+body.font-mincho-mode * {
+    font-family: var(--app-font-mincho) !important;
+}
+
+body.font-gothic-mode,
+body.font-gothic-mode * {
+    font-family: var(--app-font-gothic) !important;
 }
 .step-screen {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -393,8 +410,8 @@ body, html {
 
 .phrase { 
     writing-mode: vertical-rl; -webkit-writing-mode: vertical-rl; 
-    font-size: min(2.8vh, 26px); 
-    line-height: 1.2; letter-spacing: 0.15em; font-weight: 500; 
+    font-size: min(3.1vh, 28px); 
+    line-height: 1.25; letter-spacing: 0.15em; font-weight: 500; 
     white-space: nowrap; text-align: center; display: block; 
     overflow: visible; 
 }
@@ -1165,7 +1182,7 @@ body.large-text-mode .text-action-btn {
 body.large-text-mode #omikujiPhrase,
 body.large-text-mode #blindPhrase,
 body.large-text-mode .phrase {
-    font-size: min(3.3vh, 29px) !important;
+    font-size: min(3.6vh, 32px) !important;
     line-height: 1.35 !important;
     letter-spacing: 0.14em !important;
 }
@@ -1272,13 +1289,13 @@ body.large-text-mode .kigo-card-child-pill {
 .saijiki-phrase.long-phrase,
 .phrase.long-phrase,
 .modal-phrase-single-line.long-phrase {
-    font-size: min(2.2vh, 19px) !important;
+    font-size: min(2.4vh, 21px) !important;
     letter-spacing: 0.08em !important;
 }
 .saijiki-phrase.extra-long-phrase,
 .phrase.extra-long-phrase,
 .modal-phrase-single-line.extra-long-phrase {
-    font-size: min(1.8vh, 15px) !important;
+    font-size: min(2.0vh, 17px) !important;
     letter-spacing: 0.03em !important;
 }
 
@@ -1286,13 +1303,13 @@ body.large-text-mode .kigo-card-child-pill {
 body.large-text-mode .saijiki-phrase.long-phrase,
 body.large-text-mode .phrase.long-phrase,
 body.large-text-mode #modalPhrase.long-phrase {
-    font-size: min(2.5vh, 22px) !important;
+    font-size: min(2.7vh, 24px) !important;
     letter-spacing: 0.08em !important;
 }
 body.large-text-mode .saijiki-phrase.extra-long-phrase,
 body.large-text-mode .phrase.extra-long-phrase,
 body.large-text-mode #modalPhrase.extra-long-phrase {
-    font-size: min(2.0vh, 17px) !important;
+    font-size: min(2.2vh, 19px) !important;
     letter-spacing: 0.03em !important;
 }
 
