@@ -2103,9 +2103,10 @@ function closeCloudGuideModal() {
     if (modal) modal.classList.add('hidden');
 }
 
-// 🔑 暗号キー接続（手軽・リアルタイム中継）
+// 🔑 暗号キー接続（手軽・リアルタイム完全同期）
 let syncEventSource = null;
 const myClientId = 'cli_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+let isSyncingStream = false;
 
 function initSyncKeyListener() {
     if (!userSettings.syncKey) return;
@@ -2131,6 +2132,9 @@ function initSyncKeyListener() {
         syncEventSource.onerror = () => {
             // 自動再接続待機
         };
+
+        // 起動・接続時に相手端末へ「過去データ全同期リクエスト」を発行
+        setTimeout(requestFullSyncFromPeers, 1000);
     } catch (e) {
         console.warn('SyncKey listener start error:', e);
     }
@@ -2152,9 +2156,21 @@ function broadcastSyncKeyPayload(payload) {
     } catch (e) {}
 }
 
-function handleIncomingSyncPayload(payload) {
+// 🔄 相手端末へ「お互いの全句を同期しよう」と要求
+function requestFullSyncFromPeers() {
+    if (!userSettings.syncKey) return;
+    const myPhrases = haikuHistory.map(h => h.phrase);
+    broadcastSyncKeyPayload({
+        type: 'REQUEST_FULL_SYNC',
+        knownPhrases: myPhrases
+    });
+}
+
+// 📥 相手から届いた同期メッセージの処理
+async function handleIncomingSyncPayload(payload) {
     if (!payload || payload.senderClientId === myClientId) return; // 自分が送ったものは無視
 
+    // ① 新規作句のリアルタイム同期
     if (payload.type === 'NEW_HAIKU' && payload.haiku) {
         const item = payload.haiku;
         if (item.phrase && !haikuHistory.some(h => h.phrase === item.phrase)) {
@@ -2165,8 +2181,69 @@ function handleIncomingSyncPayload(payload) {
             }
             showToast(`✨ 他の端末から【${item.phrase}】が届きました！`);
         }
-    } else if (payload.type === 'HELLO') {
+    }
+    // ② 接続時の全句同期リクエストを受信 ➔ 相手が持っていない過去句をストリーム送信
+    else if (payload.type === 'REQUEST_FULL_SYNC') {
+        const peerPhrases = new Set(payload.knownPhrases || []);
+        const toSend = haikuHistory.filter(h => !peerPhrases.has(h.phrase));
+        
+        if (toSend.length > 0) {
+            showToast(`🔄 相手の端末へ ${toSend.length}句 を同期送信中...`);
+            for (let i = 0; i < toSend.length; i++) {
+                broadcastSyncKeyPayload({
+                    type: 'STREAM_HAIKU_ITEM',
+                    haiku: toSend[i],
+                    index: i + 1,
+                    total: toSend.length
+                });
+                await new Promise(r => setTimeout(r, 40)); // 制限回避の安全なウェイト
+            }
+            broadcastSyncKeyPayload({ type: 'STREAM_HAIKU_DONE', count: toSend.length });
+        }
+
+        // 相手の句で自分が持っていないものがあれば、こちらも要求する
+        const myPhrasesSet = new Set(haikuHistory.map(h => h.phrase));
+        const needed = (payload.knownPhrases || []).filter(p => !myPhrasesSet.has(p));
+        if (needed.length > 0) {
+            broadcastSyncKeyPayload({
+                type: 'REQUEST_SPECIFIC_ITEMS',
+                phrases: needed
+            });
+        }
+    }
+    // ③ 相手から過去句が1句ずつストリーム受信
+    else if (payload.type === 'STREAM_HAIKU_ITEM' && payload.haiku) {
+        const item = payload.haiku;
+        if (item.phrase && !haikuHistory.some(h => h.phrase === item.phrase)) {
+            haikuHistory.push(item);
+            saveLocalHaikus();
+            if (document.getElementById('readScreen').classList.contains('active')) {
+                renderYomuList();
+            }
+        }
+    }
+    // ④ ストリーム受信完了
+    else if (payload.type === 'STREAM_HAIKU_DONE') {
+        showToast(`✨ 全同期完了！ ${payload.count}句 が反映され完全一致しました`);
+    }
+    // ⑤ 特定句の要求を受信
+    else if (payload.type === 'REQUEST_SPECIFIC_ITEMS' && Array.isArray(payload.phrases)) {
+        const neededSet = new Set(payload.phrases);
+        const toSend = haikuHistory.filter(h => neededSet.has(h.phrase));
+        for (let i = 0; i < toSend.length; i++) {
+            broadcastSyncKeyPayload({
+                type: 'STREAM_HAIKU_ITEM',
+                haiku: toSend[i],
+                index: i + 1,
+                total: toSend.length
+            });
+            await new Promise(r => setTimeout(r, 40));
+        }
+    }
+    // ⑥ 接続通知
+    else if (payload.type === 'HELLO') {
         showToast('🔗 他の端末と接続しました！');
+        requestFullSyncFromPeers();
     }
 }
 
@@ -2211,7 +2288,17 @@ function connectSyncKey() {
     updateSyncStatusUI();
     initSyncKeyListener();
     broadcastSyncKeyPayload({ type: 'HELLO' });
-    alert(`合言葉【${key}】で接続を開始しました！\n別の端末で句を詠むと自動で届きます。`);
+    alert(`合言葉【${key}】で接続しました！\n相手端末の過去の句を含めて全自動で同期・一致させます。`);
+}
+
+// 手動でいつでも全同期を再実行できる関数
+function triggerManualFullSync() {
+    if (!userSettings.syncKey) {
+        alert('合言葉で接続されていません');
+        return;
+    }
+    showToast('🔄 相手端末へ全句の再同期を要求中...');
+    requestFullSyncFromPeers();
 }
 
 // ☁️ クラウド自動同期（Googleスプレッドシート等への二重保存 ＆ 双方向受信）
