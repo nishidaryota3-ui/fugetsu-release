@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.84">
+    <link rel="stylesheet" href="style.css?v=2.0.85">
 </head>
 <body>
 
@@ -514,9 +514,9 @@
 木をつみて夜の明やすき小窓かな
 
 ※「句 作者名」や「作者：子規」の指定も可能"></textarea>
-            <div style="display: flex; gap: 8px; margin-top: 10px;">
-                <button class="btn btn-outline" style="flex: 1; padding: 7px 0; font-size: 0.76rem; text-align: center;" onclick="closeBatchImportModal()">閉じる</button>
-                <button class="btn btn-outline" style="flex: 1; padding: 7px 0; font-size: 0.76rem; text-align: center; background: #4a4439; color: #fff; border-color: #4a4439;" onclick="executeBatchImport()">一括登録する</button>
+            <div style="display: flex; gap: 10px; margin-top: 12px; justify-content: center;">
+                <button class="btn btn-outline" style="min-width: 90px; padding: 8px 16px; font-size: 0.82rem; text-align: center;" onclick="closeBatchImportModal()">閉じる</button>
+                <button class="btn btn-outline" style="min-width: 100px; padding: 8px 18px; font-size: 0.82rem; text-align: center; background: #4a4439; color: #fff; border-color: #4a4439;" onclick="executeBatchImport()">一括登録</button>
             </div>
         </div>
     </div>
@@ -819,6 +819,6 @@ function doGet() {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.84"></script>
+    <script src="app.js?v=2.0.85"></script>
 </body>
 </html>

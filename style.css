@@ -1333,9 +1333,10 @@ body.large-text-mode .step-title {
 body.large-text-mode .form-label {
     font-size: 0.96rem !important;
 }
-body.large-text-mode .text-input {
-    font-size: 1.05rem !important;
-    padding: 10px 12px !important;
+body.large-text-mode .modal-card-content .text-input,
+body.large-text-mode .modal-card-content textarea {
+    font-size: 0.84rem !important;
+    padding: 7px 8px !important;
 }
 body.large-text-mode .btn {
     font-size: 1.0rem !important;
@@ -1348,8 +1349,9 @@ body.large-text-mode .font-size-btn {
     white-space: nowrap !important;
 }
 body.large-text-mode .modal-card-content .btn {
-    font-size: 0.84rem !important;
-    padding: 7px 10px !important;
+    font-size: 0.82rem !important;
+    padding: 8px 14px !important;
+    white-space: nowrap !important;
 }
 body.large-text-mode .safe-update-btn {
     font-size: 0.82rem !important;
