@@ -2042,7 +2042,11 @@ function renderTrashList() {
 function openBatchImportModal() {
     const modal = document.getElementById('batchImportModal');
     const textarea = document.getElementById('batchImportTextarea');
+    const authorInput = document.getElementById('batchAuthorName');
+    const kanaInput = document.getElementById('batchAuthorKana');
     if (textarea) textarea.value = '';
+    if (authorInput) authorInput.value = '';
+    if (kanaInput) kanaInput.value = '';
     if (modal) modal.classList.remove('hidden');
 }
 
@@ -2059,25 +2063,47 @@ function executeBatchImport() {
         return;
     }
 
+    const modalAuthorInput = document.getElementById('batchAuthorName');
+    const modalKanaInput = document.getElementById('batchAuthorKana');
+    const modalAuthor = (modalAuthorInput ? modalAuthorInput.value.trim() : '');
+    let modalKana = (modalKanaInput ? modalKanaInput.value.trim() : '');
+
+    // モーダル指定作者が著名俳人マスターにあれば読み仮名を自動補完
+    if (modalAuthor && !modalKana) {
+        const famous = FAMOUS_AUTHORS_MASTER.find(a => a.name === modalAuthor);
+        if (famous) modalKana = famous.kana;
+    }
+
+    let defaultAuthor = modalAuthor || userSettings.authorName || '風月';
+    let defaultKana = modalKana || (modalAuthor ? '' : (userSettings.authorKana || 'ふうげつ'));
+
+    let currentBatchAuthor = defaultAuthor;
+    let currentBatchKana = defaultKana;
+
     const lines = rawText.split(/\r?\n/);
     let importedCount = 0;
-    const defaultAuthor = userSettings.authorName || '風月';
-    const defaultKana = userSettings.authorKana || 'ふうげつ';
 
     lines.forEach((line, idx) => {
         const trimmed = line.trim();
         if (!trimmed) return;
 
-        let phrase = '';
-        let author = defaultAuthor;
-        let authorKana = defaultKana;
+        // 1. ブロック指定（例: 「作者：正岡子規」「作者: 松尾芭蕉」「【正岡子規】」）
+        const authorBlockMatch = trimmed.match(/^(?:作者|著者|俳人)[：:]\s*(.+)$/) || trimmed.match(/^【(.+)】$/);
+        if (authorBlockMatch) {
+            currentBatchAuthor = authorBlockMatch[1].trim();
+            const famous = FAMOUS_AUTHORS_MASTER.find(a => a.name === currentBatchAuthor);
+            currentBatchKana = famous ? famous.kana : '';
+            return;
+        }
 
-        // タブまたは全角/半角スペースで分割して作者名を判定
+        let phrase = '';
+        let author = currentBatchAuthor;
+        let authorKana = currentBatchKana;
+
+        // 2. 行内個別指定の判定（例: 「夕立やはちすを笠にかぶり行く 正岡子規」）
         const tokens = trimmed.split(/[\t\s]+/);
         if (tokens.length >= 2) {
-            // 最後のトークンが作者名の可能性が高い
             const candidateAuthor = tokens[tokens.length - 1];
-            // 歴史的俳人マスターと照合、または2単語構成なら作者名として分離
             const matchFamous = FAMOUS_AUTHORS_MASTER.find(a => a.name === candidateAuthor);
             if (matchFamous) {
                 author = matchFamous.name;
