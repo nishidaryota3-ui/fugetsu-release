@@ -410,18 +410,12 @@ body.font-gothic-mode * {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 3px;
-    padding-top: 4px;
-    pointer-events: none;
-    animation: fadeInInfo 0.25s ease forwards;
+    padding: 2px 4px;
+    cursor: pointer;
+    animation: fadeInInfo 0.2s ease forwards;
+    user-select: none;
 }
 .omikuji-info-box.hidden { display: none !important; }
-.omikuji-info-kigo { 
-    font-size: 0.8rem;
-    color: #777; 
-    letter-spacing: 0.08em; 
-    line-height: 1.2;
-}
 .omikuji-info-author { 
     font-size: 0.95rem;
     color: #2b2b2b; 

@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.85">
+    <link rel="stylesheet" href="style.css?v=2.0.86">
 </head>
 <body>
 
@@ -121,17 +121,16 @@
             </div>
         </div>
 
-        <!-- 右上：答え合わせ用の「i」ボタン ＆ シンプル横書きテキスト表示 -->
+        <!-- 右上：答え合わせ用の「i」ボタン ＆ 作者名ポップ（入れ替わり表示） -->
         <div class="omikuji-top-right">
-            <button class="flat-icon-btn" onclick="toggleOmikujiInfo()" title="作者・季語を見る" aria-label="作者・季語">
+            <button id="omikujiInfoBtn" class="flat-icon-btn" onclick="showOmikujiAuthor()" title="作者を見る" aria-label="作者">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="12" y1="16" x2="12" y2="12"></line>
                     <line x1="12" y1="8" x2="12.01" y2="8"></line>
                 </svg>
             </button>
-            <div id="omikujiInfoBox" class="omikuji-info-box hidden">
-                <div id="omikujiInfoKigo" class="omikuji-info-kigo"></div>
+            <div id="omikujiInfoBox" class="omikuji-info-box hidden" onclick="hideOmikujiAuthor()" title="タップで隠す">
                 <div id="omikujiInfoAuthor" class="omikuji-info-author"></div>
             </div>
         </div>
@@ -819,6 +818,6 @@ function doGet() {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.85"></script>
+    <script src="app.js?v=2.0.86"></script>
 </body>
 </html>

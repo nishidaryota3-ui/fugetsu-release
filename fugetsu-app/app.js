@@ -3379,7 +3379,7 @@ function triggerRandomOmikuji() {
 function changeOmikujiHaiku(direction) {
     if (omikujiIndex + direction >= 0 && omikujiIndex + direction < omikujiPool.length) {
         omikujiIndex += direction;
-        hideOmikujiInfo(); // 次の句へ進んだら再びブラインド状態にする
+        hideOmikujiAuthor(); // 次の句へ進んだら再び「i」ボタンに戻す
         renderOmikujiDisplay();
     }
 }
@@ -3392,27 +3392,25 @@ function renderOmikujiDisplay() {
     document.getElementById('prevBtn').classList.toggle('disabled', omikujiIndex === 0);
     document.getElementById('nextBtn').classList.toggle('disabled', omikujiIndex === omikujiPool.length - 1);
 
-    // 答え合わせ用情報のセット（季語：小さめ、作者名：＋2pt）
-    const seasonJa = {'haru':'春', 'natsu':'夏', 'aki':'秋', 'huyu':'冬', 'shinnen':'新年', 'muki':'無季'}[cur.season] || cur.season || '';
-    const detailSeason = cur.detailSeason ? `（${cur.detailSeason}）` : (seasonJa ? `（${seasonJa}）` : '');
-    const kigoText = cur.parentKigo || cur.kigo || '無季';
-    
-    document.getElementById('omikujiInfoKigo').textContent = `${kigoText} ${detailSeason}`;
-    document.getElementById('omikujiInfoAuthor').textContent = cur.author || userSettings.authorName || '風月';
-}
-
-function toggleOmikujiInfo() {
-    const box = document.getElementById('omikujiInfoBox');
-    if (box) {
-        box.classList.toggle('hidden');
+    // 作者名のみセット
+    const authorEl = document.getElementById('omikujiInfoAuthor');
+    if (authorEl) {
+        authorEl.textContent = cur.author || userSettings.authorName || '風月';
     }
 }
 
-function hideOmikujiInfo() {
+function showOmikujiAuthor() {
+    const btn = document.getElementById('omikujiInfoBtn');
     const box = document.getElementById('omikujiInfoBox');
-    if (box) {
-        box.classList.add('hidden');
-    }
+    if (btn) btn.classList.add('hidden');
+    if (box) box.classList.remove('hidden');
+}
+
+function hideOmikujiAuthor() {
+    const btn = document.getElementById('omikujiInfoBtn');
+    const box = document.getElementById('omikujiInfoBox');
+    if (box) box.classList.add('hidden');
+    if (btn) btn.classList.remove('hidden');
 }
 
 function initKeyboardEvents() {
@@ -3778,8 +3776,25 @@ function initSaijikiScrollWatchers() {
     }
 }
 
+// 🖱️ マウスホイール上下で横スクロール操作を可能にする（PC向け）
+function initHorizontalWheelListeners() {
+    window.addEventListener('wheel', (e) => {
+        const target = e.target.closest('.horizontal-scroll-container, .saijiki-kigo-list, .step1-kigo-list, #readScreen .horizontal-scroll-container, #saijikiScreen .horizontal-scroll-container');
+        if (target && e.deltaY !== 0) {
+            if (target.scrollWidth > target.clientWidth) {
+                e.preventDefault();
+                target.scrollLeft += e.deltaY;
+            }
+        }
+    }, { passive: false });
+}
+
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSaijikiScrollWatchers);
+    document.addEventListener('DOMContentLoaded', () => {
+        initSaijikiScrollWatchers();
+        initHorizontalWheelListeners();
+    });
 } else {
     initSaijikiScrollWatchers();
+    initHorizontalWheelListeners();
 }
