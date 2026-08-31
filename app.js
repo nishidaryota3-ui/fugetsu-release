@@ -356,7 +356,7 @@ async function loadInternalDatabases() {
     }
 
     try {
-        const respSaijiki = await fetch('data/saijiki.json?v=2.0.55');
+        const respSaijiki = await fetch('data/saijiki.json?v=2.0.56');
         if (respSaijiki.ok) {
             saijikiDatabase = await respSaijiki.json();
         }
@@ -527,13 +527,18 @@ function openAuthorSelectModal() {
 
     const myName = userSettings.authorName || '風月';
     
-    // 作者ごとの句数を集計
+    // 作者ごとの句数および読み仮名を集計
     const authorCounts = {};
+    const authorKanaMap = {};
     let totalCount = 0;
+
     haikuHistory.forEach(h => {
         if (h.status === currentReadTab) {
             const a = h.author || myName;
             authorCounts[a] = (authorCounts[a] || 0) + 1;
+            if (h.authorKana && !authorKanaMap[a]) {
+                authorKanaMap[a] = h.authorKana;
+            }
             totalCount++;
         }
     });
@@ -541,38 +546,58 @@ function openAuthorSelectModal() {
     const isMyActive = (currentAuthorFilter === null || currentAuthorFilter === myName);
     const isAllActive = (currentAuthorFilter === 'ALL');
 
-    // 1. 自分の句帳
+    // 固定ヘッダーエリア（登録者・全句帳）
+    const fixedGroup = document.createElement('div');
+    fixedGroup.className = 'author-select-fixed-group';
+
+    // 1. 自分の句帳（登録者）
     const myItem = document.createElement('div');
     myItem.className = `author-select-item ${isMyActive ? 'active' : ''}`;
     myItem.onclick = () => selectAuthorFilter(null);
     myItem.innerHTML = `<span>${escapeHtml(myName)} 句帳（自作）</span><span class="author-count-badge">${authorCounts[myName] || 0}句</span>`;
-    listEl.appendChild(myItem);
+    fixedGroup.appendChild(myItem);
 
-    // 2. すべての作品
+    // 2. すべての作品（全句帳）
     const allItem = document.createElement('div');
     allItem.className = `author-select-item ${isAllActive ? 'active' : ''}`;
     allItem.onclick = () => selectAuthorFilter('ALL');
     allItem.innerHTML = `<span>全句帳（すべての作者）</span><span class="author-count-badge">${totalCount}句</span>`;
-    listEl.appendChild(allItem);
+    fixedGroup.appendChild(allItem);
 
-    // 3. 他の作者一覧（句集）
-    const otherAuthors = Object.keys(authorCounts).filter(a => a !== myName).sort();
+    listEl.appendChild(fixedGroup);
+
+    // 3. 他の作者一覧（あいうえお順・スクロール可能）
+    const otherAuthors = Object.keys(authorCounts).filter(a => a !== myName);
+
+    // あいうえお順（五十音順）ソート
+    otherAuthors.sort((a, b) => {
+        const kanaA = authorKanaMap[a] || a;
+        const kanaB = authorKanaMap[b] || b;
+        return kanaA.localeCompare(kanaB, 'ja');
+    });
+
     if (otherAuthors.length > 0) {
         const divider = document.createElement('div');
         divider.className = 'settings-divider';
-        divider.style.margin = '6px 0';
+        divider.style.margin = '8px 0 6px';
         listEl.appendChild(divider);
+
+        const scrollGroup = document.createElement('div');
+        scrollGroup.className = 'author-select-scroll-group';
 
         otherAuthors.forEach(author => {
             const item = document.createElement('div');
             item.className = `author-select-item ${currentAuthorFilter === author ? 'active' : ''}`;
             item.onclick = () => selectAuthorFilter(author);
             item.innerHTML = `<span>${escapeHtml(author)} 句集</span><span class="author-count-badge">${authorCounts[author]}句</span>`;
-            listEl.appendChild(item);
+            scrollGroup.appendChild(item);
         });
+
+        listEl.appendChild(scrollGroup);
     }
 
     document.getElementById('authorSelectModal').classList.remove('hidden');
+}
 }
 
 function closeAuthorSelectModal() {

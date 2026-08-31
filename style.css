@@ -232,7 +232,9 @@ body.font-gothic-mode * {
 .app-version-note { font-size: 0.72rem; color: #aaa; margin-top: 2px; font-family: sans-serif; }
 
 /* 作者選択モーダル（スリム＆洗練された文字リスト） */
-.author-select-list { width: 100%; max-width: 270px; display: flex; flex-direction: column; gap: 5px; max-height: 35vh; overflow-y: auto; margin: 4px auto 0; }
+.author-select-list { width: 100%; max-width: 270px; display: flex; flex-direction: column; margin: 4px auto 0; }
+.author-select-fixed-group { display: flex; flex-direction: column; gap: 5px; width: 100%; }
+.author-select-scroll-group { display: flex; flex-direction: column; gap: 5px; width: 100%; max-height: 200px; overflow-y: auto; padding-right: 2px; }
 .author-select-item {
     display: flex; justify-content: space-between; align-items: center;
     padding: 8px 12px; background: #ffffff; border: 1px solid #e0dcd5;
