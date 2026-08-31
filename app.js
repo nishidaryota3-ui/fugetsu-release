@@ -751,7 +751,7 @@ function openSaijikiScreenFromMenu() {
     closeAuthorSelectModal();
     document.querySelectorAll('.step-screen').forEach(el => el.classList.remove('active'));
     document.getElementById('saijikiScreen').classList.add('active');
-    updateCatVisibility(false);
+    updateCatVisibility(true);
     switchSaijikiSeason(currentSaijikiSeason || 'haru');
 }
 
@@ -3399,7 +3399,7 @@ function triggerRandomOmikuji() {
 
     document.querySelectorAll('.step-screen').forEach(el => el.classList.remove('active'));
     document.getElementById('omikujiRoomScreen').classList.add('active');
-    updateCatVisibility(true);
+    updateCatVisibility(false);
 }
 
 function changeOmikujiHaiku(direction) {
