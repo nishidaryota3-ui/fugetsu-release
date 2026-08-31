@@ -61,16 +61,16 @@ body.font-gothic-mode * {
 
 .fixed-cat-trigger {
     position: fixed;
-    bottom: calc(12px + env(safe-area-inset-bottom));
-    left: calc(14px + env(safe-area-inset-left));
-    width: 140px !important;
-    max-width: 35vw !important;
+    bottom: calc(36px + env(safe-area-inset-bottom));
+    left: calc(16px + env(safe-area-inset-left));
+    width: 190px !important;
+    max-width: 48vw !important;
     height: auto !important;
     cursor: pointer;
     z-index: 80;
     transition: transform 0.2s ease, opacity 0.3s ease;
     opacity: 0.95;
-    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.08));
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.10));
 }
 .fixed-cat-trigger:hover { transform: scale(1.06); opacity: 1; }
 .fixed-cat-trigger:active { transform: scale(0.95); }
