@@ -632,19 +632,14 @@ function selectAuthorFilter(author) {
     renderYomuList();
 }
 
-// ========================================================
-// 🌸 季寄せ・歳時記 大画面（マイ歳時記ハイブリッド）
-// ========================================================
-async function openSaijikiScreenFromMenu() {
+function openSaijikiScreenFromMenu() {
     closeMenuModal();
     closeSettingsModal();
     closeAuthorSelectModal();
     document.querySelectorAll('.step-screen').forEach(el => el.classList.remove('active'));
-    document.getElementById('saijikiScreen').classList.add('active');
+    const saijikiEl = document.getElementById('saijikiScreen');
+    if (saijikiEl) saijikiEl.classList.add('active');
     updateCatVisibility(false);
-    if (!saijikiDatabase || saijikiDatabase.length === 0) {
-        await loadInternalDatabases();
-    }
     switchSaijikiSeason(currentSaijikiSeason || 'haru');
 }
 
@@ -2101,10 +2096,7 @@ async function executeSheetImport() {
     }
 }
 
-// 🔑 合言葉（Sync Key）による複数端末の常時リアルタイム同期（PeerJS P2P ＆ クラウドリレー）
-let peerInstance = null;
-let activePeerConn = null;
-
+// 🔑 クラウド自動同期・端末間同期
 function updateSyncStatusUI() {
     const statusText = document.getElementById('syncStatusText');
     const displayArea = document.getElementById('syncKeyDisplayArea');
@@ -2122,69 +2114,6 @@ function updateSyncStatusUI() {
         statusText.textContent = '未接続（単独で利用中）';
         statusText.className = 'sync-status-text';
     }
-}
-
-// P2P通信の初期化
-function initPeerSync() {
-    if (!userSettings.syncKey || typeof Peer === 'undefined') return;
-    const cleanKey = userSettings.syncKey.replace(/[^0-9a-zA-Z]/g, '');
-    
-    try {
-        if (peerInstance) {
-            peerInstance.destroy();
-        }
-
-        // ランダムサフィックスで自身のPeerを作成
-        const myPeerId = `fugetsu-${cleanKey}-${Math.random().toString(36).substring(2, 7)}`;
-        peerInstance = new Peer(myPeerId, {
-            debug: 0
-        });
-
-        peerInstance.on('open', (id) => {
-            // 他の端末からの着信を待ち受け
-            peerInstance.on('connection', (conn) => {
-                setupPeerConnection(conn);
-            });
-        });
-
-        peerInstance.on('error', (err) => {
-            console.warn('PeerJS fallback:', err);
-        });
-    } catch (e) {
-        console.warn('Peer init error:', e);
-    }
-}
-
-function setupPeerConnection(conn) {
-    activePeerConn = conn;
-
-    conn.on('open', () => {
-        // 接続直後にお互いのデータを送信
-        conn.send({
-            type: 'HAIKU_SYNC',
-            haikus: haikuHistory,
-            authorName: userSettings.authorName
-        });
-    });
-
-    conn.on('data', (data) => {
-        if (data && data.type === 'HAIKU_SYNC' && Array.isArray(data.haikus)) {
-            let merged = 0;
-            data.haikus.forEach(h => {
-                if (h.phrase && !haikuHistory.some(existing => existing.phrase === h.phrase)) {
-                    haikuHistory.push(h);
-                    merged++;
-                }
-            });
-            if (merged > 0) {
-                saveLocalHaikus();
-                if (document.getElementById('readScreen').classList.contains('active')) {
-                    renderYomuList();
-                }
-                showToast(`⚡ 端末から ${merged}句 をリアルタイム同期しました！`);
-            }
-        }
-    });
 }
 
 // 1. 合言葉を発行する
@@ -2206,7 +2135,6 @@ async function generateSyncKey() {
     updateSyncStatusUI();
     showToast(`🔑 合言葉【${newKey}】を発行しました！`);
     
-    initPeerSync();
     await pushAllHaikusToCloud();
 }
 
@@ -2225,7 +2153,6 @@ async function connectSyncKey() {
     updateSyncStatusUI();
 
     showToast(`🔄 合言葉【${key}】で接続中...`);
-    initPeerSync();
 
     const count = await fetchHaikusFromCloud();
     await pushAllHaikusToCloud();
