@@ -1819,7 +1819,7 @@ function initPersistentStorage() {
 
 // 🔄 ワンタップ安全更新（俳句データを1ミリも消さずにアプリだけ最新化）
 async function checkForAppUpdate() {
-    showToast('最新版を確認・更新しています...');
+    showToast('🔄 最新版を確認・更新しています...');
     try {
         if ('serviceWorker' in navigator) {
             const registrations = await navigator.serviceWorker.getRegistrations();
@@ -2034,7 +2034,7 @@ function executeBatchImport() {
             renderYomuList();
         }
         closeBatchImportModal();
-        showToast(`${importedCount}句を一括取り込みました`);
+        showToast(`✅ ${importedCount}句を一括取り込みました！`);
     } else {
         alert('取り込み可能な新しい句が見つかりませんでした（既に登録済みの可能性があります）。');
     }
@@ -2084,11 +2084,11 @@ function copyGasCode() {
     const codeBlock = document.getElementById('gasScriptCodeBlock');
     if (codeBlock) {
         navigator.clipboard.writeText(codeBlock.value).then(() => {
-            showToast('GASコードをコピーしました');
+            showToast('📋 GASコードをコピーしました！');
         }).catch(() => {
             codeBlock.select();
             document.execCommand('copy');
-            showToast('GASコードをコピーしました');
+            showToast('📋 GASコードをコピーしました！');
         });
     }
 }
@@ -2156,7 +2156,7 @@ function broadcastSyncKeyPayload(payload) {
     } catch (e) {}
 }
 
-// 相手端末へ「お互いの全句を同期しよう」と要求
+// 🔄 相手端末へ「お互いの全句を同期しよう」と要求
 function requestFullSyncFromPeers() {
     if (!userSettings.syncKey) return;
     const myPhrases = haikuHistory.map(h => h.phrase);
@@ -2166,7 +2166,7 @@ function requestFullSyncFromPeers() {
     });
 }
 
-// 相手から届いた同期メッセージの処理
+// 📥 相手から届いた同期メッセージの処理
 async function handleIncomingSyncPayload(payload) {
     if (!payload || payload.senderClientId === myClientId) return; // 自分が送ったものは無視
 
@@ -2179,7 +2179,7 @@ async function handleIncomingSyncPayload(payload) {
             if (document.getElementById('readScreen').classList.contains('active')) {
                 renderYomuList();
             }
-            showToast(`他の端末から【${item.phrase}】が届きました`);
+            showToast(`✨ 他の端末から【${item.phrase}】が届きました！`);
         }
     }
     // ② 接続時の全句同期リクエストを受信 ➔ 相手が持っていない過去句をストリーム送信
@@ -2188,7 +2188,7 @@ async function handleIncomingSyncPayload(payload) {
         const toSend = haikuHistory.filter(h => !peerPhrases.has(h.phrase));
         
         if (toSend.length > 0) {
-            showToast(`相手の端末へ ${toSend.length}句 を同期送信中...`);
+            showToast(`🔄 相手の端末へ ${toSend.length}句 を同期送信中...`);
             for (let i = 0; i < toSend.length; i++) {
                 broadcastSyncKeyPayload({
                     type: 'STREAM_HAIKU_ITEM',
@@ -2224,7 +2224,7 @@ async function handleIncomingSyncPayload(payload) {
     }
     // ④ ストリーム受信完了
     else if (payload.type === 'STREAM_HAIKU_DONE') {
-        showToast(`全同期完了：${payload.count}句が反映され完全一致しました`);
+        showToast(`✨ 全同期完了！ ${payload.count}句 が反映され完全一致しました`);
     }
     // ⑤ 特定句の要求を受信
     else if (payload.type === 'REQUEST_SPECIFIC_ITEMS' && Array.isArray(payload.phrases)) {
@@ -2242,7 +2242,7 @@ async function handleIncomingSyncPayload(payload) {
     }
     // ⑥ 接続通知
     else if (payload.type === 'HELLO') {
-        showToast('他の端末と接続しました');
+        showToast('🔗 他の端末と接続しました！');
         requestFullSyncFromPeers();
     }
 }
@@ -2253,7 +2253,7 @@ function updateSyncStatusUI() {
     if (!statusText) return;
 
     if (userSettings.syncKey) {
-        statusText.textContent = `接続中（合言葉: ${userSettings.syncKey}）`;
+        statusText.textContent = `🟢 接続中（合言葉: ${userSettings.syncKey}）`;
         statusText.style.color = '#2e7d32';
         if (inputEl) inputEl.value = userSettings.syncKey;
     } else {
@@ -2288,7 +2288,7 @@ function connectSyncKey() {
     updateSyncStatusUI();
     initSyncKeyListener();
     broadcastSyncKeyPayload({ type: 'HELLO' });
-    alert(`合言葉【${key}】で接続しました。\n相手端末の過去の句を含めて全自動で同期・一致させます。`);
+    alert(`合言葉【${key}】で接続しました！\n相手端末の過去の句を含めて全自動で同期・一致させます。`);
 }
 
 // 手動でいつでも全同期を再実行できる関数
@@ -2297,7 +2297,7 @@ function triggerManualFullSync() {
         alert('合言葉で接続されていません');
         return;
     }
-    showToast('相手端末へ全句の再同期を要求中...');
+    showToast('🔄 相手端末へ全句の再同期を要求中...');
     requestFullSyncFromPeers();
 }
 
@@ -2316,17 +2316,17 @@ async function saveCloudSyncSettings() {
     userSettings.cloudSyncUrl = url;
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
     updateCloudStatusBadge();
-    showToast('同期URLを保存しました。データを取り込み中...');
+    showToast('☁️ 同期URLを保存しました。データを取り込み中...');
 
     const res = await fetchHaikusFromCloud(true);
     if (res && res.success) {
         if (res.count > 0) {
-            alert(`スプレッドシートから【${res.count}句】を取り込み、同期を完了しました。`);
+            alert(`🎉 スプレッドシートから【${res.count}句】を取り込み、同期を完了しました！`);
         } else {
-            alert('スプレッドシートと同期完了しました（既に最新の状態です）。');
+            alert('✅ スプレッドシートと同期完了しました（既に最新の状態です）');
         }
     } else if (res && res.error) {
-        alert('スプレッドシートの読み込みに失敗しました：\n' + res.error + '\n\n※スプレッドシートの共有が「リンクを知っている全員が閲覧可」、またはGASのアクセス権が「全員」になっているかご確認ください。');
+        alert('⚠️ スプレッドシートの読み込みに失敗しました：\n' + res.error + '\n\n※スプレッドシートの共有が「リンクを知っている全員が閲覧可」、またはGASのアクセス権が「全員」になっているかご確認ください。');
     }
 }
 
@@ -2472,7 +2472,7 @@ async function fetchHaikusFromCloud(isManual = false) {
                     if (document.getElementById('readScreen').classList.contains('active')) {
                         renderYomuList();
                     }
-                    showToast(`スプレッドシートから ${mergedCount}句 を同期しました`);
+                    showToast(`☁️ スプレッドシートから ${mergedCount}句 を同期しました`);
                 }
                 return { success: true, count: mergedCount };
             } else {
@@ -2573,9 +2573,9 @@ function parseAndMergeCsvHaikus(csvText) {
         if (document.getElementById('readScreen').classList.contains('active')) {
             renderYomuList();
         }
-        showToast(`スプレッドシートから ${mergedCount}句 を同期しました`);
+        showToast(`☁️ スプレッドシートから ${mergedCount}句 を同期しました！`);
     } else {
-        showToast('スプレッドシートと同期完了（最新の状態です）');
+        showToast('☁️ スプレッドシートと同期完了（最新の状態です）');
     }
     return mergedCount;
 }

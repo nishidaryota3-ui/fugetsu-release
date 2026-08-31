@@ -16,20 +16,14 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.73">
+    <link rel="stylesheet" href="style.css?v=2.0.74">
 </head>
 <body>
 
-    <!-- おみ句じトリガーボタン（モノトーン・フラット） -->
-    <button id="fixedCatBtn" class="fixed-omikuji-trigger hidden" onclick="triggerRandomOmikuji()" title="おみ句じを引く">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-        </svg>
-        <span>おみ句じ</span>
-    </button>
+    <!-- 🐾 おみ句じ猫ボタン -->
+    <img id="fixedCatBtn" src="omikuji-cat.png" alt="おみ句じを引く" class="fixed-cat-trigger hidden" onclick="triggerRandomOmikuji()" title="おみ句じを引く">
 
-    <!-- ① トップ画面 -->
+    <!-- 🚪 ① トップ画面 -->
     <div id="startScreen" class="step-screen active">
         <!-- 右上の設定ボタン（フラットSVG・モノトーン） -->
         <div class="top-settings-bar">
@@ -42,38 +36,17 @@
         </div>
 
         <div class="top-icon-container" id="topIconContainer">
-            <!-- 読む -->
             <div class="top-icon-block" onclick="startYomuMode()">
-                <div class="top-icon-circle">
-                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-                    </svg>
-                </div>
+                <img src="icon_top_input.png" alt="読む" class="top-icon-img">
                 <span class="top-icon-sub">俳句を読む</span>
             </div>
-
-            <!-- 季寄せ -->
+            <!-- ▼▼ 季寄せショートカット（設定でON/OFF） ▼▼ -->
             <div id="homeKiyoseBlock" class="top-icon-block hidden" onclick="openSaijikiScreenFromMenu()">
-                <div class="top-icon-circle">
-                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 2a4 4 0 0 0-4 4c0 2 2 4 4 6 2-2 4-4 4-6a4 4 0 0 0-4-4z"></path>
-                        <path d="M12 12c-2 2-4 2-6 4a4 4 0 0 0 4 4c2 0 2-2 2-4 0 2 0 4 2 4a4 4 0 0 0 4-4c-2-2-4-2-6-4z"></path>
-                        <circle cx="12" cy="12" r="1.5"></circle>
-                    </svg>
-                </div>
+                <img src="kiyose.png" alt="季寄せ" class="top-icon-img" onerror="this.src='icon_top_input.png'">
                 <span class="top-icon-sub">季寄せ</span>
             </div>
-
-            <!-- 詠む -->
             <div class="top-icon-block" onclick="startEmuMode()">
-                <div class="top-icon-circle">
-                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
-                        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
-                        <path d="M2 2l7.586 7.586"></path>
-                    </svg>
-                </div>
+                <img src="icon_top_output.png" alt="詠む" class="top-icon-img">
                 <span class="top-icon-sub">俳句を詠む</span>
             </div>
         </div>
@@ -829,6 +802,6 @@ function doGet() {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.73"></script>
+    <script src="app.js?v=2.0.74"></script>
 </body>
 </html>
