@@ -840,15 +840,6 @@ function getGojuonRowChar(kana) {
     return 'あ';
 }
 
-function jumpToGojuon(rowChar) {
-    const container = document.getElementById('saijikiKigoList');
-    if (!container) return;
-    const target = container.querySelector(`[data-row="${rowChar}"]`);
-    if (target) {
-        target.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-    }
-}
-
 function jumpToStep1Gojuon(rowChar) {
     const container = document.getElementById('step1KigoList');
     if (!container) return;
@@ -1879,11 +1870,11 @@ function toggleSettingsAccordion(sectionId) {
     const isHidden = sectionEl.classList.contains('hidden');
     
     // すべてのセクションを一旦閉じる
-    ['settingSection1', 'settingSection2', 'settingSection3', 'settingSectionTrash', 'settingSection5'].forEach((id) => {
+    ['settingSection1', 'settingSection2', 'settingSection3', 'settingSectionTrash', 'settingSection5', 'settingSection6'].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
     });
-    ['settingArrow1', 'settingArrow2', 'settingArrow3', 'settingArrowTrash', 'settingArrow5'].forEach(aid => {
+    ['settingArrow1', 'settingArrow2', 'settingArrow3', 'settingArrowTrash', 'settingArrow5', 'settingArrow6'].forEach(aid => {
         const arrow = document.getElementById(aid);
         if (arrow) arrow.textContent = '▿';
     });
@@ -1896,6 +1887,7 @@ function toggleSettingsAccordion(sectionId) {
         else if (sectionId === 'settingSection3') arrowId = 'settingArrow3';
         else if (sectionId === 'settingSectionTrash') arrowId = 'settingArrowTrash';
         else if (sectionId === 'settingSection5') arrowId = 'settingArrow5';
+        else if (sectionId === 'settingSection6') arrowId = 'settingArrow6';
         const arrow = document.getElementById(arrowId);
         if (arrow) arrow.textContent = '▴';
     }
@@ -1903,11 +1895,11 @@ function toggleSettingsAccordion(sectionId) {
 
 function openSettingsModal() {
     // すべてのアコーディオンを閉じた状態にする
-    ['settingSection1', 'settingSection2', 'settingSection3', 'settingSectionTrash', 'settingSection5'].forEach((id) => {
+    ['settingSection1', 'settingSection2', 'settingSection3', 'settingSectionTrash', 'settingSection5', 'settingSection6'].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
     });
-    ['settingArrow1', 'settingArrow2', 'settingArrow3', 'settingArrowTrash', 'settingArrow5'].forEach(aid => {
+    ['settingArrow1', 'settingArrow2', 'settingArrow3', 'settingArrowTrash', 'settingArrow5', 'settingArrow6'].forEach(aid => {
         const arrow = document.getElementById(aid);
         if (arrow) arrow.textContent = '▿';
     });
@@ -1993,8 +1985,8 @@ function saveTrashList() {
     } catch (e) {}
 }
 
-function restoreFromTrash(phraseToRestore) {
-    const idx = trashList.findIndex(item => item.phrase === phraseToRestore);
+function restoreFromTrash(itemId) {
+    const idx = trashList.findIndex(item => item.id === itemId);
     if (idx !== -1) {
         const item = trashList.splice(idx, 1)[0];
         item.status = item.originalStatus || '完成句';
@@ -2041,7 +2033,9 @@ function renderTrashList() {
                 <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
             </svg>
         `;
-        restoreBtn.onclick = () => restoreFromTrash(item.phrase);
+        // id があればidで、なければphraseにフォールバック（旧データ互換）
+        const itemKey = item.id || item.phrase;
+        restoreBtn.onclick = () => restoreFromTrash(itemKey);
 
         row.appendChild(textSpan);
         row.appendChild(restoreBtn);
@@ -3059,7 +3053,8 @@ function exportHaikuData() {
         version: '2.0',
         exportedAt: new Date().toISOString(),
         settings: userSettings,
-        haikus: haikuHistory
+        haikus: haikuHistory,
+        trash: trashList   // ごみ箱データも保存
     };
     const jsonStr = JSON.stringify(exportData, null, 2);
     const blob = new Blob([jsonStr], { type: 'application/json' });
@@ -3086,7 +3081,12 @@ function importHaikuData(event) {
         try {
             const data = JSON.parse(e.target.result);
             if (data && Array.isArray(data.haikus)) {
-                if (confirm(`句帳データ（${data.haikus.length}句）を読み込みますか？\n（現在の句帳に追加・統合されます）`)) {
+                const trashCount = Array.isArray(data.trash) ? data.trash.length : 0;
+                const confirmMsg = trashCount > 0
+                    ? `句帳データ（${data.haikus.length}句）とごみ箱（${trashCount}句）を読み込みますか？\n（現在の句帳に追加・統合されます）`
+                    : `句帳データ（${data.haikus.length}句）を読み込みますか？\n（現在の句帳に追加・統合されます）`;
+                if (confirm(confirmMsg)) {
+                    // 句帳マージ（phraseで重複チェック）
                     const existingPhrases = new Set(haikuHistory.map(h => h.phrase));
                     let addedCount = 0;
                     data.haikus.forEach(item => {
@@ -3097,12 +3097,29 @@ function importHaikuData(event) {
                         }
                     });
                     saveLocalHaikus();
+
+                    // ごみ箱マージ（idで重複チェック）
+                    let trashAddedCount = 0;
+                    if (Array.isArray(data.trash)) {
+                        const existingTrashIds = new Set(trashList.map(t => t.id));
+                        data.trash.forEach(item => {
+                            const key = item.id || item.phrase;
+                            if (!existingTrashIds.has(key)) {
+                                trashList.push(item);
+                                existingTrashIds.add(key);
+                                trashAddedCount++;
+                            }
+                        });
+                        if (trashAddedCount > 0) saveTrashList();
+                    }
+
                     if (data.settings && data.settings.authorName) {
                         userSettings = Object.assign(userSettings, data.settings);
                         localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
                         updateHeaderTitle();
                     }
-                    alert(`バックアップから ${addedCount} 句を復元しました！`);
+                    const trashMsg = trashAddedCount > 0 ? `\nごみ箱から ${trashAddedCount} 句を復元しました。` : '';
+                    alert(`バックアップから ${addedCount} 句を復元しました！${trashMsg}`);
                     closeSettingsModal();
                     if (document.getElementById('readScreen').classList.contains('active')) {
                         renderYomuList();
