@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.50">
+    <link rel="stylesheet" href="style.css?v=2.0.51">
 </head>
 <body>
 
@@ -362,15 +362,25 @@
                     </div>
                     <div class="settings-sub-note">※端末内にJSON形式で保存 / 復元</div>
 
-                    <div class="settings-form" style="margin-top: 10px; width: 100%;">
+                    <div style="margin-top: 10px; width: 100%; display: flex; justify-content: center;">
+                        <button class="btn btn-outline batch-import-open-btn" onclick="openBatchImportModal()">
+                            <span>📝 テキストから一括取り込み</span>
+                        </button>
+                    </div>
+                    <div class="settings-sub-note">※メモ帳やExcelの句をまとめて登録</div>
+
+                    <div class="settings-form" style="margin-top: 12px; width: 100%;">
                         <div class="form-group" style="margin-bottom: 4px;">
                             <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
                                 <span>スプレッドシート自動同期</span>
-                                <span id="cloudSyncStatusBadge" class="cloud-status-badge">未設定</span>
+                                <span style="display: flex; gap: 6px; align-items: center;">
+                                    <span class="guide-link-btn" onclick="openCloudGuideModal()">使い方</span>
+                                    <span id="cloudSyncStatusBadge" class="cloud-status-badge">未設定</span>
+                                </span>
                             </label>
                             <input type="url" id="settingCloudSyncUrl" class="text-input sync-url-input" placeholder="Web App URLを貼り付け">
                         </div>
-                        <div class="settings-sub-note" style="margin-top: 2px;">※URLを設定すると作句時にクラウドへ自動二重保存</div>
+                        <div class="settings-sub-note" style="margin-top: 2px;">※URLを設定すると全端末で自動双方向同期</div>
                         <button class="btn btn-outline cloud-save-btn" onclick="saveCloudSyncSettings()">同期URLを保存</button>
                     </div>
                 </div>
@@ -447,10 +457,11 @@
                     <label class="form-label">俳号（作者名）</label>
                     <input type="text" id="welcomeAuthorName" class="text-input" placeholder="例：風月、芭蕉" value="風月">
                 </div>
-                <div class="form-group">
-                    <label class="form-label">よみがな</label>
-                    <input type="text" id="welcomeAuthorKana" class="text-input" placeholder="例：ふうげつ" value="ふうげつ">
-                </div>
+                <button class="btn" style="margin-top: 15px;" onclick="completeWelcomeSetup()">句帳をはじめる</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 💡 定期バックアップ案内モーダル -->
     <div id="backupReminderModal" class="card-overlay hidden">
         <div class="modal-card-content" style="max-width: 320px; text-align: center;" onclick="event.stopPropagation()">
@@ -460,6 +471,60 @@
                 <button class="btn" style="padding: 10px 0; font-size: 0.9rem;" onclick="acceptBackupReminder()">今すぐ端末に保存</button>
                 <button class="btn btn-outline" style="padding: 8px 0; font-size: 0.85rem; border: none; color: #888;" onclick="closeBackupReminderModal()">後で通知する</button>
             </div>
+        </div>
+    </div>
+
+    <!-- 📝 テキスト一括取り込みモーダル -->
+    <div id="batchImportModal" class="card-overlay hidden" onclick="closeBatchImportModal()">
+        <div class="modal-card-content" style="max-width: 340px; text-align: center;" onclick="event.stopPropagation()">
+            <span class="modal-close-corner" onclick="closeBatchImportModal()">✕</span>
+            <h3 class="modal-title" style="font-size: 1.1rem; margin-bottom: 4px;">テキストから一括取り込み</h3>
+            <p class="settings-desc" style="font-size: 0.78rem; color: #666; margin-bottom: 8px;">
+                メモ帳やWord、Excelから句をまとめて貼り付けてください。<br>
+                ※作者名がある場合は「句　作者名」の形式で自動判別します。
+            </p>
+            <textarea id="batchImportTextarea" class="batch-import-textarea" placeholder="春風や闘志いだきて丘に立つ&#10;閑さや岩にしみ入る蝉の声　松尾芭蕉&#10;菜の花や月は東に日は西に　与謝蕪村"></textarea>
+            <div class="settings-btn-row-fit" style="margin-top: 8px;">
+                <button class="btn btn-outline" style="flex: 1; padding: 8px 0; font-size: 0.82rem;" onclick="closeBatchImportModal()">閉じる</button>
+                <button class="btn" style="flex: 1; padding: 8px 0; font-size: 0.82rem;" onclick="executeBatchImport()">一括登録する</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📊 スプレッドシート連携ガイドモーダル -->
+    <div id="cloudGuideModal" class="card-overlay hidden" onclick="closeCloudGuideModal()">
+        <div class="modal-card-content" style="max-width: 345px; text-align: left;" onclick="event.stopPropagation()">
+            <span class="modal-close-corner" onclick="closeCloudGuideModal()">✕</span>
+            <h3 class="modal-title" style="font-size: 1.1rem; text-align: center; margin-bottom: 8px;">スプレッドシート連携ガイド</h3>
+            
+            <div class="cloud-guide-step-box">
+                <div class="guide-step-title">1. 列の並び順（A列に貼るだけ！）</div>
+                <p class="guide-step-desc">A列に俳句を貼り付けます。季語や季節は空欄でもアプリが自動判定します。</p>
+                <table class="guide-sample-table">
+                    <thead>
+                        <tr><th>A列（俳句）</th><th>B列（季語）</th><th>D列（作者）</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>春風や闘志...</td><td>（空欄可）</td><td>（空欄可）</td></tr>
+                        <tr><td>閑さや岩にし...</td><td>蝉</td><td>松尾芭蕉</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="cloud-guide-step-box" style="margin-top: 10px;">
+                <div class="guide-step-title">2. ひな形スプレッドシート</div>
+                <p class="guide-step-desc">以下のボタンから、正しい列が揃ったテンプレートシートを自分のGoogleドライブに複製できます。</p>
+                <a href="https://docs.google.com/spreadsheets/d/1EOmZn53hFA8GpVdcn--aU-lj9uHjGQpnSZ1o9jbnsYs/copy" target="_blank" rel="noopener noreferrer" class="btn btn-outline guide-template-btn">
+                    📁 ひな形シートを自分のGoogleにコピー
+                </a>
+            </div>
+
+            <div class="cloud-guide-step-box" style="margin-top: 10px;">
+                <div class="guide-step-title">3. Web App URLの取得</div>
+                <p class="guide-step-desc">シートの「拡張機能」➔「Apps Script」でデプロイしたWeb App URLをコピーして設定欄に貼り付けてください。</p>
+            </div>
+
+            <button class="btn" style="width: 100%; margin-top: 12px; padding: 8px 0; font-size: 0.85rem;" onclick="closeCloudGuideModal()">閉じる</button>
         </div>
     </div>
 
@@ -665,6 +730,6 @@
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.50"></script>
+    <script src="app.js?v=2.0.51"></script>
 </body>
 </html>

@@ -185,6 +185,9 @@ window.onload = function() {
 
     // 定期バックアップ案内のチェック
     setTimeout(checkBackupReminder, 1200);
+
+    // クラウドからの自動双方向同期チェック
+    setTimeout(fetchHaikusFromCloud, 800);
 };
 
 function loadUserSettings() {
@@ -353,7 +356,7 @@ async function loadInternalDatabases() {
     }
 
     try {
-        const respSaijiki = await fetch('data/saijiki.json?v=2.0.50');
+        const respSaijiki = await fetch('data/saijiki.json?v=2.0.51');
         if (respSaijiki.ok) {
             saijikiDatabase = await respSaijiki.json();
         }
@@ -1875,7 +1878,148 @@ function renderTrashList() {
     });
 }
 
-// ☁️ クラウド自動同期（Googleスプレッドシート等への二重保存）
+// 📝 テキスト一括取り込み機能（超インテリジェント・パーサー）
+function openBatchImportModal() {
+    const modal = document.getElementById('batchImportModal');
+    const textarea = document.getElementById('batchImportTextarea');
+    if (textarea) textarea.value = '';
+    if (modal) modal.classList.remove('hidden');
+}
+
+function closeBatchImportModal() {
+    const modal = document.getElementById('batchImportModal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function executeBatchImport() {
+    const textarea = document.getElementById('batchImportTextarea');
+    const rawText = textarea ? textarea.value.trim() : '';
+    if (!rawText) {
+        alert('取り込むテキストを入力してください。');
+        return;
+    }
+
+    const lines = rawText.split(/\r?\n/);
+    let importedCount = 0;
+    const defaultAuthor = userSettings.authorName || '風月';
+    const defaultKana = userSettings.authorKana || 'ふうげつ';
+
+    lines.forEach((line, idx) => {
+        const trimmed = line.trim();
+        if (!trimmed) return;
+
+        let phrase = '';
+        let author = defaultAuthor;
+        let authorKana = defaultKana;
+
+        // タブまたは全角/半角スペースで分割して作者名を判定
+        const tokens = trimmed.split(/[\t\s]+/);
+        if (tokens.length >= 2) {
+            // 最後のトークンが作者名の可能性が高い
+            const candidateAuthor = tokens[tokens.length - 1];
+            // 歴史的俳人マスターと照合、または2単語構成なら作者名として分離
+            const matchFamous = FAMOUS_AUTHORS_MASTER.find(a => a.name === candidateAuthor);
+            if (matchFamous) {
+                author = matchFamous.name;
+                authorKana = matchFamous.kana;
+                phrase = tokens.slice(0, tokens.length - 1).join(' ');
+            } else if (candidateAuthor.length <= 8 && tokens.length === 2) {
+                author = candidateAuthor;
+                authorKana = '';
+                phrase = tokens[0];
+            } else {
+                phrase = trimmed;
+            }
+        } else {
+            phrase = trimmed;
+        }
+
+        // 重複チェック（既に同じ句がある場合はスキップ）
+        if (haikuHistory.some(h => h.phrase === phrase)) {
+            return;
+        }
+
+        // 🧠 歳時記DBから季語・季節を最長一致で自動検知
+        let detectedKigo = '無季';
+        let detectedParentKigo = '無季';
+        let detectedParentKana = 'むき';
+        let detectedSeason = 'muki';
+        let detectedDetail = '';
+
+        let longestMatchLen = 0;
+
+        if (saijikiDatabase && saijikiDatabase.length > 0) {
+            for (const item of saijikiDatabase) {
+                // 親季語とのマッチ
+                if (item.kigo && phrase.includes(item.kigo) && item.kigo.length > longestMatchLen) {
+                    longestMatchLen = item.kigo.length;
+                    detectedKigo = item.kigo;
+                    detectedParentKigo = item.kigo;
+                    detectedParentKana = item.kana || '';
+                    detectedSeason = item.season || 'muki';
+                    detectedDetail = item.detailSeason || '';
+                }
+                // 子季語（関連季語）とのマッチ
+                if (item.children && Array.isArray(item.children)) {
+                    for (const c of item.children) {
+                        const childName = (typeof c === 'string') ? c : (c.name || '');
+                        if (childName && phrase.includes(childName) && childName.length > longestMatchLen) {
+                            longestMatchLen = childName.length;
+                            detectedKigo = childName;
+                            detectedParentKigo = item.kigo;
+                            detectedParentKana = item.kana || '';
+                            detectedSeason = item.season || 'muki';
+                            detectedDetail = item.detailSeason || '';
+                        }
+                    }
+                }
+            }
+        }
+
+        const newHaiku = {
+            id: 'h-batch-' + Date.now() + '-' + idx,
+            phrase: phrase,
+            author: author,
+            authorKana: authorKana,
+            kigo: detectedKigo,
+            parentKigo: detectedParentKigo,
+            parentKana: detectedParentKana,
+            season: detectedSeason,
+            detailSeason: detectedDetail,
+            status: '完成句',
+            sakkuDate: getTodayDateString(),
+            createdAt: Date.now() - (lines.length - idx)
+        };
+
+        haikuHistory.unshift(newHaiku);
+        syncHaikuToCloud(newHaiku);
+        importedCount++;
+    });
+
+    if (importedCount > 0) {
+        saveLocalHaikus();
+        if (document.getElementById('readScreen').classList.contains('active')) {
+            renderYomuList();
+        }
+        closeBatchImportModal();
+        showToast(`✅ ${importedCount}句を一括取り込みました！`);
+    } else {
+        alert('取り込み可能な新しい句が見つかりませんでした（既に登録済みの可能性があります）。');
+    }
+}
+
+// 📊 スプレッドシート連携ガイド
+function openCloudGuideModal() {
+    const modal = document.getElementById('cloudGuideModal');
+    if (modal) modal.classList.remove('hidden');
+}
+
+function closeCloudGuideModal() {
+    const modal = document.getElementById('cloudGuideModal');
+    if (modal) modal.classList.add('hidden');
+}
+
+// ☁️ クラウド自動同期（Googleスプレッドシート等への二重保存 ＆ 双方向受信）
 function saveCloudSyncSettings() {
     const urlInput = document.getElementById('settingCloudSyncUrl');
     const url = urlInput ? urlInput.value.trim() : '';
@@ -1883,6 +2027,9 @@ function saveCloudSyncSettings() {
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
     updateCloudStatusBadge();
     showToast(url ? '☁️ クラウド同期URLを保存しました' : 'クラウド同期を解除しました');
+    if (url) {
+        fetchHaikusFromCloud();
+    }
 }
 
 function updateCloudStatusBadge() {
@@ -1903,6 +2050,36 @@ function syncHaikuToCloud(haikuObj) {
             body: JSON.stringify(haikuObj)
         }).catch(e => console.warn('Cloud sync background error:', e));
     } catch (e) {}
+}
+
+// 📥 クラウド（スプレッドシート）から最新データを双方向受信・マージ
+async function fetchHaikusFromCloud() {
+    if (!userSettings.cloudSyncUrl || !userSettings.cloudSyncUrl.startsWith('http')) return;
+    try {
+        const resp = await fetch(userSettings.cloudSyncUrl, { method: 'GET' });
+        if (resp.ok) {
+            const cloudHaikus = await resp.json();
+            if (Array.isArray(cloudHaikus) && cloudHaikus.length > 0) {
+                let mergedCount = 0;
+                cloudHaikus.forEach(item => {
+                    if (item.phrase && !haikuHistory.some(h => h.phrase === item.phrase)) {
+                        haikuHistory.push(item);
+                        mergedCount++;
+                    }
+                });
+                if (mergedCount > 0) {
+                    saveLocalHaikus();
+                    if (document.getElementById('readScreen').classList.contains('active')) {
+                        renderYomuList();
+                    }
+                    showToast(`☁️ クラウドから ${mergedCount}句 を同期しました`);
+                }
+            }
+        }
+    } catch (e) {
+        // オフラインまたはCORS制限時は手元データで静かに動作
+        console.warn('Cloud fetch silent fallback:', e);
+    }
 }
 
 // 💡 定期バックアップ案内
