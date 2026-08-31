@@ -2222,21 +2222,79 @@ async function fetchHaikusFromCloud() {
         // Web App URL（JSON返却形式）の場合
         const resp = await fetch(rawUrl, { method: 'GET' });
         if (resp.ok) {
-            const cloudHaikus = await resp.json();
-            if (Array.isArray(cloudHaikus) && cloudHaikus.length > 0) {
+            const data = await resp.json();
+            let rows = [];
+            if (data && Array.isArray(data.rows)) {
+                rows = data.rows;
+            } else if (Array.isArray(data)) {
+                rows = data;
+            }
+
+            if (rows.length > 0) {
                 let mergedCount = 0;
-                cloudHaikus.forEach(item => {
-                    if (item.phrase && !haikuHistory.some(h => h.phrase === item.phrase)) {
-                        haikuHistory.push(item);
+                rows.forEach(r => {
+                    let phrase = '';
+                    let author = '';
+                    let authorKana = '';
+                    let kigo = '';
+                    let parentKigo = '';
+                    let parentKana = '';
+                    let season = '';
+                    let detailSeason = '';
+                    let status = '完成句';
+                    let sakkuDate = '';
+
+                    if (Array.isArray(r)) {
+                        // GASの12列行配列 [phrase, author, authorKana, kigo, parentKigo, parentKana, season, detailSeason, _, _, status, sakkuDate]
+                        phrase = (r[0] || '').toString().trim();
+                        if (phrase === '俳句' || phrase === 'phrase' || !phrase) return; // ヘッダー行スキップ
+                        author = (r[1] || '').toString().trim() || userSettings.authorName || '西田上酢';
+                        authorKana = (r[2] || '').toString().trim() || userSettings.authorKana || '';
+                        kigo = (r[3] || '').toString().trim();
+                        parentKigo = (r[4] || '').toString().trim();
+                        parentKana = (r[5] || '').toString().trim();
+                        season = (r[6] || '').toString().trim();
+                        detailSeason = (r[7] || '').toString().trim();
+                        status = (r[10] || '').toString().trim() || '完成句';
+                        sakkuDate = (r[11] || '').toString().trim();
+                    } else if (typeof r === 'object' && r.phrase) {
+                        phrase = r.phrase.trim();
+                        author = r.author || userSettings.authorName || '西田上酢';
+                        authorKana = r.authorKana || userSettings.authorKana || '';
+                        kigo = r.kigo || '';
+                        parentKigo = r.parentKigo || '';
+                        parentKana = r.parentKana || '';
+                        season = r.season || '';
+                        detailSeason = r.detailSeason || '';
+                        status = r.status || '完成句';
+                        sakkuDate = r.sakkuDate || '';
+                    }
+
+                    if (phrase && !haikuHistory.some(h => h.phrase === phrase)) {
+                        haikuHistory.push({
+                            id: 'cloud_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                            phrase,
+                            author,
+                            authorKana,
+                            kigo,
+                            parentKigo,
+                            parentKana,
+                            season,
+                            detailSeason,
+                            status,
+                            sakkuDate,
+                            createdAt: Date.now()
+                        });
                         mergedCount++;
                     }
                 });
+
                 if (mergedCount > 0) {
                     saveLocalHaikus();
                     if (document.getElementById('readScreen').classList.contains('active')) {
                         renderYomuList();
                     }
-                    showToast(`☁️ クラウドから ${mergedCount}句 を同期しました`);
+                    showToast(`☁️ スプレッドシートから ${mergedCount}句 を同期しました`);
                 }
             }
         }
