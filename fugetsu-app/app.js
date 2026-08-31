@@ -616,7 +616,6 @@ function selectAuthorFilter(author) {
 // 🌸 季寄せ・歳時記 大画面（マイ歳時記ハイブリッド）
 // ========================================================
 function openSaijikiScreenFromMenu() {
-    closeMenuModal();
     closeSettingsModal();
     closeAuthorSelectModal();
     document.querySelectorAll('.step-screen').forEach(el => el.classList.remove('active'));
