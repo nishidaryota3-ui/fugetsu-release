@@ -356,7 +356,7 @@ async function loadInternalDatabases() {
     }
 
     try {
-        const respSaijiki = await fetch('data/saijiki.json?v=2.0.51');
+        const respSaijiki = await fetch('data/saijiki.json?v=2.0.52');
         if (respSaijiki.ok) {
             saijikiDatabase = await respSaijiki.json();
         }
@@ -2084,15 +2084,30 @@ async function fetchHaikusFromCloud() {
 
 // 💡 定期バックアップ案内
 function checkBackupReminder() {
-    const kanseiCount = haikuHistory.filter(h => h.status === '完成句').length;
-    const lastBackup = parseInt(localStorage.getItem(STORAGE_KEY_LAST_BACKUP) || '0', 10);
+    // 新規ユーザー・初期化前は絶対に表示しない
+    if (!userSettings.initialized) return;
+
+    const myName = userSettings.authorName || '風月';
+    const myKanseiCount = haikuHistory.filter(h => h.status === '完成句' && (!h.author || h.author === myName)).length;
+
+    // 自作の句が10句以上ない場合は表示しない
+    if (myKanseiCount < 10) return;
+
+    const savedLastBackup = localStorage.getItem(STORAGE_KEY_LAST_BACKUP);
+    if (!savedLastBackup) {
+        localStorage.setItem(STORAGE_KEY_LAST_BACKUP, String(Date.now()));
+        return;
+    }
+
+    const lastBackup = parseInt(savedLastBackup, 10);
     const daysSinceLastBackup = (Date.now() - lastBackup) / (1000 * 60 * 60 * 24);
 
-    if ((kanseiCount >= 30 && daysSinceLastBackup >= 14) || daysSinceLastBackup >= 30) {
+    // 30日以上経過時のみ案内
+    if (daysSinceLastBackup >= 30) {
         const modal = document.getElementById('backupReminderModal');
         const msg = document.getElementById('backupReminderMsg');
         if (modal && msg) {
-            msg.innerHTML = `大切な作品が <strong>${kanseiCount}句</strong> 蓄積されています。<br>万が一のスマホ故障や紛失に備えて、端末にバックアップを保存しますか？`;
+            msg.innerHTML = `大切な作品が <strong>${myKanseiCount}句</strong> 蓄積されています。<br>万が一のスマホ故障や紛失に備えて、端末にバックアップを保存しますか？`;
             modal.classList.remove('hidden');
         }
     }
@@ -2146,8 +2161,10 @@ function setFontFamilyMode(mode) {
 }
 
 function saveAuthorSettings() {
-    const name = document.getElementById('settingAuthorName').value.trim() || '風月';
-    const kana = document.getElementById('settingAuthorKana').value.trim() || 'ふうげつ';
+    const nameEl = document.getElementById('settingAuthorName');
+    const kanaEl = document.getElementById('settingAuthorKana');
+    const name = (nameEl ? nameEl.value.trim() : '') || '風月';
+    const kana = (kanaEl ? kanaEl.value.trim() : '') || 'ふうげつ';
     userSettings.authorName = name;
     userSettings.authorKana = kana;
     userSettings.initialized = true;
@@ -2158,14 +2175,18 @@ function saveAuthorSettings() {
 }
 
 function completeWelcomeSetup() {
-    const name = document.getElementById('welcomeAuthorName').value.trim() || '風月';
-    const kana = document.getElementById('welcomeAuthorKana').value.trim() || 'ふうげつ';
+    const nameEl = document.getElementById('welcomeAuthorName');
+    const kanaEl = document.getElementById('welcomeAuthorKana');
+    const name = (nameEl ? nameEl.value.trim() : '') || '風月';
+    const kana = (kanaEl ? kanaEl.value.trim() : '') || 'ふうげつ';
     userSettings.authorName = name;
     userSettings.authorKana = kana;
     userSettings.initialized = true;
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
+    localStorage.setItem(STORAGE_KEY_LAST_BACKUP, String(Date.now()));
     updateHeaderTitle();
-    document.getElementById('welcomeModal').classList.add('hidden');
+    const modal = document.getElementById('welcomeModal');
+    if (modal) modal.classList.add('hidden');
 }
 
 // 漢数字表記の旧暦（例：旧暦七月十五日（文月））をアラビア数字（7月15日（文月））に変換するヘルパー

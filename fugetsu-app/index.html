@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.51">
+    <link rel="stylesheet" href="style.css?v=2.0.52">
 </head>
 <body>
 
@@ -453,11 +453,15 @@
             <h3 class="modal-title" style="font-size: 1.15rem; margin-bottom: 5px;">ようこそ風月へ</h3>
             <p class="settings-desc" style="margin-bottom: 15px;">あなたの俳号（作者名）を教えてください。<br>後からいつでも設定で変更できます。</p>
             <div class="settings-form" style="width: 100%;">
-                <div class="form-group">
-                    <label class="form-label">俳号（作者名）</label>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label class="form-label">あなたの俳号（作者名）</label>
                     <input type="text" id="welcomeAuthorName" class="text-input" placeholder="例：風月、芭蕉" value="風月">
                 </div>
-                <button class="btn" style="margin-top: 15px;" onclick="completeWelcomeSetup()">句帳をはじめる</button>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label class="form-label">俳号のよみがな</label>
+                    <input type="text" id="welcomeAuthorKana" class="text-input" placeholder="例：ふうげつ、ばしょう" value="ふうげつ">
+                </div>
+                <button class="btn" style="margin-top: 5px;" onclick="completeWelcomeSetup()">句帳をはじめる</button>
             </div>
         </div>
     </div>
@@ -730,6 +734,6 @@
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.51"></script>
+    <script src="app.js?v=2.0.52"></script>
 </body>
 </html>
