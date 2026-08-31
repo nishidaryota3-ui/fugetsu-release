@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.78">
+    <link rel="stylesheet" href="style.css?v=2.0.79">
 </head>
 <body>
 
@@ -402,13 +402,33 @@
 
             <div class="settings-divider"></div>
 
-            <!-- 五、 表示・各種設定 -->
+            <!-- 五、 句帳の保存と復元 -->
             <div class="menu-pillar-section">
                 <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection5')">
-                    <span class="pillar-section-title">五、 表示・各種設定</span>
+                    <span class="pillar-section-title">五、 句帳の保存と復元</span>
                     <span id="settingArrow5" class="pillar-accordion-arrow">▿</span>
                 </div>
                 <div id="settingSection5" class="pillar-accordion-body hidden">
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px; padding-left: 10px;">
+                        <div class="pillar-text-link" onclick="exportHaikuData()">
+                            ① バックアップをファイルに保存
+                        </div>
+                        <div class="pillar-text-link" onclick="triggerImportFileInput()">
+                            ② ファイルから句帳を復元
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-divider"></div>
+
+            <!-- 六、 表示・各種設定 -->
+            <div class="menu-pillar-section">
+                <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection6')">
+                    <span class="pillar-section-title">六、 表示・各種設定</span>
+                    <span id="settingArrow6" class="pillar-accordion-arrow">▿</span>
+                </div>
+                <div id="settingSection6" class="pillar-accordion-body hidden">
                     <div class="settings-form" style="width: 100%; margin-top: 4px;">
                         <div class="form-group" style="margin-bottom: 10px;">
                             <label class="form-label" style="margin-bottom: 4px;">文字サイズ</label>
@@ -439,11 +459,7 @@
             </div>
             
             <div class="settings-footer-action-area" style="margin-top: 14px; display: flex; flex-direction: column; align-items: center; gap: 6px;">
-                <div class="settings-btn-row-fit" style="margin-top: 0; opacity: 0.85;">
-                    <button class="btn btn-outline" style="padding: 4px 10px; font-size: 0.72rem; border-radius: 12px;" onclick="exportHaikuData()">バックアップ保存</button>
-                    <button class="btn btn-outline" style="padding: 4px 10px; font-size: 0.72rem; border-radius: 12px;" onclick="triggerImportFileInput()">ファイルから復元</button>
-                    <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="importHaikuData(event)">
-                </div>
+                <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="importHaikuData(event)">
                 <button type="button" class="safe-update-btn" onclick="checkForAppUpdate()">最新版を確認・更新</button>
                 <div class="app-version-note">おみ句じ句帳 - 風月 v2.0</div>
             </div>
@@ -796,6 +812,6 @@ function doGet() {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.78"></script>
+    <script src="app.js?v=2.0.79"></script>
 </body>
 </html>
