@@ -356,7 +356,7 @@ async function loadInternalDatabases() {
     }
 
     try {
-        const respSaijiki = await fetch('data/saijiki.json?v=2.0.53');
+        const respSaijiki = await fetch('data/saijiki.json?v=2.0.54');
         if (respSaijiki.ok) {
             saijikiDatabase = await respSaijiki.json();
         }
@@ -1721,11 +1721,11 @@ function toggleSettingsAccordion(sectionId) {
     const isHidden = sectionEl.classList.contains('hidden');
     
     // すべてのセクションを一旦閉じる
-    ['settingSection1', 'settingSection2', 'settingSectionTrash', 'settingSection3'].forEach((id) => {
+    ['settingSection1', 'settingSection2', 'settingSection3', 'settingSectionTrash', 'settingSection5'].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
     });
-    ['settingArrow1', 'settingArrow2', 'settingArrowTrash', 'settingArrow3'].forEach(aid => {
+    ['settingArrow1', 'settingArrow2', 'settingArrow3', 'settingArrowTrash', 'settingArrow5'].forEach(aid => {
         const arrow = document.getElementById(aid);
         if (arrow) arrow.textContent = '▿';
     });
@@ -1735,8 +1735,9 @@ function toggleSettingsAccordion(sectionId) {
         sectionEl.classList.remove('hidden');
         let arrowId = 'settingArrow1';
         if (sectionId === 'settingSection2') arrowId = 'settingArrow2';
-        else if (sectionId === 'settingSectionTrash') arrowId = 'settingArrowTrash';
         else if (sectionId === 'settingSection3') arrowId = 'settingArrow3';
+        else if (sectionId === 'settingSectionTrash') arrowId = 'settingArrowTrash';
+        else if (sectionId === 'settingSection5') arrowId = 'settingArrow5';
         const arrow = document.getElementById(arrowId);
         if (arrow) arrow.textContent = '▴';
     }
@@ -1744,11 +1745,11 @@ function toggleSettingsAccordion(sectionId) {
 
 function openSettingsModal() {
     // すべてのアコーディオンを閉じた状態にする
-    ['settingSection1', 'settingSection2', 'settingSectionTrash', 'settingSection3'].forEach((id) => {
+    ['settingSection1', 'settingSection2', 'settingSection3', 'settingSectionTrash', 'settingSection5'].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
     });
-    ['settingArrow1', 'settingArrow2', 'settingArrowTrash', 'settingArrow3'].forEach(aid => {
+    ['settingArrow1', 'settingArrow2', 'settingArrow3', 'settingArrowTrash', 'settingArrow5'].forEach(aid => {
         const arrow = document.getElementById(aid);
         if (arrow) arrow.textContent = '▿';
     });

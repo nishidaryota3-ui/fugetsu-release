@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.53">
+    <link rel="stylesheet" href="style.css?v=2.0.54">
 </head>
 <body>
 
@@ -348,27 +348,31 @@
 
             <div class="settings-divider"></div>
 
-            <!-- 二、 データの保存・移行 ＆ 同期 -->
+            <!-- 二、 過去句のまとめて登録 -->
             <div class="menu-pillar-section">
                 <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection2')">
-                    <span class="pillar-section-title">二、 データ移行・クラウド同期</span>
+                    <span class="pillar-section-title">二、 過去句のまとめて登録</span>
                     <span id="settingArrow2" class="pillar-accordion-arrow">▿</span>
                 </div>
                 <div id="settingSection2" class="pillar-accordion-body hidden">
-                    <div class="settings-btn-row-fit">
-                        <button class="btn btn-outline settings-action-btn" onclick="exportHaikuData()">データ出力</button>
-                        <button class="btn btn-outline settings-action-btn" onclick="triggerImportFileInput()">データ復元</button>
-                        <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="importHaikuData(event)">
-                    </div>
-
-                    <div style="margin-top: 10px; width: 100%; display: flex; justify-content: center;">
+                    <p class="settings-desc" style="margin-bottom: 8px;">パソコンのメモ帳やWord、Excelにある過去の句をコピペで一発登録できます。</p>
+                    <div style="width: 100%; display: flex; justify-content: center;">
                         <button class="btn btn-outline batch-import-open-btn" onclick="openBatchImportModal()">
-                            <span>📝 テキストから一括取り込み</span>
+                            <span>📝 テキストを貼り付けて登録</span>
                         </button>
                     </div>
+                </div>
+            </div>
 
-                    <div class="settings-divider" style="margin: 12px 0 8px;"></div>
+            <div class="settings-divider"></div>
 
+            <!-- 三、 他の端末（PC・スマホ）と繋ぐ -->
+            <div class="menu-pillar-section">
+                <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection3')">
+                    <span class="pillar-section-title">三、 他の端末（PC・スマホ）と繋ぐ</span>
+                    <span id="settingArrow3" class="pillar-accordion-arrow">▿</span>
+                </div>
+                <div id="settingSection3" class="pillar-accordion-body hidden">
                     <div class="settings-form" style="width: 100%;">
                         <div class="form-group" style="margin-bottom: 4px;">
                             <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
@@ -378,9 +382,9 @@
                                     <span id="cloudSyncStatusBadge" class="cloud-status-badge">未設定</span>
                                 </span>
                             </label>
-                            <input type="url" id="settingCloudSyncUrl" class="text-input sync-url-input" placeholder="スプレッドシートのURLを貼り付け">
+                            <input type="url" id="settingCloudSyncUrl" class="text-input sync-url-input" placeholder="スプレッドシートの共有URLを貼り付け">
                         </div>
-                        <div class="settings-sub-note" style="margin-top: 2px;">※シートURLを貼るだけで全端末で自動同期</div>
+                        <div class="settings-sub-note" style="margin-top: 2px;">※シートのURLを貼るだけで全端末が自動同期</div>
                         <button class="btn btn-outline cloud-save-btn" onclick="saveCloudSyncSettings()">同期URLを保存</button>
                     </div>
                 </div>
@@ -388,10 +392,10 @@
 
             <div class="settings-divider"></div>
 
-            <!-- 三、 ごみ箱（最近削除した句の復元） -->
+            <!-- 四、 ごみ箱（最近削除した句の復元） -->
             <div class="menu-pillar-section">
                 <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSectionTrash')">
-                    <span class="pillar-section-title">三、 ごみ箱（削除した句の復元）</span>
+                    <span class="pillar-section-title">四、 ごみ箱（削除した句の復元）</span>
                     <span id="settingArrowTrash" class="pillar-accordion-arrow">▿</span>
                 </div>
                 <div id="settingSectionTrash" class="pillar-accordion-body hidden">
@@ -404,13 +408,13 @@
 
             <div class="settings-divider"></div>
 
-            <!-- 四、 表示・各種設定 -->
+            <!-- 五、 表示・各種設定 -->
             <div class="menu-pillar-section">
-                <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection3')">
-                    <span class="pillar-section-title">四、 表示・各種設定</span>
-                    <span id="settingArrow3" class="pillar-accordion-arrow">▿</span>
+                <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection5')">
+                    <span class="pillar-section-title">五、 表示・各種設定</span>
+                    <span id="settingArrow5" class="pillar-accordion-arrow">▿</span>
                 </div>
-                <div id="settingSection3" class="pillar-accordion-body hidden">
+                <div id="settingSection5" class="pillar-accordion-body hidden">
                     <div class="settings-form" style="width: 100%; margin-top: 4px;">
                         <div class="form-group" style="margin-bottom: 12px;">
                             <label class="form-label" style="margin-bottom: 6px;">文字サイズ</label>
@@ -440,7 +444,12 @@
                 </div>
             </div>
             
-            <div class="settings-footer-action-area" style="margin-top: 14px; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+            <div class="settings-footer-action-area" style="margin-top: 14px; display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                <div class="settings-btn-row-fit" style="margin-top: 0; opacity: 0.85;">
+                    <button class="btn btn-outline" style="padding: 4px 10px; font-size: 0.72rem; border-radius: 12px;" onclick="exportHaikuData()">バックアップ保存</button>
+                    <button class="btn btn-outline" style="padding: 4px 10px; font-size: 0.72rem; border-radius: 12px;" onclick="triggerImportFileInput()">ファイルから復元</button>
+                    <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="importHaikuData(event)">
+                </div>
                 <button type="button" class="safe-update-btn" onclick="checkForAppUpdate()">最新版を確認・更新</button>
                 <div class="app-version-note">おみ句じ句帳 - 風月 v2.0</div>
             </div>
@@ -726,6 +735,6 @@
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.53"></script>
+    <script src="app.js?v=2.0.54"></script>
 </body>
 </html>

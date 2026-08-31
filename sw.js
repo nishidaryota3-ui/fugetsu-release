@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fugetsu-release-v53';
+const CACHE_NAME = 'fugetsu-release-v54';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -14,7 +14,7 @@ const ASSETS_TO_CACHE = [
   './data/koyomi.json',
   './data/saijiki.json',
   './data/koyomi.json?v=2.0.33',
-  './data/saijiki.json?v=2.0.53'
+  './data/saijiki.json?v=2.0.54'
 ];
 
 self.addEventListener('install', (event) => {
