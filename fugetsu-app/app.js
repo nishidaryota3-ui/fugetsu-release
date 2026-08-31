@@ -2877,6 +2877,8 @@ function onSettingCheckboxChanged() {
 
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
     applyUserSettingsToUI();
+}
+
 function setAppTheme(theme) {
     userSettings.theme = theme;
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
