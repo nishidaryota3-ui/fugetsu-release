@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.66">
+    <link rel="stylesheet" href="style.css?v=2.0.67">
 </head>
 <body>
 
@@ -351,14 +351,26 @@
             <!-- 二、 過去句の取り込み -->
             <div class="menu-pillar-section">
                 <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection2')">
-                    <span class="pillar-section-title">二、 過去句の取り込み</span>
+                    <span class="pillar-section-title">二、 過去句の取り込み（引っ越し）</span>
                     <span id="settingArrow2" class="pillar-accordion-arrow">▿</span>
                 </div>
                 <div id="settingSection2" class="pillar-accordion-body hidden">
-                    <p class="settings-desc" style="margin-bottom: 8px;">メモ帳やExcelにある過去の句を一括登録します。</p>
-                    <button class="btn btn-outline pillar-action-btn" style="width: 100%; font-size: 0.82rem;" onclick="openBatchImportModal()">
-                        テキストを貼り付けて登録
+                    <p class="settings-desc" style="margin-bottom: 8px;">過去に詠んだ句を風月アプリへまとめて取り込みます。</p>
+                    
+                    <!-- テキスト貼り付け -->
+                    <button class="btn btn-outline pillar-action-btn" style="width: 100%; font-size: 0.82rem; margin-bottom: 8px;" onclick="openBatchImportModal()">
+                        📝 テキストを貼り付けて登録
                     </button>
+
+                    <!-- スプレッドシート共有URL読み込み -->
+                    <div class="sync-pillar-card" style="background: #faf8f5;">
+                        <span class="sync-card-title">📊 スプレッドシートから取り込み</span>
+                        <p class="settings-sub-note" style="margin: 4px 0 6px;">「リンクを知っている全員が閲覧可」の共有URLを貼って取り込みます。</p>
+                        <div style="display: flex; gap: 6px;">
+                            <input type="url" id="importSheetUrlInput" class="text-input" style="flex: 1; font-size: 0.8rem;" placeholder="スプレッドシートの共有URL">
+                            <button type="button" class="btn btn-outline" style="padding: 0 10px; font-size: 0.78rem;" onclick="executeSheetImportFromSection2()">取り込む</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -367,14 +379,14 @@
             <!-- 三、 他の端末と同期 -->
             <div class="menu-pillar-section">
                 <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection3')">
-                    <span class="pillar-section-title">三、 他の端末と同期</span>
+                    <span class="pillar-section-title">三、 他の端末と同期（常時連動）</span>
                     <span id="settingArrow3" class="pillar-accordion-arrow">▿</span>
                 </div>
                 <div id="settingSection3" class="pillar-accordion-body hidden">
                     <!-- ① 暗号キー接続（手軽） -->
                     <div class="sync-pillar-card">
                         <div class="sync-card-header">
-                            <span class="sync-card-title">① 暗号キー接続（手軽）</span>
+                            <span class="sync-card-title">① 暗号キー接続（手軽・端末間）</span>
                             <button type="button" class="guide-link-btn" onclick="openSyncKeyHelpModal()">詳細</button>
                         </div>
                         <p class="settings-sub-note" style="margin: 4px 0 8px;">合言葉を入力するだけで端末同士を接続。</p>
@@ -390,15 +402,15 @@
                         </div>
                     </div>
 
-                    <!-- ② スプレッドシート同期（高度） -->
+                    <!-- ② GASスプレッドシート同期（恒久・完全二重保存） -->
                     <div class="sync-pillar-card" style="margin-top: 8px;">
                         <div class="sync-card-header">
-                            <span class="sync-card-title">② スプレッドシート同期（恒久保存）</span>
+                            <span class="sync-card-title">② Google自動二重保存（GAS・完全同期）</span>
                             <button type="button" class="guide-link-btn" onclick="openCloudGuideModal()">詳細</button>
                         </div>
-                        <p class="settings-sub-note" style="margin: 4px 0 8px;">水没や故障でも句を守るGoogle自動二重保存。</p>
+                        <p class="settings-sub-note" style="margin: 4px 0 8px;">詠むたびに自動保存。水没や故障でも句を守る完全同期。</p>
                         <div style="display: flex; gap: 6px;">
-                            <input type="url" id="settingCloudSyncUrl" class="text-input" style="flex: 1; font-size: 0.8rem;" placeholder="共有URL / GAS URL">
+                            <input type="url" id="settingCloudSyncUrl" class="text-input" style="flex: 1; font-size: 0.8rem;" placeholder="GASウェブアプリURLを貼り付け">
                             <button type="button" class="btn btn-outline" style="padding: 0 12px; font-size: 0.78rem;" onclick="saveCloudSyncSettings()">保存</button>
                         </div>
                     </div>
@@ -543,28 +555,30 @@
         </div>
     </div>
 
-    <!-- 📊 スプレッドシート連携ガイドモーダル -->
+    <!-- 📊 GASスプレッドシート連携ガイドモーダル -->
     <div id="cloudGuideModal" class="card-overlay hidden" onclick="closeCloudGuideModal()">
         <div class="modal-card-content" style="max-width: 355px; text-align: left; max-height: 85vh; overflow-y: auto;" onclick="event.stopPropagation()">
             <span class="modal-close-corner" onclick="closeCloudGuideModal()">✕</span>
-            <h3 class="modal-title" style="font-size: 1.05rem; text-align: center; margin-bottom: 8px;">スプレッドシート同期ガイド</h3>
+            <h3 class="modal-title" style="font-size: 1.05rem; text-align: center; margin-bottom: 8px;">Google自動二重保存ガイド</h3>
             
             <div class="cloud-guide-step-box">
-                <div class="guide-step-title">【方法A】 共有URLを貼る（手軽・読込）</div>
+                <div class="guide-step-title">1. 特徴とメリット</div>
                 <p class="guide-step-desc">
-                  1. スプレッドシートの「共有」で「リンクを知っている全員が閲覧可」に設定。<br>
-                  2. シートのURLを設定欄に貼り付けるだけで句を同期・復元できます。
+                  ・アプリで詠んだ句が<b>Googleスプレッドシートにリアルタイム自動追記</b>されます。<br>
+                  ・万が一スマホが水没・故障・紛失しても、全句が100% Google上に残ります。<br>
+                  ・PCとスマホの両方にこのURLを登録すれば、<b>常時完全自動同期</b>になります。
                 </p>
             </div>
 
             <div class="cloud-guide-step-box" style="margin-top: 8px;">
-                <div class="guide-step-title">【方法B】 GASによる完全双方向同期（高度）</div>
-                <p class="guide-step-desc">
-                  アプリで詠んだ句が自動でシートに追記される完全同期です。<br>
-                  スプレッドシートの「拡張機能 ➔ Apps Script」に以下のコードを貼り付けて「ウェブアプリとしてデプロイ」してください。
+                <div class="guide-step-title">2. 設定手順（3ステップ）</div>
+                <p class="guide-step-desc" style="line-height: 1.6;">
+                  ① スプレッドシートを開き「拡張機能 ➔ Apps Script」を選択。<br>
+                  ② 以下のコードを貼り付けて保存。<br>
+                  ③ 右上「デプロイ ➔ 新しいデプロイ ➔ 種類: ウェブアプリ（アクセス: 全員）」でURLを発行し、設定欄に貼り付け。
                 </p>
                 <div style="position: relative; margin-top: 6px;">
-                    <textarea id="gasScriptCodeBlock" readonly class="gas-code-textarea" style="width: 100%; height: 90px; font-family: monospace; font-size: 0.72rem; padding: 6px; border: 1px solid #ddd; border-radius: 4px; background: #f8f8f8; resize: none;">function doPost(e) {
+                    <textarea id="gasScriptCodeBlock" readonly class="gas-code-textarea" style="width: 100%; height: 95px; font-family: monospace; font-size: 0.72rem; padding: 6px; border: 1px solid #ddd; border-radius: 4px; background: #f8f8f8; resize: none;">function doPost(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var data = JSON.parse(e.postData.contents);
   if (data.haiku) {
@@ -787,6 +801,6 @@ function doGet() {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.66"></script>
+    <script src="app.js?v=2.0.67"></script>
 </body>
 </html>

@@ -2037,7 +2037,36 @@ function executeBatchImport() {
     }
 }
 
-// 📊 スプレッドシート連携ガイド
+// 📊 スプレッドシート連携・取り込み
+async function executeSheetImportFromSection2() {
+    const inputEl = document.getElementById('importSheetUrlInput');
+    const rawUrl = inputEl ? inputEl.value.trim() : '';
+    if (!rawUrl) {
+        alert('スプレッドシートの共有URLを入力してください。');
+        return;
+    }
+
+    try {
+        const sheetIdMatch = rawUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+        if (sheetIdMatch && sheetIdMatch[1]) {
+            const sheetId = sheetIdMatch[1];
+            const gidMatch = rawUrl.match(/[#&?]gid=([0-9]+)/);
+            const gid = gidMatch ? gidMatch[1] : '0';
+            
+            const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}`;
+            const resp = await fetch(csvUrl);
+            if (resp.ok) {
+                const csvText = await resp.text();
+                parseAndMergeCsvHaikus(csvText);
+                return;
+            }
+        }
+        alert('スプレッドシートからデータを読み取れませんでした。共有設定が「リンクを知っている全員が閲覧可」になっているかご確認ください。');
+    } catch (e) {
+        alert('スプレッドシートの読み込みに失敗しました：' + e.message);
+    }
+}
+
 function openSyncKeyHelpModal() {
     const modal = document.getElementById('syncKeyHelpModal');
     if (modal) modal.classList.remove('hidden');
