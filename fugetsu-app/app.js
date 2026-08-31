@@ -186,16 +186,8 @@ window.onload = function() {
     // 定期バックアップ案内のチェック
     setTimeout(checkBackupReminder, 1200);
 
-    // クラウドからの自動双方向同期チェック（起動時・フォーカス時・10秒ごと定期）
-    setTimeout(fetchHaikusFromCloud, 500);
-    window.addEventListener('focus', () => {
-        fetchHaikusFromCloud();
-    });
-    setInterval(() => {
-        if (userSettings.syncKey) {
-            fetchHaikusFromCloud();
-        }
-    }, 10000);
+    // クラウドからの自動双方向同期チェック
+    setTimeout(fetchHaikusFromCloud, 800);
 };
 
 function loadUserSettings() {
@@ -364,26 +356,14 @@ async function loadInternalDatabases() {
     }
 
     try {
-        let respSaijiki = await fetch('data/saijiki.json?v=2.0.60');
-        if (!respSaijiki || !respSaijiki.ok) {
-            respSaijiki = await fetch('data/saijiki.json');
-        }
-        if (respSaijiki && respSaijiki.ok) {
+        const respSaijiki = await fetch('data/saijiki.json?v=2.0.64');
+        if (respSaijiki.ok) {
             saijikiDatabase = await respSaijiki.json();
             renderSaijikiKigoList();
             renderStep1KigoList();
         }
     } catch (e) {
-        try {
-            const fallbackResp = await fetch('data/saijiki.json');
-            if (fallbackResp.ok) {
-                saijikiDatabase = await fallbackResp.json();
-                renderSaijikiKigoList();
-                renderStep1KigoList();
-            }
-        } catch (err2) {
-            console.warn('Saijiki load offline fallback:', err2);
-        }
+        console.warn('Saijiki load offline fallback:', e);
     }
 }
 
@@ -620,6 +600,7 @@ function openAuthorSelectModal() {
 
     document.getElementById('authorSelectModal').classList.remove('hidden');
 }
+}
 
 function closeAuthorSelectModal() {
     document.getElementById('authorSelectModal').classList.add('hidden');
@@ -632,13 +613,15 @@ function selectAuthorFilter(author) {
     renderYomuList();
 }
 
+// ========================================================
+// 🌸 季寄せ・歳時記 大画面（マイ歳時記ハイブリッド）
+// ========================================================
 function openSaijikiScreenFromMenu() {
     closeMenuModal();
     closeSettingsModal();
     closeAuthorSelectModal();
     document.querySelectorAll('.step-screen').forEach(el => el.classList.remove('active'));
-    const saijikiEl = document.getElementById('saijikiScreen');
-    if (saijikiEl) saijikiEl.classList.add('active');
+    document.getElementById('saijikiScreen').classList.add('active');
     updateCatVisibility(false);
     switchSaijikiSeason(currentSaijikiSeason || 'haru');
 }
@@ -1811,7 +1794,7 @@ function openSettingsModal() {
 
     const cloudInput = document.getElementById('settingCloudSyncUrl');
     if (cloudInput) cloudInput.value = userSettings.cloudSyncUrl || '';
-    updateSyncStatusUI();
+    updateCloudStatusBadge();
 
     renderTrashList();
     document.getElementById('settingsModal').classList.remove('hidden');
@@ -2066,189 +2049,91 @@ function closeCloudGuideModal() {
     if (modal) modal.classList.add('hidden');
 }
 
-// 📊 スプレッドシートから句を一括取り込み（データ移行・引っ越し）
-async function executeSheetImport() {
+// ☁️ クラウド自動同期（Googleスプレッドシート等への二重保存 ＆ 双方向受信）
+function saveCloudSyncSettings() {
     const urlInput = document.getElementById('settingCloudSyncUrl');
-    const rawUrl = urlInput ? urlInput.value.trim() : '';
-    if (!rawUrl) {
-        alert('スプレッドシートの共有URLを入力してください。');
-        return;
-    }
-
-    try {
-        const sheetIdMatch = rawUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-        if (sheetIdMatch && sheetIdMatch[1]) {
-            const sheetId = sheetIdMatch[1];
-            const gidMatch = rawUrl.match(/[#&?]gid=([0-9]+)/);
-            const gid = gidMatch ? gidMatch[1] : '0';
-            
-            const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}`;
-            const resp = await fetch(csvUrl);
-            if (resp.ok) {
-                const csvText = await resp.text();
-                parseAndMergeCsvHaikus(csvText);
-                return;
-            }
-        }
-        alert('スプレッドシートのURLからデータを読み取れませんでした。共有設定が「リンクを知っている全員が閲覧可」になっているかご確認ください。');
-    } catch (e) {
-        alert('スプレッドシートの読み込みに失敗しました：' + e.message);
-    }
-}
-
-// 🔑 クラウド自動同期・端末間同期
-function updateSyncStatusUI() {
-    const statusText = document.getElementById('syncStatusText');
-    const displayArea = document.getElementById('syncKeyDisplayArea');
-    const myKeyText = document.getElementById('mySyncKeyText');
-    const inputEl = document.getElementById('inputSyncKey');
-
-    if (!statusText) return;
-
-    if (userSettings.syncKey) {
-        statusText.textContent = `🟢 接続中（合言葉: ${userSettings.syncKey}）`;
-        statusText.className = 'sync-status-text connected';
-        if (displayArea) displayArea.classList.add('hidden');
-        if (inputEl) inputEl.value = userSettings.syncKey;
-    } else {
-        statusText.textContent = '未接続（単独で利用中）';
-        statusText.className = 'sync-status-text';
-    }
-}
-
-// 1. 合言葉を発行する
-async function generateSyncKey() {
-    const num1 = Math.floor(100 + Math.random() * 900);
-    const num2 = Math.floor(100 + Math.random() * 900);
-    const newKey = `${num1}-${num2}`;
-
-    userSettings.syncKey = newKey;
+    let url = urlInput ? urlInput.value.trim() : '';
+    userSettings.cloudSyncUrl = url;
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
-
-    const displayArea = document.getElementById('syncKeyDisplayArea');
-    const myKeyText = document.getElementById('mySyncKeyText');
-    if (displayArea && myKeyText) {
-        myKeyText.textContent = newKey;
-        displayArea.classList.remove('hidden');
+    updateCloudStatusBadge();
+    showToast(url ? '☁️ クラウド同期URLを保存しました' : 'クラウド同期を解除しました');
+    if (url) {
+        fetchHaikusFromCloud();
     }
-
-    updateSyncStatusUI();
-    showToast(`🔑 合言葉【${newKey}】を発行しました！`);
-    
-    await pushAllHaikusToCloud();
 }
 
-// 2. 相手の合言葉を入力して接続する
-async function connectSyncKey() {
-    const inputEl = document.getElementById('inputSyncKey');
-    const key = inputEl ? inputEl.value.trim() : '';
-
-    if (!key || key.length < 4) {
-        alert('合言葉を正しく入力してください（例：829-104）');
-        return;
-    }
-
-    userSettings.syncKey = key;
-    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
-    updateSyncStatusUI();
-
-    showToast(`🔄 合言葉【${key}】で接続中...`);
-
-    const count = await fetchHaikusFromCloud();
-    await pushAllHaikusToCloud();
-    alert(`✅ 合言葉【${key}】で接続しました！\n${count}句 を新しく同期しました。`);
-}
-
-// 全句をクラウドに送信（合言葉部屋にアップロード）
-async function pushAllHaikusToCloud() {
-    if (!userSettings.syncKey) return;
-
-    // P2Pアクティブ接続があれば直接送信
-    if (activePeerConn && activePeerConn.open) {
-        try {
-            activePeerConn.send({
-                type: 'HAIKU_SYNC',
-                haikus: haikuHistory,
-                authorName: userSettings.authorName
-            });
-        } catch (e) {}
-    }
-
-    const keyClean = userSettings.syncKey.replace(/[^0-9a-zA-Z]/g, '');
-    const topic = `fugetsu-sync-${keyClean}`;
-    
-    // 軽量化ペイロード（直近30句＋全フレーズ一覧）
-    const payload = {
-        updatedAt: Date.now(),
-        authorName: userSettings.authorName || '風月',
-        haikus: haikuHistory.slice(0, 50)
-    };
-
-    try {
-        await fetch(`https://ntfy.sh/${topic}`, {
-            method: 'POST',
-            headers: {
-                'X-Retain': '1',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
-    } catch (e) {}
+function updateCloudStatusBadge() {
+    const badge = document.getElementById('cloudSyncStatusBadge');
+    if (!badge) return;
+    const isSet = !!(userSettings.cloudSyncUrl && userSettings.cloudSyncUrl.startsWith('http'));
+    badge.textContent = isSet ? '同期中' : '未設定';
+    badge.classList.toggle('active', isSet);
 }
 
 function syncHaikuToCloud(haikuObj) {
-    if (!userSettings.syncKey) return;
-    pushAllHaikusToCloud();
+    if (!userSettings.cloudSyncUrl || !userSettings.cloudSyncUrl.startsWith('http')) return;
+    // Web App URLの場合のみPOST送信
+    if (userSettings.cloudSyncUrl.includes('script.google.com')) {
+        try {
+            fetch(userSettings.cloudSyncUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(haikuObj)
+            }).catch(e => console.warn('Cloud sync background error:', e));
+        } catch (e) {}
+    }
 }
 
-// 📥 クラウド（合言葉部屋）から最新データを双方向受信・マージ
+// 📥 クラウド（スプレッドシート）から最新データを双方向受信・マージ
 async function fetchHaikusFromCloud() {
-    if (!userSettings.syncKey) return 0;
-    const keyClean = userSettings.syncKey.replace(/[^0-9a-zA-Z]/g, '');
-    const topic = `fugetsu-sync-${keyClean}`;
-    let mergedCount = 0;
+    let rawUrl = userSettings.cloudSyncUrl;
+    if (!rawUrl || !rawUrl.startsWith('http')) return;
 
     try {
-        const resp = await fetch(`https://ntfy.sh/${topic}/json?poll=1`);
-        if (resp.ok) {
-            const text = await resp.text();
-            const lines = text.trim().split('\n');
-            let latestPayload = null;
-
-            for (const line of lines) {
-                if (!line.trim()) continue;
-                try {
-                    const item = JSON.parse(line);
-                    if (item.event === 'message' && item.message) {
-                        const parsed = JSON.parse(item.message);
-                        if (parsed && Array.isArray(parsed.haikus)) {
-                            latestPayload = parsed;
-                        }
-                    }
-                } catch (err) {}
+        // 通常のGoogleスプレッドシートURL（docs.google.com/spreadsheets/d/...）の場合
+        if (rawUrl.includes('docs.google.com/spreadsheets/d/')) {
+            const sheetIdMatch = rawUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+            if (sheetIdMatch && sheetIdMatch[1]) {
+                const sheetId = sheetIdMatch[1];
+                const gidMatch = rawUrl.match(/[#&?]gid=([0-9]+)/);
+                const gid = gidMatch ? gidMatch[1] : '0';
+                
+                // GViz API エンドポイント（CORS許可・gid対応）
+                const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}`;
+                const resp = await fetch(csvUrl);
+                if (resp.ok) {
+                    const csvText = await resp.text();
+                    parseAndMergeCsvHaikus(csvText);
+                    return;
+                }
             }
+        }
 
-            if (latestPayload && Array.isArray(latestPayload.haikus)) {
-                latestPayload.haikus.forEach(cloudHaiku => {
-                    if (cloudHaiku.phrase && !haikuHistory.some(h => h.phrase === cloudHaiku.phrase)) {
-                        haikuHistory.push(cloudHaiku);
+        // Web App URL（JSON返却形式）の場合
+        const resp = await fetch(rawUrl, { method: 'GET' });
+        if (resp.ok) {
+            const cloudHaikus = await resp.json();
+            if (Array.isArray(cloudHaikus) && cloudHaikus.length > 0) {
+                let mergedCount = 0;
+                cloudHaikus.forEach(item => {
+                    if (item.phrase && !haikuHistory.some(h => h.phrase === item.phrase)) {
+                        haikuHistory.push(item);
                         mergedCount++;
                     }
                 });
-
                 if (mergedCount > 0) {
                     saveLocalHaikus();
                     if (document.getElementById('readScreen').classList.contains('active')) {
                         renderYomuList();
                     }
+                    showToast(`☁️ クラウドから ${mergedCount}句 を同期しました`);
                 }
-                updateSyncStatusUI();
             }
         }
     } catch (e) {
-        console.warn('Sync fetch fallback:', e);
+        console.warn('Cloud fetch silent fallback:', e);
     }
-    return mergedCount;
 }
 
 // 📄 CSV文字列（引用符対応）をパースしてローカル句帳にマージする高度パーサー

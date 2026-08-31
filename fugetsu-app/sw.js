@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fugetsu-release-v63';
+const CACHE_NAME = 'fugetsu-release-v64';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -12,7 +12,9 @@ const ASSETS_TO_CACHE = [
   './icon_top_output.png',
   './kiyose.png',
   './data/koyomi.json',
-  './data/saijiki.json'
+  './data/saijiki.json',
+  './data/koyomi.json?v=2.0.33',
+  './data/saijiki.json?v=2.0.64'
 ];
 
 self.addEventListener('install', (event) => {
@@ -58,9 +60,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 画像・データファイルなどはキャッシュまたはネットワークから確実に返す
+  // 画像・データファイルなどはキャッシュ優先
   event.respondWith(
-    caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
+    caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) return cachedResponse;
       return fetch(event.request).then((response) => {
         if (response && response.status === 200) {
@@ -68,9 +70,6 @@ self.addEventListener('fetch', (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
         }
         return response;
-      }).catch(() => {
-        // オフライン時のフォールバック
-        return caches.match('./data/saijiki.json');
       });
     })
   );

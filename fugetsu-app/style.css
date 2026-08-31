@@ -227,46 +227,9 @@ body.font-gothic-mode * {
 
 .settings-checkbox-group { display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 4px; }
 .settings-checkbox-row { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.84rem; color: #2b2b2b; user-select: none; text-align: left; letter-spacing: 0.04em; }
-.app-version-note { font-size: 0.72rem; color: #aaa; margin-top: 2px; font-family: sans-serif; }
+.settings-checkbox-row input[type="checkbox"] { accent-color: #2b2b2b; width: 15px; height: 15px; cursor: pointer; }
 
-/* 🔑 合言葉同期UI */
-.sync-status-box {
-    width: 100%;
-    padding: 8px 12px;
-    background: #f7f5f0;
-    border: 1px solid #e2ded7;
-    border-radius: 6px;
-    text-align: center;
-}
-.sync-status-text {
-    font-size: 0.82rem;
-    color: #666;
-    font-weight: 500;
-}
-.sync-status-text.connected {
-    color: #2b7a4b;
-    font-weight: 600;
-}
-.sync-key-display-area {
-    width: 100%;
-    background: #ffffff;
-    border: 1px dashed #2b2b2b;
-    border-radius: 8px;
-    padding: 10px;
-    text-align: center;
-}
-.sync-key-label {
-    font-size: 0.75rem;
-    color: #888;
-    margin-bottom: 4px;
-}
-.sync-key-code {
-    font-size: 1.4rem;
-    font-weight: bold;
-    color: #2b2b2b;
-    letter-spacing: 0.15em;
-    font-family: monospace;
-}
+.app-version-note { font-size: 0.72rem; color: #aaa; margin-top: 2px; font-family: sans-serif; }
 
 /* 作者選択モーダル（スリム＆洗練された文字リスト） */
 .author-select-list { width: 100%; max-width: 270px; display: flex; flex-direction: column; margin: 4px auto 0; }

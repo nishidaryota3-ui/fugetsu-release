@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.63">
+    <link rel="stylesheet" href="style.css?v=2.0.64">
 </head>
 <body>
 
@@ -348,69 +348,44 @@
 
             <div class="settings-divider"></div>
 
-            <!-- 二、 データの移行・取り込み（過去句の引っ越し） -->
+            <!-- 二、 過去句のまとめて登録 -->
             <div class="menu-pillar-section">
                 <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection2')">
-                    <span class="pillar-section-title">二、 データの移行・取り込み</span>
+                    <span class="pillar-section-title">二、 過去句のまとめて登録</span>
                     <span id="settingArrow2" class="pillar-accordion-arrow">▿</span>
                 </div>
                 <div id="settingSection2" class="pillar-accordion-body hidden">
-                    <p class="settings-desc" style="margin-bottom: 8px;">パソコンのメモ帳やExcel、スプレッドシートにある過去の句をアプリに読み込みます。</p>
-                    
-                    <div style="width: 100%; display: flex; flex-direction: column; gap: 8px; align-items: center;">
-                        <button class="btn btn-outline batch-import-open-btn" style="width: 100%;" onclick="openBatchImportModal()">
-                            <span>📝 テキストを貼り付けて一括登録</span>
+                    <p class="settings-desc" style="margin-bottom: 8px;">パソコンのメモ帳やWord、Excelにある過去の句をコピペで一発登録できます。</p>
+                    <div style="width: 100%; display: flex; justify-content: center;">
+                        <button class="btn btn-outline batch-import-open-btn" onclick="openBatchImportModal()">
+                            <span>📝 テキストを貼り付けて登録</span>
                         </button>
-
-                        <div class="settings-form" style="width: 100%; margin-top: 4px;">
-                            <div class="form-group" style="margin-bottom: 4px;">
-                                <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span>スプレッドシートから読み込み</span>
-                                    <span class="guide-link-btn" onclick="openCloudGuideModal()">使い方</span>
-                                </label>
-                                <input type="url" id="settingCloudSyncUrl" class="text-input sync-url-input" placeholder="スプレッドシートの共有URLを貼り付け">
-                            </div>
-                            <button class="btn btn-outline cloud-save-btn" onclick="executeSheetImport()">シートから句を取り込む</button>
-                        </div>
                     </div>
                 </div>
             </div>
 
             <div class="settings-divider"></div>
 
-            <!-- 三、 他の端末（PC・スマホ）と常時同期 -->
+            <!-- 三、 他の端末（PC・スマホ）と繋ぐ -->
             <div class="menu-pillar-section">
                 <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection3')">
-                    <span class="pillar-section-title">三、 他の端末（PC・スマホ）と同期</span>
+                    <span class="pillar-section-title">三、 他の端末（PC・スマホ）と繋ぐ</span>
                     <span id="settingArrow3" class="pillar-accordion-arrow">▿</span>
                 </div>
                 <div id="settingSection3" class="pillar-accordion-body hidden">
-                    <p class="settings-desc" style="margin-bottom: 10px;">
-                        パソコンとスマホの両方で使いたいときに「合言葉」で繋ぎます。<br>
-                        どちらで詠んでも自動で全端末にリアルタイム同期されます。
-                    </p>
-
-                    <div id="syncStatusContainer" class="sync-status-box">
-                        <div id="syncStatusText" class="sync-status-text">未接続（単独で利用中）</div>
-                    </div>
-
-                    <div id="syncKeyDisplayArea" class="sync-key-display-area hidden" style="margin-top: 8px;">
-                        <div class="sync-key-label">あなたの合言葉</div>
-                        <div id="mySyncKeyText" class="sync-key-code">---</div>
-                        <div class="settings-sub-note">※もう片方の端末でこの合言葉を入力してください</div>
-                    </div>
-
-                    <div class="settings-form" style="width: 100%; margin-top: 10px;">
-                        <div style="display: flex; gap: 8px;">
-                            <button type="button" class="btn btn-outline" style="flex: 1; padding: 8px 0; font-size: 0.82rem;" onclick="generateSyncKey()">🔑 合言葉を発行</button>
+                    <div class="settings-form" style="width: 100%;">
+                        <div class="form-group" style="margin-bottom: 4px;">
+                            <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>スプレッドシート自動同期</span>
+                                <span style="display: flex; gap: 6px; align-items: center;">
+                                    <span class="guide-link-btn" onclick="openCloudGuideModal()">使い方</span>
+                                    <span id="cloudSyncStatusBadge" class="cloud-status-badge">未設定</span>
+                                </span>
+                            </label>
+                            <input type="url" id="settingCloudSyncUrl" class="text-input sync-url-input" placeholder="スプレッドシートの共有URLを貼り付け">
                         </div>
-                        <div class="form-group" style="margin-top: 10px; margin-bottom: 4px;">
-                            <label class="form-label">相手の合言葉を入力して接続</label>
-                            <div style="display: flex; gap: 6px;">
-                                <input type="text" id="inputSyncKey" class="text-input" style="flex: 1; text-align: center; font-family: monospace; font-size: 1rem; letter-spacing: 0.1em;" placeholder="例：829-104">
-                                <button type="button" class="btn" style="padding: 0 16px; font-size: 0.82rem;" onclick="connectSyncKey()">接続</button>
-                            </div>
-                        </div>
+                        <div class="settings-sub-note" style="margin-top: 2px;">※シートのURLを貼るだけで全端末が自動同期</div>
+                        <button class="btn btn-outline cloud-save-btn" onclick="saveCloudSyncSettings()">同期URLを保存</button>
                     </div>
                 </div>
             </div>
@@ -760,6 +735,6 @@
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.63"></script>
+    <script src="app.js?v=2.0.64"></script>
 </body>
 </html>
