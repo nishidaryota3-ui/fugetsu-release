@@ -1595,3 +1595,20 @@ body.large-text-mode #previewPhrase.extra-long-phrase {
     background: #fff !important;
 }
 
+.pillar-text-link {
+    font-size: 0.84rem;
+    color: #333333;
+    cursor: pointer;
+    padding: 5px 0;
+    transition: color 0.15s ease, opacity 0.15s ease;
+    user-select: none;
+    letter-spacing: 0.02em;
+}
+.pillar-text-link:hover {
+    color: #000000;
+    text-decoration: underline;
+}
+.pillar-text-link:active {
+    opacity: 0.6;
+}
+
