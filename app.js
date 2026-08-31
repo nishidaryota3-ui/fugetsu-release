@@ -186,8 +186,16 @@ window.onload = function() {
     // 定期バックアップ案内のチェック
     setTimeout(checkBackupReminder, 1200);
 
-    // クラウドからの自動双方向同期チェック
-    setTimeout(fetchHaikusFromCloud, 800);
+    // クラウドからの自動双方向同期チェック（起動時・フォーカス時・10秒ごと定期）
+    setTimeout(fetchHaikusFromCloud, 500);
+    window.addEventListener('focus', () => {
+        fetchHaikusFromCloud();
+    });
+    setInterval(() => {
+        if (userSettings.syncKey) {
+            fetchHaikusFromCloud();
+        }
+    }, 10000);
 };
 
 function loadUserSettings() {
@@ -356,14 +364,26 @@ async function loadInternalDatabases() {
     }
 
     try {
-        const respSaijiki = await fetch('data/saijiki.json?v=2.0.59');
-        if (respSaijiki.ok) {
+        let respSaijiki = await fetch('data/saijiki.json?v=2.0.60');
+        if (!respSaijiki || !respSaijiki.ok) {
+            respSaijiki = await fetch('data/saijiki.json');
+        }
+        if (respSaijiki && respSaijiki.ok) {
             saijikiDatabase = await respSaijiki.json();
             renderSaijikiKigoList();
             renderStep1KigoList();
         }
     } catch (e) {
-        console.warn('Saijiki load offline fallback:', e);
+        try {
+            const fallbackResp = await fetch('data/saijiki.json');
+            if (fallbackResp.ok) {
+                saijikiDatabase = await fallbackResp.json();
+                renderSaijikiKigoList();
+                renderStep1KigoList();
+            }
+        } catch (err2) {
+            console.warn('Saijiki load offline fallback:', err2);
+        }
     }
 }
 
