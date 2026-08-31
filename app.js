@@ -671,7 +671,7 @@ function deleteAuthorHaikus(author, count, event) {
     // 対象の句をごみ箱に移動
     const targetHaikus = haikuHistory.filter(h => (h.author || userSettings.authorName || '風月') === author);
     targetHaikus.forEach(h => {
-        trashHistory.unshift({
+        trashList.unshift({
             ...h,
             deletedAt: Date.now()
         });
@@ -711,7 +711,7 @@ function deleteAllHaikus(count, event) {
 
     // 全句をごみ箱に移動
     haikuHistory.forEach(h => {
-        trashHistory.unshift({
+        trashList.unshift({
             ...h,
             deletedAt: Date.now()
         });
@@ -2545,7 +2545,7 @@ function syncHaikuToCloud(haikuObj, action = 'save', oldPhrase = '') {
             params.append('oldPhrase', oldPhrase || (haikuObj ? haikuObj.phrase : ''));
             if (haikuObj) {
                 params.append('phrase', haikuObj.phrase || '');
-                params.append('author', haikuObj.author || userSettings.authorName || '西田上酢');
+                params.append('author', haikuObj.author || userSettings.authorName || '風月');
                 params.append('authorKana', haikuObj.authorKana || userSettings.authorKana || '');
                 params.append('kigo', haikuObj.kigo || '');
                 params.append('parentKigo', haikuObj.parentKigo || '');
@@ -2624,7 +2624,7 @@ async function fetchHaikusFromCloud(isManual = false) {
                         // GASの12列行配列 [phrase, author, authorKana, kigo, parentKigo, parentKana, season, detailSeason, _, _, status, sakkuDate]
                         phrase = (r[0] || '').toString().trim();
                         if (phrase === '俳句' || phrase === 'phrase' || !phrase) return; // ヘッダー行スキップ
-                        author = (r[1] || '').toString().trim() || userSettings.authorName || '西田上酢';
+                        author = (r[1] || '').toString().trim() || userSettings.authorName || '風月';
                         authorKana = (r[2] || '').toString().trim() || userSettings.authorKana || '';
                         kigo = (r[3] || '').toString().trim();
                         parentKigo = (r[4] || '').toString().trim();
@@ -2635,7 +2635,7 @@ async function fetchHaikusFromCloud(isManual = false) {
                         sakkuDate = (r[11] || '').toString().trim();
                     } else if (typeof r === 'object' && r.phrase) {
                         phrase = r.phrase.trim();
-                        author = r.author || userSettings.authorName || '西田上酢';
+                        author = r.author || userSettings.authorName || '風月';
                         authorKana = r.authorKana || userSettings.authorKana || '';
                         kigo = r.kigo || '';
                         parentKigo = r.parentKigo || '';
@@ -2848,13 +2848,16 @@ function closeBackupReminderModal() {
 }
 
 // 🔔 トースト通知ヘルパー
+let _toastTimer = null;
 function showToast(msg) {
     const toast = document.getElementById('appToast');
     if (!toast) return;
     toast.textContent = msg;
     toast.classList.remove('hidden');
-    setTimeout(() => {
+    if (_toastTimer) clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => {
         toast.classList.add('hidden');
+        _toastTimer = null;
     }, 2800);
 }
 
