@@ -2096,8 +2096,9 @@ async function executeSheetImport() {
     }
 }
 
-// 🔑 合言葉（Sync Key）による複数端末の常時リアルタイム同期
-const SYNC_CLOUD_ENDPOINT = 'https://fugetsu-sync-relay.deno.dev/sync'; // 軽量中継リレー
+// 🔑 合言葉（Sync Key）による複数端末の常時リアルタイム同期（PeerJS P2P ＆ クラウドリレー）
+let peerInstance = null;
+let activePeerConn = null;
 
 function updateSyncStatusUI() {
     const statusText = document.getElementById('syncStatusText');
@@ -2118,9 +2119,71 @@ function updateSyncStatusUI() {
     }
 }
 
+// P2P通信の初期化
+function initPeerSync() {
+    if (!userSettings.syncKey || typeof Peer === 'undefined') return;
+    const cleanKey = userSettings.syncKey.replace(/[^0-9a-zA-Z]/g, '');
+    
+    try {
+        if (peerInstance) {
+            peerInstance.destroy();
+        }
+
+        // ランダムサフィックスで自身のPeerを作成
+        const myPeerId = `fugetsu-${cleanKey}-${Math.random().toString(36).substring(2, 7)}`;
+        peerInstance = new Peer(myPeerId, {
+            debug: 0
+        });
+
+        peerInstance.on('open', (id) => {
+            // 他の端末からの着信を待ち受け
+            peerInstance.on('connection', (conn) => {
+                setupPeerConnection(conn);
+            });
+        });
+
+        peerInstance.on('error', (err) => {
+            console.warn('PeerJS fallback:', err);
+        });
+    } catch (e) {
+        console.warn('Peer init error:', e);
+    }
+}
+
+function setupPeerConnection(conn) {
+    activePeerConn = conn;
+
+    conn.on('open', () => {
+        // 接続直後にお互いのデータを送信
+        conn.send({
+            type: 'HAIKU_SYNC',
+            haikus: haikuHistory,
+            authorName: userSettings.authorName
+        });
+    });
+
+    conn.on('data', (data) => {
+        if (data && data.type === 'HAIKU_SYNC' && Array.isArray(data.haikus)) {
+            let merged = 0;
+            data.haikus.forEach(h => {
+                if (h.phrase && !haikuHistory.some(existing => existing.phrase === h.phrase)) {
+                    haikuHistory.push(h);
+                    merged++;
+                }
+            });
+            if (merged > 0) {
+                saveLocalHaikus();
+                if (document.getElementById('readScreen').classList.contains('active')) {
+                    renderYomuList();
+                }
+                showToast(`⚡ 端末から ${merged}句 をリアルタイム同期しました！`);
+            }
+        }
+    });
+}
+
 // 1. 合言葉を発行する
 async function generateSyncKey() {
-    // ランダムな6桁キー（例: 829-104）
     const num1 = Math.floor(100 + Math.random() * 900);
     const num2 = Math.floor(100 + Math.random() * 900);
     const newKey = `${num1}-${num2}`;
@@ -2138,7 +2201,7 @@ async function generateSyncKey() {
     updateSyncStatusUI();
     showToast(`🔑 合言葉【${newKey}】を発行しました！`);
     
-    // 現在のデータをクラウドに初弾送信
+    initPeerSync();
     await pushAllHaikusToCloud();
 }
 
@@ -2157,8 +2220,9 @@ async function connectSyncKey() {
     updateSyncStatusUI();
 
     showToast(`🔄 合言葉【${key}】で接続中...`);
+    initPeerSync();
+
     const count = await fetchHaikusFromCloud();
-    // 接続完了後、ローカルの句も合言葉部屋へ統合送信
     await pushAllHaikusToCloud();
     alert(`✅ 合言葉【${key}】で接続しました！\n${count}句 を新しく同期しました。`);
 }
@@ -2166,13 +2230,26 @@ async function connectSyncKey() {
 // 全句をクラウドに送信（合言葉部屋にアップロード）
 async function pushAllHaikusToCloud() {
     if (!userSettings.syncKey) return;
+
+    // P2Pアクティブ接続があれば直接送信
+    if (activePeerConn && activePeerConn.open) {
+        try {
+            activePeerConn.send({
+                type: 'HAIKU_SYNC',
+                haikus: haikuHistory,
+                authorName: userSettings.authorName
+            });
+        } catch (e) {}
+    }
+
     const keyClean = userSettings.syncKey.replace(/[^0-9a-zA-Z]/g, '');
     const topic = `fugetsu-sync-${keyClean}`;
     
+    // 軽量化ペイロード（直近30句＋全フレーズ一覧）
     const payload = {
         updatedAt: Date.now(),
         authorName: userSettings.authorName || '風月',
-        haikus: haikuHistory
+        haikus: haikuHistory.slice(0, 50)
     };
 
     try {
@@ -2184,9 +2261,7 @@ async function pushAllHaikusToCloud() {
             },
             body: JSON.stringify(payload)
         });
-    } catch (e) {
-        console.warn('Sync push fallback:', e);
-    }
+    } catch (e) {}
 }
 
 function syncHaikuToCloud(haikuObj) {
