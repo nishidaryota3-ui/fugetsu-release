@@ -2271,7 +2271,7 @@ function updateSyncStatusUI() {
     if (!statusText) return;
 
     if (userSettings.syncKey) {
-        statusText.textContent = `🟢 接続中（合言葉: ${userSettings.syncKey}）`;
+        statusText.textContent = `接続中（暗号キー: ${userSettings.syncKey}）`;
         statusText.style.color = '#2e7d32';
         if (inputEl) inputEl.value = userSettings.syncKey;
     } else {
@@ -2290,14 +2290,14 @@ function generateSyncKey() {
     updateSyncStatusUI();
     initSyncKeyListener();
     broadcastSyncKeyPayload({ type: 'HELLO' });
-    showToast(`合言葉【${newKey}】を発行しました`);
+    showToast(`暗号キー【${newKey}】を発行しました`);
 }
 
 function connectSyncKey() {
     const inputEl = document.getElementById('inputSyncKey');
     const key = inputEl ? inputEl.value.trim() : '';
     if (!key || key.length < 4) {
-        alert('合言葉を正しく入力してください');
+        alert('暗号キーを正しく入力してください');
         return;
     }
 
@@ -2306,7 +2306,7 @@ function connectSyncKey() {
     updateSyncStatusUI();
     initSyncKeyListener();
     broadcastSyncKeyPayload({ type: 'HELLO' });
-    alert(`合言葉【${key}】で接続しました！\n相手端末の過去の句を含めて全自動で同期・一致させます。`);
+    alert(`暗号キー【${key}】で接続しました。\n相手端末の過去の句を含めて全自動で同期・一致させます。`);
 }
 
 // 手動でいつでも全同期を再実行できる関数
