@@ -598,7 +598,6 @@ function openAuthorSelectModal() {
 
     document.getElementById('authorSelectModal').classList.remove('hidden');
 }
-}
 
 function closeAuthorSelectModal() {
     document.getElementById('authorSelectModal').classList.add('hidden');
