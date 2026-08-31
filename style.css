@@ -395,8 +395,8 @@ body.font-gothic-mode * {
 /* おみ句じ画面：ブラインド鑑賞＆答え合わせ（枠なし・横書きミニマル表示） */
 .omikuji-top-right {
     position: absolute;
-    top: calc(15px + env(safe-area-inset-top));
-    right: calc(15px + env(safe-area-inset-right));
+    top: calc(46px + env(safe-area-inset-top));
+    right: calc(18px + env(safe-area-inset-right));
     z-index: 60;
     display: flex;
     flex-direction: column;
