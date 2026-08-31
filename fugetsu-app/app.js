@@ -2142,15 +2142,31 @@ function connectSyncKey() {
 }
 
 // ☁️ クラウド自動同期（Googleスプレッドシート等への二重保存 ＆ 双方向受信）
-function saveCloudSyncSettings() {
+async function saveCloudSyncSettings() {
     const urlInput = document.getElementById('settingCloudSyncUrl');
     let url = urlInput ? urlInput.value.trim() : '';
+    if (!url) {
+        userSettings.cloudSyncUrl = '';
+        localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
+        updateCloudStatusBadge();
+        showToast('クラウド同期を解除しました');
+        return;
+    }
+
     userSettings.cloudSyncUrl = url;
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
     updateCloudStatusBadge();
-    showToast(url ? '☁️ クラウド同期URLを保存しました' : 'クラウド同期を解除しました');
-    if (url) {
-        fetchHaikusFromCloud();
+    showToast('☁️ 同期URLを保存しました。データを取り込み中...');
+
+    const res = await fetchHaikusFromCloud(true);
+    if (res && res.success) {
+        if (res.count > 0) {
+            alert(`🎉 スプレッドシートから【${res.count}句】を取り込み、同期を完了しました！`);
+        } else {
+            alert('✅ スプレッドシートと同期完了しました（既に最新の状態です）');
+        }
+    } else if (res && res.error) {
+        alert('⚠️ スプレッドシートの読み込みに失敗しました：\n' + res.error + '\n\n※スプレッドシートの共有が「リンクを知っている全員が閲覧可」、またはGASのアクセス権が「全員」になっているかご確認ください。');
     }
 }
 
@@ -2195,9 +2211,9 @@ function syncHaikuToCloud(haikuObj, action = 'save', oldPhrase = '') {
 }
 
 // 📥 クラウド（スプレッドシート）から最新データを双方向受信・マージ
-async function fetchHaikusFromCloud() {
+async function fetchHaikusFromCloud(isManual = false) {
     let rawUrl = userSettings.cloudSyncUrl;
-    if (!rawUrl || !rawUrl.startsWith('http')) return;
+    if (!rawUrl || !rawUrl.startsWith('http')) return { success: false, error: 'URLが未設定です' };
 
     try {
         // 通常のGoogleスプレッドシートURL（docs.google.com/spreadsheets/d/...）の場合
@@ -2213,14 +2229,16 @@ async function fetchHaikusFromCloud() {
                 const resp = await fetch(csvUrl);
                 if (resp.ok) {
                     const csvText = await resp.text();
-                    parseAndMergeCsvHaikus(csvText);
-                    return;
+                    const count = parseAndMergeCsvHaikus(csvText);
+                    return { success: true, count: count };
+                } else {
+                    return { success: false, error: `スプレッドシートの取得に失敗しました（HTTP ${resp.status}）` };
                 }
             }
         }
 
         // Web App URL（JSON返却形式）の場合
-        const resp = await fetch(rawUrl, { method: 'GET' });
+        const resp = await fetch(rawUrl, { method: 'GET', redirect: 'follow' });
         if (resp.ok) {
             const data = await resp.json();
             let rows = [];
@@ -2296,18 +2314,24 @@ async function fetchHaikusFromCloud() {
                     }
                     showToast(`☁️ スプレッドシートから ${mergedCount}句 を同期しました`);
                 }
+                return { success: true, count: mergedCount };
+            } else {
+                return { success: true, count: 0 };
             }
+        } else {
+            return { success: false, error: `GASからのデータ取得に失敗しました（HTTP ${resp.status}）` };
         }
     } catch (e) {
         console.warn('Cloud fetch silent fallback:', e);
+        return { success: false, error: e.message };
     }
 }
 
 // 📄 CSV文字列（引用符対応）をパースしてローカル句帳にマージする高度パーサー
 function parseAndMergeCsvHaikus(csvText) {
-    if (!csvText) return;
+    if (!csvText) return 0;
     const lines = parseCSVRows(csvText);
-    if (lines.length < 2) return;
+    if (lines.length < 2) return 0;
 
     // 1行目のヘッダー行から各列のインデックスを自動検出
     const headers = lines[0].map(h => h.trim());
@@ -2393,6 +2417,7 @@ function parseAndMergeCsvHaikus(csvText) {
     } else {
         showToast('☁️ スプレッドシートと同期完了（最新の状態です）');
     }
+    return mergedCount;
 }
 
 // 引用符（ダブルクォーテーション）対応の完全なCSV行パーサー
