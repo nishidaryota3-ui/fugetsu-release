@@ -2040,29 +2040,47 @@ function executeBatchImport() {
     }
 }
 
-// 📊 スプレッドシート連携・取り込み
-async function executeSheetImportFromSection2() {
-    const inputEl = document.getElementById('importSheetUrlInput');
+function openExcelImportModal() {
+    const modal = document.getElementById('excelImportModal');
+    if (modal) modal.classList.remove('hidden');
+}
+
+function closeExcelImportModal() {
+    const modal = document.getElementById('excelImportModal');
+    if (modal) modal.classList.add('hidden');
+}
+
+async function executeExcelImport() {
+    const inputEl = document.getElementById('excelImportUrlInput');
     const rawUrl = inputEl ? inputEl.value.trim() : '';
     if (!rawUrl) {
-        alert('スプレッドシートの共有URLを入力してください。');
+        alert('URLを入力してください。');
         return;
     }
 
     try {
-        const sheetIdMatch = rawUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-        if (sheetIdMatch && sheetIdMatch[1]) {
-            const sheetId = sheetIdMatch[1];
-            const gidMatch = rawUrl.match(/[#&?]gid=([0-9]+)/);
-            const gid = gidMatch ? gidMatch[1] : '0';
-            
-            const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}`;
-            const resp = await fetch(csvUrl);
-            if (resp.ok) {
-                const csvText = await resp.text();
-                parseAndMergeCsvHaikus(csvText);
-                return;
+        let fetchUrl = rawUrl;
+        if (rawUrl.includes('docs.google.com/spreadsheets/d/')) {
+            const sheetIdMatch = rawUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+            if (sheetIdMatch && sheetIdMatch[1]) {
+                const sheetId = sheetIdMatch[1];
+                const gidMatch = rawUrl.match(/[#&?]gid=([0-9]+)/);
+                const gid = gidMatch ? gidMatch[1] : '0';
+                fetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}`;
             }
+        }
+
+        const resp = await fetch(fetchUrl);
+        if (resp.ok) {
+            const csvText = await resp.text();
+            const count = parseAndMergeCsvHaikus(csvText);
+            closeExcelImportModal();
+            if (count > 0) {
+                alert(`スプレッドシートから【${count}句】を取り込みました。`);
+            } else {
+                alert('取り込み可能な新しい句が見つかりませんでした（既に登録済みの可能性があります）。');
+            }
+            return;
         }
         alert('スプレッドシートからデータを読み取れませんでした。共有設定が「リンクを知っている全員が閲覧可」になっているかご確認ください。');
     } catch (e) {

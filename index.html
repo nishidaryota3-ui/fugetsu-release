@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.74">
+    <link rel="stylesheet" href="style.css?v=2.0.75">
 </head>
 <body>
 
@@ -348,28 +348,22 @@
 
             <div class="settings-divider"></div>
 
-            <!-- 二、 過去句の取り込み -->
+            <!-- 二、 過去の句を取込む -->
             <div class="menu-pillar-section">
                 <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection2')">
-                    <span class="pillar-section-title">二、 過去句の取り込み（引っ越し）</span>
+                    <span class="pillar-section-title">二、 過去の句を取込む</span>
                     <span id="settingArrow2" class="pillar-accordion-arrow">▿</span>
                 </div>
                 <div id="settingSection2" class="pillar-accordion-body hidden">
-                    <p class="settings-desc" style="margin-bottom: 8px;">過去に詠んだ句を風月アプリへまとめて取り込みます。</p>
-                    
-                    <!-- テキスト貼り付け -->
-                    <button class="btn btn-outline pillar-action-btn" style="width: 100%; font-size: 0.82rem; margin-bottom: 8px;" onclick="openBatchImportModal()">
-                        📝 テキストを貼り付けて登録
-                    </button>
-
-                    <!-- スプレッドシート共有URL読み込み -->
-                    <div class="sync-pillar-card" style="background: #faf8f5;">
-                        <span class="sync-card-title">📊 スプレッドシートから取り込み</span>
-                        <p class="settings-sub-note" style="margin: 4px 0 6px;">「リンクを知っている全員が閲覧可」の共有URLを貼って取り込みます。</p>
-                        <div style="display: flex; gap: 6px;">
-                            <input type="url" id="importSheetUrlInput" class="text-input" style="flex: 1; font-size: 0.8rem;" placeholder="スプレッドシートの共有URL">
-                            <button type="button" class="btn btn-outline" style="padding: 0 10px; font-size: 0.78rem;" onclick="executeSheetImportFromSection2()">取り込む</button>
-                        </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
+                        <button type="button" class="btn btn-outline" style="width: 100%; text-align: left; padding: 10px 14px; font-size: 0.84rem; display: flex; justify-content: space-between; align-items: center;" onclick="openBatchImportModal()">
+                            <span>① テキストを貼り付けて取込み</span>
+                            <span style="font-size: 0.75rem; color: #888;">開く ＞</span>
+                        </button>
+                        <button type="button" class="btn btn-outline" style="width: 100%; text-align: left; padding: 10px 14px; font-size: 0.84rem; display: flex; justify-content: space-between; align-items: center;" onclick="openExcelImportModal()">
+                            <span>② エクセルから取込み</span>
+                            <span style="font-size: 0.75rem; color: #888;">開く ＞</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -526,6 +520,21 @@
             <div class="settings-btn-row-fit" style="margin-top: 8px;">
                 <button class="btn btn-outline" style="flex: 1; padding: 8px 0; font-size: 0.82rem;" onclick="closeBatchImportModal()">閉じる</button>
                 <button class="btn" style="flex: 1; padding: 8px 0; font-size: 0.82rem;" onclick="executeBatchImport()">一括登録する</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- エクセルから取込みモーダル -->
+    <div id="excelImportModal" class="card-overlay hidden" onclick="closeExcelImportModal()">
+        <div class="modal-card-content" style="max-width: 350px; text-align: left;" onclick="event.stopPropagation()">
+            <span class="modal-close-corner" onclick="closeExcelImportModal()">✕</span>
+            <h3 class="modal-title" style="font-size: 1.02rem; text-align: center; margin-bottom: 6px;">エクセル／スプレッドシートのURLから取込み</h3>
+            <p class="settings-desc" style="font-size: 0.76rem; color: #666; margin-bottom: 10px; line-height: 1.4;">
+                ※「リンクを知っている全員が共有可」の共有URLを取得してください
+            </p>
+            <div style="display: flex; gap: 6px; align-items: center;">
+                <input type="url" id="excelImportUrlInput" class="text-input" style="flex: 1; font-size: 0.8rem;" placeholder="URLを貼付">
+                <button type="button" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.75rem; white-space: nowrap;" onclick="executeExcelImport()">取込む</button>
             </div>
         </div>
     </div>
@@ -802,6 +811,6 @@ function doGet() {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.74"></script>
+    <script src="app.js?v=2.0.75"></script>
 </body>
 </html>
