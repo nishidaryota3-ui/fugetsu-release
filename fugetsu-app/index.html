@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
     <link rel="manifest" href="manifest.json">
 
-    <link rel="stylesheet" href="style.css?v=2.0.76">
+    <link rel="stylesheet" href="style.css?v=2.0.77">
 </head>
 <body>
 
@@ -371,40 +371,16 @@
             <!-- 三、 他の端末と同期 -->
             <div class="menu-pillar-section">
                 <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection3')">
-                    <span class="pillar-section-title">三、 他の端末と同期（常時連動）</span>
+                    <span class="pillar-section-title">三、 他の端末と同期</span>
                     <span id="settingArrow3" class="pillar-accordion-arrow">▿</span>
                 </div>
                 <div id="settingSection3" class="pillar-accordion-body hidden">
-                    <!-- ① 暗号キー接続（手軽） -->
-                    <div class="sync-pillar-card">
-                        <div class="sync-card-header">
-                            <span class="sync-card-title">① 暗号キー接続（手軽・端末間）</span>
-                            <button type="button" class="guide-link-btn" onclick="openSyncKeyHelpModal()">詳細</button>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px; padding-left: 10px;">
+                        <div class="pillar-text-link" onclick="openSyncKeyHelpModal()">
+                            ① 暗号キー接続
                         </div>
-                        <p class="settings-sub-note" style="margin: 4px 0 8px;">合言葉を入力するだけで端末同士を接続。</p>
-                        <div style="display: flex; gap: 6px; margin-bottom: 6px;">
-                            <button type="button" class="btn btn-outline" style="flex: 1; padding: 6px 0; font-size: 0.78rem;" onclick="generateSyncKey()">合言葉を発行</button>
-                        </div>
-                        <div style="display: flex; gap: 6px;">
-                            <input type="text" id="inputSyncKey" class="text-input" style="flex: 1; text-align: center; font-size: 0.88rem;" placeholder="合言葉を入力">
-                            <button type="button" class="btn" style="padding: 0 12px; font-size: 0.78rem;" onclick="connectSyncKey()">接続</button>
-                        </div>
-                        <div id="syncStatusContainer" class="sync-status-box" style="margin-top: 6px; padding: 4px; display: flex; justify-content: space-between; align-items: center;">
-                            <span id="syncStatusText" class="sync-status-text" style="font-size: 0.75rem;">未接続</span>
-                            <button type="button" class="btn btn-outline" style="padding: 2px 8px; font-size: 0.7rem; background: #fff;" onclick="triggerManualFullSync()">🔄 全句を同期</button>
-                        </div>
-                    </div>
-
-                    <!-- ② GASスプレッドシート同期（恒久・完全二重保存） -->
-                    <div class="sync-pillar-card" style="margin-top: 8px;">
-                        <div class="sync-card-header">
-                            <span class="sync-card-title">② Google自動二重保存（GAS・完全同期）</span>
-                            <button type="button" class="guide-link-btn" onclick="openCloudGuideModal()">詳細</button>
-                        </div>
-                        <p class="settings-sub-note" style="margin: 4px 0 8px;">詠むたびに自動保存。水没や故障でも句を守る完全同期。</p>
-                        <div style="display: flex; gap: 6px;">
-                            <input type="url" id="settingCloudSyncUrl" class="text-input" style="flex: 1; font-size: 0.8rem;" placeholder="GASウェブアプリURLを貼り付け">
-                            <button type="button" class="btn btn-outline" style="padding: 0 12px; font-size: 0.78rem;" onclick="saveCloudSyncSettings()">保存</button>
+                        <div class="pillar-text-link" onclick="openCloudGuideModal()">
+                            ② google自動完全同期
                         </div>
                     </div>
                 </div>
@@ -543,73 +519,82 @@
         </div>
     </div>
 
-    <!-- 🔑 暗号キー接続ヘルプモーダル -->
+    <!-- ① 暗号キー接続モーダル -->
     <div id="syncKeyHelpModal" class="card-overlay hidden" onclick="closeSyncKeyHelpModal()">
-        <div class="modal-card-content" style="max-width: 345px; text-align: left;" onclick="event.stopPropagation()">
+        <div class="modal-card-content" style="max-width: 360px; text-align: left;" onclick="event.stopPropagation()">
             <span class="modal-close-corner" onclick="closeSyncKeyHelpModal()">✕</span>
-            <h3 class="modal-title" style="font-size: 1.05rem; text-align: center; margin-bottom: 8px;">暗号キー接続の仕組み</h3>
+            <h3 class="modal-title" style="font-size: 0.90rem; text-align: center; margin-bottom: 8px; white-space: nowrap;">暗号キー接続</h3>
             
-            <div class="cloud-guide-step-box">
-                <div class="guide-step-title">1. 特徴とメリット</div>
-                <p class="guide-step-desc">
-                  ・Googleアカウントや設定は一切不要。<br>
-                  ・合言葉を教え合うだけで、端末同士が直接通信して同期します。
-                </p>
+            <p class="settings-desc" style="font-size: 0.74rem; color: #666; margin-bottom: 8px; line-height: 1.4;">
+                合言葉を入力するだけで、同じ合言葉を持つ端末同士がリアルタイムに同期します。
+            </p>
+
+            <div style="margin-bottom: 8px;">
+                <button type="button" class="btn btn-outline" style="width: 100%; padding: 6px 0; font-size: 0.76rem;" onclick="generateSyncKey()">合言葉を発行</button>
             </div>
 
-            <div class="cloud-guide-step-box" style="margin-top: 8px; border-left: 3px solid #8c8476;">
-                <div class="guide-step-title">2. ⚠️ ご利用上の注意点</div>
-                <p class="guide-step-desc">
-                  ・<b>両方の端末でアプリを開いている時</b>に同期されます。<br>
-                  ・クラウド上に保管されないため、<b>スマホ水没・故障時のバックアップにはなりません</b>（水没対策には「②スプレッドシート同期」または「バックアップ保存」をご利用ください）。
-                </p>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="text" id="inputSyncKey" class="text-input" style="flex: 2; font-size: 0.82rem; padding: 7px 10px; text-align: center;" placeholder="合言葉を入力">
+                <button type="button" class="btn btn-outline" style="flex: 1; padding: 7px 0; font-size: 0.76rem; text-align: center;" onclick="connectSyncKey()">接続</button>
             </div>
 
-            <button class="btn" style="width: 100%; margin-top: 12px; padding: 8px 0; font-size: 0.85rem;" onclick="closeSyncKeyHelpModal()">閉じる</button>
+            <div id="syncStatusContainer" class="sync-status-box" style="margin-top: 8px; padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; background: #faf8f5; border: 1px solid #ede8e1; border-radius: 4px;">
+                <span id="syncStatusText" class="sync-status-text" style="font-size: 0.74rem;">未接続</span>
+                <button type="button" class="btn btn-outline" style="padding: 2px 8px; font-size: 0.70rem; background: #fff;" onclick="triggerManualFullSync()">全句を同期</button>
+            </div>
+
+            <p class="settings-desc" style="font-size: 0.70rem; color: #888; margin-top: 8px; line-height: 1.3;">
+                ※両方の端末でアプリを開いているときに同期されます。
+            </p>
         </div>
     </div>
 
-    <!-- 📊 GASスプレッドシート連携ガイドモーダル -->
+    <!-- ② Google自動完全同期モーダル -->
     <div id="cloudGuideModal" class="card-overlay hidden" onclick="closeCloudGuideModal()">
-        <div class="modal-card-content" style="max-width: 355px; text-align: left; max-height: 85vh; overflow-y: auto;" onclick="event.stopPropagation()">
+        <div class="modal-card-content" style="max-width: 360px; text-align: left; max-height: 85vh; overflow-y: auto;" onclick="event.stopPropagation()">
             <span class="modal-close-corner" onclick="closeCloudGuideModal()">✕</span>
-            <h3 class="modal-title" style="font-size: 1.05rem; text-align: center; margin-bottom: 8px;">Google自動二重保存ガイド</h3>
+            <h3 class="modal-title" style="font-size: 0.90rem; text-align: center; margin-bottom: 8px; white-space: nowrap;">google自動完全同期</h3>
             
-            <div class="cloud-guide-step-box">
-                <div class="guide-step-title">1. 特徴とメリット</div>
-                <p class="guide-step-desc">
-                  ・アプリで詠んだ句が<b>Googleスプレッドシートにリアルタイム自動追記</b>されます。<br>
-                  ・万が一スマホが水没・故障・紛失しても、全句が100% Google上に残ります。<br>
-                  ・PCとスマホの両方にこのURLを登録すれば、<b>常時完全自動同期</b>になります。
-                </p>
+            <p class="settings-desc" style="font-size: 0.74rem; color: #666; margin-bottom: 8px; line-height: 1.4;">
+                句を詠むたびにGoogleスプレッドシートへ自動保存されます。
+            </p>
+
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="url" id="settingCloudSyncUrl" class="text-input" style="flex: 2; font-size: 0.82rem; padding: 7px 10px;" placeholder="GASウェブアプリURLを貼付">
+                <button type="button" class="btn btn-outline" style="flex: 1; padding: 7px 0; font-size: 0.76rem; text-align: center;" onclick="saveCloudSyncSettings()">保存</button>
             </div>
 
-            <div class="cloud-guide-step-box" style="margin-top: 8px;">
-                <div class="guide-step-title">2. 設定手順（3ステップ）</div>
-                <p class="guide-step-desc" style="line-height: 1.6;">
-                  ① スプレッドシートを開き「拡張機能 ➔ Apps Script」を選択。<br>
-                  ② 以下のコードを貼り付けて保存。<br>
-                  ③ 右上「デプロイ ➔ 新しいデプロイ ➔ 種類: ウェブアプリ（アクセス: 全員）」でURLを発行し、設定欄に貼り付け。
-                </p>
-                <div style="position: relative; margin-top: 6px;">
-                    <textarea id="gasScriptCodeBlock" readonly class="gas-code-textarea" style="width: 100%; height: 95px; font-family: monospace; font-size: 0.72rem; padding: 6px; border: 1px solid #ddd; border-radius: 4px; background: #f8f8f8; resize: none;">function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var data = JSON.parse(e.postData.contents);
-  if (data.haiku) {
-    sheet.appendRow([data.haiku.phrase, data.haiku.author, data.haiku.kigo, data.haiku.season, data.haiku.sakkuDate]);
+            <div style="margin-top: 12px; border-top: 1px solid #ede8e1; padding-top: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-size: 0.76rem; font-weight: 600; color: #555;">GASスクリプトコード</span>
+                    <button type="button" class="btn btn-outline" style="padding: 2px 8px; font-size: 0.70rem;" onclick="copyGasCode()">コードをコピー</button>
+                </div>
+                <textarea id="gasScriptCodeBlock" readonly class="gas-code-textarea" style="width: 100%; height: 95px; font-family: monospace; font-size: 0.70rem; padding: 6px; border: 1px solid #ddd; border-radius: 4px; background: #f8f8f8; resize: none;">function doPost(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName('俳句集成') || ss.getSheets()[0];
+  var p = e.parameter;
+  var action = p.action || 'save';
+  var oldPhrase = p.oldPhrase || '';
+  var targetRow = 0;
+  if (oldPhrase !== '') {
+    var cell = sheet.getRange("A:A").createTextFinder(oldPhrase).matchEntireCell(true).findNext();
+    if (cell) targetRow = cell.getRow();
   }
-  return ContentService.createTextOutput(JSON.stringify({status: 'ok'})).setMimeType(ContentService.MimeType.JSON);
+  if (action === 'delete' && targetRow > 1) {
+    sheet.deleteRow(targetRow);
+    return ContentService.createTextOutput(JSON.stringify({status:'deleted'})).setMimeType(ContentService.MimeType.JSON);
+  }
+  var rowData = [p.phrase||'', p.author||'', p.authorKana||'', p.kigo||'', p.parentKigo||'', p.parentKana||'', p.season||'', p.detailSeason||'', '', '', p.status||'完成句', p.sakkuDate||''];
+  if (targetRow > 1) sheet.getRange(targetRow, 1, 1, rowData.length).setValues([rowData]);
+  else sheet.appendRow(rowData);
+  return ContentService.createTextOutput(JSON.stringify({status:'saved'})).setMimeType(ContentService.MimeType.JSON);
 }
 function doGet() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('俳句集成') || SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
   var rows = sheet.getDataRange().getValues();
   return ContentService.createTextOutput(JSON.stringify({rows: rows})).setMimeType(ContentService.MimeType.JSON);
 }</textarea>
-                    <button type="button" class="btn btn-outline" style="position: absolute; right: 6px; top: 6px; padding: 2px 8px; font-size: 0.7rem; background: #fff;" onclick="copyGasCode()">コピー</button>
-                </div>
             </div>
-
-            <button class="btn" style="width: 100%; margin-top: 12px; padding: 8px 0; font-size: 0.85rem;" onclick="closeCloudGuideModal()">閉じる</button>
         </div>
     </div>
 
@@ -815,6 +800,6 @@ function doGet() {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.0.76"></script>
+    <script src="app.js?v=2.0.77"></script>
 </body>
 </html>
