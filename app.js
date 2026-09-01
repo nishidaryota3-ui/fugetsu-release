@@ -3504,7 +3504,7 @@ function startYomuMode() {
     renderYomuList();
     document.querySelectorAll('.step-screen').forEach(el => el.classList.remove('active'));
     document.getElementById('readScreen').classList.add('active');
-    updateCatVisibility(true);
+    updateCatVisibility(false);
 }
 
 function switchReadTab(status) {

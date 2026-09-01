@@ -174,23 +174,25 @@ body.font-gothic-mode * {
     pointer-events: none; 
 }
 
-/* 📖 一句ずつ表示コンテナ */
+/* 📖 一句ずつ表示コンテナ（画面全体に広げ、俳句を画面中央の黄金位置に美しく配置） */
 .read-single-container {
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    flex: 1;
-    min-height: 60vh;
+    height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin: auto;
+    z-index: 10;
+    pointer-events: auto;
 }
 
 .kucho-single-top-right {
     position: absolute;
-    top: 5px;
-    right: 5px;
+    top: calc(18px + env(safe-area-inset-top));
+    right: calc(45px + env(safe-area-inset-right));
     z-index: 60;
     display: flex;
     flex-direction: column;
@@ -205,17 +207,19 @@ body.font-gothic-mode * {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    padding: 2px 6px;
+    padding: 3px 8px;
     cursor: pointer;
     animation: fadeInInfo 0.2s ease forwards;
     user-select: none;
-    background: rgba(250, 249, 246, 0.9);
+    background: rgba(250, 249, 246, 0.95);
+    border: 1px solid #dcd9d0;
     border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 .kucho-single-info-box.hidden { display: none !important; }
 
 .kucho-single-info-date {
-    font-size: 0.90rem;
+    font-size: 0.92rem;
     color: #2b2b2b;
     font-weight: 500;
     letter-spacing: 0.05em;
@@ -224,12 +228,20 @@ body.font-gothic-mode * {
 
 .kucho-single-counter {
     position: absolute;
-    bottom: 5px;
-    font-size: 0.82rem;
+    bottom: calc(18px + env(safe-area-inset-bottom));
+    font-size: 0.85rem;
     color: #8c8476;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     pointer-events: none;
+    z-index: 20;
+}
+
+/* 句帳のヘッダー＆タブは最前面で確実に操作できるように */
+#readScreen .read-header,
+#readScreen .read-tab-text-group {
+    position: relative;
+    z-index: 50;
 }
 
 /* 日付区切り（1行表示） */
