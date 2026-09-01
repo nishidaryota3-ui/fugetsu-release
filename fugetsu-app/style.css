@@ -191,8 +191,8 @@ body.font-gothic-mode * {
 
 .kucho-single-top-right {
     position: absolute;
-    top: calc(18px + env(safe-area-inset-top));
-    right: calc(45px + env(safe-area-inset-right));
+    top: calc(90px + env(safe-area-inset-top));
+    right: calc(18px + env(safe-area-inset-right));
     z-index: 60;
     display: flex;
     flex-direction: column;
