@@ -3914,10 +3914,27 @@ function hideOmikujiInfo() {
 
 function initKeyboardEvents() {
     document.addEventListener('keydown', function(e) {
-        const room = document.getElementById('omikujiRoomScreen');
-        if (!room || !room.classList.contains('active') || ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
-        if (e.key === 'ArrowRight' || e.key === 'ArrowUp') changeOmikujiHaiku(-1);
-        else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') changeOmikujiHaiku(1);
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
+
+        // 🎲 おみくじ画面でのキーボード操作
+        const omikujiRoom = document.getElementById('omikujiRoomScreen');
+        if (omikujiRoom && omikujiRoom.classList.contains('active')) {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowUp') changeOmikujiHaiku(-1);
+            else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') changeOmikujiHaiku(1);
+            return;
+        }
+
+        // 📖 句帳（一句ずつ表示モード）でのキーボード操作
+        const readScreen = document.getElementById('readScreen');
+        if (readScreen && readScreen.classList.contains('active') && userSettings.kuchoDisplayMode === 'single') {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                changeKuchoSingleHaiku(-1);
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                changeKuchoSingleHaiku(1);
+            }
+        }
     });
 }
 
