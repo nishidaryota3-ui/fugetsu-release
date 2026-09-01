@@ -614,12 +614,13 @@ body.font-gothic-mode * {
     height: 70vh !important;
     max-height: 520px !important;
     min-height: 280px !important;
-    width: 2.5em !important;
-    min-width: 45px !important;
+    width: 1.3em !important;
+    min-width: 0 !important;
     
     caret-color: #8c8476 !important;
     box-sizing: border-box !important;
-    padding: 6px 8px !important;
+    padding: 6px 0 !important;
+    margin: 0 auto !important;
     
     white-space: nowrap !important;
     overflow: hidden !important;
