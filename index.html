@@ -12,11 +12,11 @@
     <meta name="application-name" content="句帳風月">
     <meta name="theme-color" content="#faf9f6">
     
-    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=2.9.1">
-    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=2.9.1">
-    <link rel="manifest" href="manifest.json?v=2.9.1">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=3.0.0">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=3.0.0">
+    <link rel="manifest" href="manifest.json?v=3.0.0">
 
-    <link rel="stylesheet" href="style.css?v=2.9.1">
+    <link rel="stylesheet" href="style.css?v=3.0.0">
 </head>
 <body>
 
@@ -105,7 +105,36 @@
             <span id="tabShitagaki" class="text-tab" onclick="switchReadTab('下書き')">下書き</span>
         </div>
 
+        <!-- スクロール一覧表示 -->
         <div id="readHaikuList" class="horizontal-scroll-container saijiki-scroll-list">
+        </div>
+
+        <!-- 📖 一句ずつ表示コンテナ（おみくじ風鑑賞 ＆ 「i」日付表示） -->
+        <div id="readSingleContainer" class="read-single-container hidden">
+            <!-- 右上：「i」ボタン ＆ 日付ポップアップ（アラビア数字 2026/9/1） -->
+            <div class="omikuji-top-right">
+                <button id="kuchoSingleInfoBtn" class="flat-icon-btn" onclick="toggleKuchoSingleDateInfo()" title="作句日を見る" aria-label="作句日">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                </button>
+                <div id="kuchoSingleInfoBox" class="omikuji-info-box hidden" onclick="hideKuchoSingleDateInfo()" title="タップで隠す">
+                    <div id="kuchoSingleInfoDate" class="omikuji-info-author"></div>
+                </div>
+            </div>
+
+            <!-- 前後ナビゲーションボタン（時系列） -->
+            <button id="kuchoSinglePrevBtn" class="nav-arrow arrow-right" onclick="changeKuchoSingleHaiku(-1)">＞</button> 
+            <button id="kuchoSingleNextBtn" class="nav-arrow arrow-left" onclick="changeKuchoSingleHaiku(1)">＜</button>  
+            
+            <div class="haiku-screen" onclick="onCurrentSingleHaikuClicked()">
+                <p id="kuchoSinglePhrase" class="phrase"></p>
+            </div>
+            
+            <!-- 下部：句数カウント（例: 3 / 24句） -->
+            <div id="kuchoSingleCounter" class="kucho-single-counter"></div>
         </div>
     </div>
 
@@ -143,7 +172,7 @@
         </div>
     </div>
 
-    <!-- 👤 句帳メニュー（三本柱アコーディオン：句帳切替・季寄せ・句集印刷）モーダル -->
+    <!-- 👤 句帳メニュー（四本柱アコーディオン：句帳切替・表示設定・季寄せ・句集印刷）モーダル -->
     <div id="authorSelectModal" class="card-overlay hidden" onclick="closeAuthorSelectModal()">
         <div class="modal-card-content menu-accordion-modal" onclick="event.stopPropagation()">
             <span class="modal-close-corner" onclick="closeAuthorSelectModal()">✕</span>
@@ -162,26 +191,52 @@
 
             <div class="settings-divider"></div>
 
-            <!-- 二、季寄せ・歳時記 -->
+            <!-- 二、句帳の表示設定 【新設】 -->
             <div class="menu-pillar-section">
                 <div class="pillar-accordion-header" onclick="toggleMenuAccordion('pillarSection2')">
-                    <span class="pillar-section-title">二、 季寄せ・歳時記</span>
+                    <span class="pillar-section-title">二、 句帳の表示設定</span>
                     <span id="pillarArrow2" class="pillar-accordion-arrow">▿</span>
                 </div>
                 <div id="pillarSection2" class="pillar-accordion-body hidden">
+                    <div class="print-setting-row" style="margin-bottom: 12px; margin-top: 4px;">
+                        <span class="print-setting-label">表示形式</span>
+                        <div class="print-mode-switch-group">
+                            <button type="button" id="kuchoModeScrollBtn" class="print-mode-btn active" onclick="setKuchoDisplayMode('scroll')">スクロール</button>
+                            <button type="button" id="kuchoModeSingleBtn" class="print-mode-btn" onclick="setKuchoDisplayMode('single')">一句ずつ</button>
+                        </div>
+                    </div>
+                    <div id="kuchoPitchSettingRow" class="print-setting-row" style="margin-bottom: 8px;">
+                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-bottom: 6px;">
+                            <span class="print-setting-label">俳句の間隔（ピッチ）</span>
+                            <span id="kuchoPitchValueLabel" style="font-size: 0.8rem; color: #777;">50px</span>
+                        </div>
+                        <input type="range" id="kuchoPitchSlider" min="15" max="120" value="50" step="5" style="width: 100%; accent-color: #2b2b2b; cursor: pointer;" oninput="onKuchoPitchSliderChanged(this.value)">
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-divider"></div>
+
+            <!-- 三、季寄せ・歳時記 -->
+            <div class="menu-pillar-section">
+                <div class="pillar-accordion-header" onclick="toggleMenuAccordion('pillarSection3')">
+                    <span class="pillar-section-title">三、 季寄せ・歳時記</span>
+                    <span id="pillarArrow3" class="pillar-accordion-arrow">▿</span>
+                </div>
+                <div id="pillarSection3" class="pillar-accordion-body hidden">
                     <button class="btn btn-outline pillar-action-btn" onclick="openSaijikiScreenFromMenu()">季寄せを開く</button>
                 </div>
             </div>
 
             <div class="settings-divider"></div>
 
-            <!-- 三、 句集の冊子印刷 (PDF) -->
+            <!-- 四、 句集の冊子印刷 (PDF) -->
             <div class="menu-pillar-section">
-                <div class="pillar-accordion-header" onclick="toggleMenuAccordion('pillarSection3')">
-                    <span class="pillar-section-title">三、 句集の冊子印刷 (PDF)</span>
-                    <span id="pillarArrow3" class="pillar-accordion-arrow">▿</span>
+                <div class="pillar-accordion-header" onclick="toggleMenuAccordion('pillarSection4')">
+                    <span class="pillar-section-title">四、 句集の冊子印刷 (PDF)</span>
+                    <span id="pillarArrow4" class="pillar-accordion-arrow">▿</span>
                 </div>
-                <div id="pillarSection3" class="pillar-accordion-body hidden">
+                <div id="pillarSection4" class="pillar-accordion-body hidden">
                     <div class="print-setting-row" style="margin-bottom: 12px; margin-top: 4px;">
                         <span class="print-setting-label">印刷形式</span>
                         <div class="print-mode-switch-group">
@@ -851,6 +906,6 @@ function handleRequest(e) {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.9.1"></script>
+    <script src="app.js?v=3.0.0"></script>
 </body>
 </html>

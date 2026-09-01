@@ -146,12 +146,25 @@ body.font-gothic-mode * {
 .text-tab.active { color: #2b2b2b; font-weight: 500; border-bottom-color: #2b2b2b; }
 .text-tab-divider { color: #d0cbc0; font-size: 0.8rem; }
 
+:root {
+    --kucho-pitch: 50px;
+}
+
 .horizontal-scroll-container { display: flex !important; flex-direction: row-reverse !important; justify-content: flex-start !important; align-items: center; width: 100%; height: 65vh; overflow-x: auto !important; overflow-y: hidden !important; scroll-behavior: smooth; padding: 0 10vw; margin: auto !important; }
 .horizontal-scroll-container::-webkit-scrollbar { height: 6px; }
 .horizontal-scroll-container::-webkit-scrollbar-track { background: #eae8e3; border-radius: 3px; }
 .horizontal-scroll-container::-webkit-scrollbar-thumb { background: #b5b5b5; border-radius: 3px; }
 
-.saijiki-haiku-card { display: flex; flex-direction: row-reverse; gap: 1.2rem; align-items: center; padding: 0 20px; cursor: pointer; transition: opacity 0.2s; flex-shrink: 0; }
+.saijiki-haiku-card { 
+    display: flex; 
+    flex-direction: row-reverse; 
+    gap: 1.2rem; 
+    align-items: center; 
+    padding: 0 calc(var(--kucho-pitch, 50px) / 2); 
+    cursor: pointer; 
+    transition: opacity 0.2s, padding 0.1s ease; 
+    flex-shrink: 0; 
+}
 .saijiki-haiku-card:active { opacity: 0.6; }
 .saijiki-phrase { 
     writing-mode: vertical-rl; -webkit-writing-mode: vertical-rl; 
@@ -161,11 +174,33 @@ body.font-gothic-mode * {
     pointer-events: none; 
 }
 
+/* 📖 一句ずつ表示コンテナ */
+.read-single-container {
+    position: relative;
+    width: 100%;
+    height: 65vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: auto;
+}
+
+.kucho-single-counter {
+    position: absolute;
+    bottom: 5px;
+    font-size: 0.82rem;
+    color: #8c8476;
+    letter-spacing: 0.1em;
+    font-family: inherit;
+    pointer-events: none;
+}
+
 /* 日付区切り（1行表示） */
 .date-divider-card { 
     writing-mode: vertical-rl; -webkit-writing-mode: vertical-rl; 
     font-size: 0.88rem; color: #8c8476; letter-spacing: 0.2em; 
-    padding: 0 15px; border-left: 1px solid #dcd9d0; 
+    padding: 0 calc(var(--kucho-pitch, 50px) / 2.5); border-left: 1px solid #dcd9d0; 
     height: auto !important; max-height: 80%; 
     white-space: nowrap !important; 
     display: flex; align-items: center; justify-content: center; 

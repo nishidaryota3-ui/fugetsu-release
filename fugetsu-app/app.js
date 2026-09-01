@@ -69,7 +69,9 @@ let userSettings = {
     fontFamily: 'mincho',   // 'mincho' | 'gothic'
     cloudSyncUrl: '',       // Googleスプレッドシート/クラウド同期URL
     omikujiScope: 'ALL',    // 'ALL' | 'MINE' | 'AUTHORS'
-    omikujiSelectedAuthors: [] // 特定の作者リスト
+    omikujiSelectedAuthors: [], // 特定の作者リスト
+    kuchoDisplayMode: 'scroll', // 'scroll' | 'single'
+    kuchoPitch: 50          // スクロール時の俳句間隔ピッチ(px)
 };
 
 let currentHaikuData = {
@@ -116,6 +118,27 @@ function normalizeSakkuDate(rawDate) {
     }
 
     return str;
+}
+
+function formatDateArabic(sakkuDate) {
+    sakkuDate = normalizeSakkuDate(sakkuDate);
+    if (!sakkuDate) return '年代不詳';
+    const parts = String(sakkuDate).trim().replace(/[/.]/g, '-').split('-').filter(Boolean);
+    if (parts.length === 1 && /^\d{1,4}$/.test(parts[0])) {
+        return `${parseInt(parts[0], 10)}年`;
+    }
+    if (parts.length === 2 && /^\d{1,4}$/.test(parts[0])) {
+        const m = parseInt(parts[1], 10);
+        return isNaN(m) ? sakkuDate : `${parseInt(parts[0], 10)}/${m}`;
+    }
+    if (parts.length >= 3 && /^\d{1,4}$/.test(parts[0])) {
+        const m = parseInt(parts[1], 10);
+        const d = parseInt(parts[2], 10);
+        if (!isNaN(m) && !isNaN(d)) {
+            return `${parseInt(parts[0], 10)}/${m}/${d}`;
+        }
+    }
+    return sakkuDate;
 }
 
 function parseDateLabel(dateStr) {
@@ -281,6 +304,9 @@ function applyUserSettingsToUI() {
     if (cloudInput && !cloudInput.value && userSettings.cloudSyncUrl) {
         cloudInput.value = userSettings.cloudSyncUrl;
     }
+    // 句帳ピッチ設定の適用
+    const pitch = userSettings.kuchoPitch !== undefined ? userSettings.kuchoPitch : 50;
+    document.documentElement.style.setProperty('--kucho-pitch', `${pitch}px`);
     updateCloudStatusBadge();
 }
 
@@ -537,7 +563,7 @@ function getFormattedSakkuDateFromFields() {
 }
 
 // ========================================================
-// 👤 句帳メニュー（三本柱アコーディオン）
+// 👤 句帳メニュー（四本柱アコーディオン）
 // ========================================================
 function toggleMenuAccordion(sectionId) {
     const sectionEl = document.getElementById(sectionId);
@@ -546,7 +572,7 @@ function toggleMenuAccordion(sectionId) {
     const isHidden = sectionEl.classList.contains('hidden');
     
     // すべてのセクションを一旦閉じる
-    ['pillarSection1', 'pillarSection2', 'pillarSection3'].forEach((id, idx) => {
+    ['pillarSection1', 'pillarSection2', 'pillarSection3', 'pillarSection4'].forEach((id, idx) => {
         const el = document.getElementById(id);
         const arrow = document.getElementById(`pillarArrow${idx + 1}`);
         if (el) el.classList.add('hidden');
@@ -562,18 +588,61 @@ function toggleMenuAccordion(sectionId) {
     }
 }
 
+function updateKuchoDisplayModeUI(mode) {
+    const scrollBtn = document.getElementById('kuchoModeScrollBtn');
+    const singleBtn = document.getElementById('kuchoModeSingleBtn');
+    const pitchRow = document.getElementById('kuchoPitchSettingRow');
+    if (scrollBtn && singleBtn) {
+        scrollBtn.classList.toggle('active', mode === 'scroll');
+        singleBtn.classList.toggle('active', mode === 'single');
+    }
+    if (pitchRow) {
+        pitchRow.style.display = (mode === 'scroll') ? 'block' : 'none';
+    }
+}
+
+function updateKuchoPitchUI(pitch) {
+    const slider = document.getElementById('kuchoPitchSlider');
+    const label = document.getElementById('kuchoPitchValueLabel');
+    if (slider) slider.value = pitch;
+    if (label) label.textContent = `${pitch}px`;
+    document.documentElement.style.setProperty('--kucho-pitch', `${pitch}px`);
+}
+
+function setKuchoDisplayMode(mode) {
+    userSettings.kuchoDisplayMode = mode;
+    saveSettings();
+    updateKuchoDisplayModeUI(mode);
+    renderYomuList();
+}
+
+function onKuchoPitchSliderChanged(val) {
+    const pitch = parseInt(val, 10);
+    userSettings.kuchoPitch = pitch;
+    const label = document.getElementById('kuchoPitchValueLabel');
+    if (label) label.textContent = `${pitch}px`;
+    document.documentElement.style.setProperty('--kucho-pitch', `${pitch}px`);
+    saveSettings();
+}
+
 function openAuthorSelectModal() {
     const listEl = document.getElementById('authorSelectList');
     if (!listEl) return;
     listEl.innerHTML = '';
 
     // すべてのアコーディオンを閉じた状態にする
-    ['pillarSection1', 'pillarSection2', 'pillarSection3'].forEach((id, idx) => {
+    ['pillarSection1', 'pillarSection2', 'pillarSection3', 'pillarSection4'].forEach((id, idx) => {
         const el = document.getElementById(id);
         const arrow = document.getElementById(`pillarArrow${idx + 1}`);
         if (el) el.classList.add('hidden');
         if (arrow) arrow.textContent = '▿';
     });
+
+    // 表示設定の初期UI反映
+    const currentMode = userSettings.kuchoDisplayMode || 'scroll';
+    const currentPitch = userSettings.kuchoPitch !== undefined ? userSettings.kuchoPitch : 50;
+    updateKuchoDisplayModeUI(currentMode);
+    updateKuchoPitchUI(currentPitch);
 
     const myName = userSettings.authorName || '風月';
     
@@ -3502,8 +3571,21 @@ function renderYomuList() {
         return true;
     });
 
+    const scrollContainer = document.getElementById('readHaikuList');
+    const singleContainer = document.getElementById('readSingleContainer');
+    const isSingleMode = (userSettings.kuchoDisplayMode === 'single');
+
     if (targetHaikus.length === 0) {
-        container.innerHTML = `<div style="text-align:center; color:#888; margin:auto; font-size:0.9rem;">該当する${currentReadTab}はありません。</div>`;
+        currentKuchoHaikus = [];
+        if (isSingleMode && singleContainer) {
+            scrollContainer?.classList.add('hidden');
+            singleContainer.classList.remove('hidden');
+            renderKuchoSingleView();
+        } else if (scrollContainer) {
+            singleContainer?.classList.add('hidden');
+            scrollContainer.classList.remove('hidden');
+            scrollContainer.innerHTML = `<div style="text-align:center; color:#888; margin:auto; font-size:0.9rem;">該当する${currentReadTab}はありません。</div>`;
+        }
         return;
     }
 
@@ -3519,6 +3601,20 @@ function renderYomuList() {
         return (b.createdAt || 0) - (a.createdAt || 0);
     });
 
+    currentKuchoHaikus = targetHaikus;
+
+    // 一句ずつ表示モードの場合
+    if (isSingleMode) {
+        if (scrollContainer) scrollContainer.classList.add('hidden');
+        if (singleContainer) singleContainer.classList.remove('hidden');
+        renderKuchoSingleView();
+        return;
+    }
+
+    // スクロール表示モードの場合
+    if (singleContainer) singleContainer.classList.add('hidden');
+    if (scrollContainer) scrollContainer.classList.remove('hidden');
+
     let lastGroupKey = '';
     targetHaikus.forEach(item => {
         if (item._parsedDate.groupKey !== lastGroupKey) {
@@ -3526,7 +3622,7 @@ function renderYomuList() {
             const divider = document.createElement('div');
             divider.className = 'date-divider-card';
             divider.textContent = item._parsedDate.label;
-            container.appendChild(divider);
+            scrollContainer.appendChild(divider);
         }
         const card = document.createElement('div');
         card.className = 'saijiki-haiku-card';
@@ -3538,10 +3634,81 @@ function renderYomuList() {
         applyPhraseLengthClass(phraseDiv, item.phrase);
         card.appendChild(phraseDiv);
         
-        container.appendChild(card);
+        scrollContainer.appendChild(card);
     });
 
-    requestAnimationFrame(() => { container.scrollLeft = container.scrollWidth; });
+    requestAnimationFrame(() => { scrollContainer.scrollLeft = scrollContainer.scrollWidth; });
+}
+
+let currentKuchoHaikus = [];
+let currentKuchoSingleIndex = 0;
+
+function renderKuchoSingleView() {
+    const singleContainer = document.getElementById('readSingleContainer');
+    if (!singleContainer) return;
+
+    if (!currentKuchoHaikus || currentKuchoHaikus.length === 0) {
+        const phraseEl = document.getElementById('kuchoSinglePhrase');
+        if (phraseEl) phraseEl.textContent = '';
+        const counterEl = document.getElementById('kuchoSingleCounter');
+        if (counterEl) counterEl.textContent = `0 / 0`;
+        return;
+    }
+
+    if (currentKuchoSingleIndex < 0) currentKuchoSingleIndex = 0;
+    if (currentKuchoSingleIndex >= currentKuchoHaikus.length) currentKuchoSingleIndex = currentKuchoHaikus.length - 1;
+
+    const cur = currentKuchoHaikus[currentKuchoSingleIndex];
+    const phraseEl = document.getElementById('kuchoSinglePhrase');
+    if (phraseEl) {
+        phraseEl.textContent = cur.phrase;
+        applyPhraseLengthClass(phraseEl, cur.phrase);
+    }
+
+    const counterEl = document.getElementById('kuchoSingleCounter');
+    if (counterEl) {
+        counterEl.textContent = `${currentKuchoSingleIndex + 1} / ${currentKuchoHaikus.length}`;
+    }
+
+    hideKuchoSingleDateInfo();
+}
+
+function changeKuchoSingleHaiku(direction) {
+    if (!currentKuchoHaikus || currentKuchoHaikus.length === 0) return;
+    currentKuchoSingleIndex = (currentKuchoSingleIndex + direction + currentKuchoHaikus.length) % currentKuchoHaikus.length;
+    renderKuchoSingleView();
+}
+
+function toggleKuchoSingleDateInfo() {
+    const box = document.getElementById('kuchoSingleInfoBox');
+    if (!box) return;
+    if (box.classList.contains('hidden')) {
+        showKuchoSingleDateInfo();
+    } else {
+        hideKuchoSingleDateInfo();
+    }
+}
+
+function showKuchoSingleDateInfo() {
+    if (!currentKuchoHaikus || currentKuchoHaikus.length === 0) return;
+    const cur = currentKuchoHaikus[currentKuchoSingleIndex];
+    const box = document.getElementById('kuchoSingleInfoBox');
+    const dateEl = document.getElementById('kuchoSingleInfoDate');
+    if (box && dateEl && cur) {
+        dateEl.textContent = formatDateArabic(cur.sakkuDate);
+        box.classList.remove('hidden');
+    }
+}
+
+function hideKuchoSingleDateInfo() {
+    const box = document.getElementById('kuchoSingleInfoBox');
+    if (box) box.classList.add('hidden');
+}
+
+function onCurrentSingleHaikuClicked() {
+    if (!currentKuchoHaikus || currentKuchoHaikus.length === 0) return;
+    const cur = currentKuchoHaikus[currentKuchoSingleIndex];
+    if (cur) window.onHaikuCardClicked(cur);
 }
 
 window.onHaikuCardClicked = function(haikuObj) {
