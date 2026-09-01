@@ -12,11 +12,11 @@
     <meta name="application-name" content="句帳風月">
     <meta name="theme-color" content="#faf9f6">
     
-    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=2.2.0">
-    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=2.2.0">
-    <link rel="manifest" href="manifest.json?v=2.2.0">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=2.3.0">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=2.3.0">
+    <link rel="manifest" href="manifest.json?v=2.3.0">
 
-    <link rel="stylesheet" href="style.css?v=2.2.0">
+    <link rel="stylesheet" href="style.css?v=2.3.0">
 </head>
 <body>
 
@@ -649,82 +649,83 @@ function handleRequest(e) {
     <!-- 🔔 共通トースト通知 -->
     <div id="appToast" class="app-toast hidden"></div>
 
-    <!-- 🖋️ ステップ1：句の入力 -->
+    <!-- 🖋️ ステップ1：句の入力（完全縦書き作句空間） -->
     <div id="step1" class="step-screen">
-        <div class="step-title">【一】 句の入力</div>
-        <div class="input-screen-content">
-            <div class="input-dock">
-                <input type="text" id="inputPhrase" class="dock-input" placeholder="ここに一句入力してください" autocomplete="off">
-            </div>
-            <div class="btn-group step1-btn-group">
-                <button class="btn btn-outline gothic-btn" onclick="cancelEmuMode()">戻る</button>
-                <button class="btn gothic-btn" onclick="goToStep2()">次へ</button>
-            </div>
+        <div class="step1-top-bar">
+            <div class="step-title" style="text-align: left; width: auto; padding: 0;">【一】 句の入力</div>
+            <button type="button" class="step1-top-kiyose-btn" onclick="openStep1KiyoseModal()">季寄せ</button>
+        </div>
+        
+        <!-- 🌸 完全無垢な縦書き作句キャンバス -->
+        <div class="vertical-sakku-canvas" onclick="focusVerticalSakkuInput()">
+            <textarea id="inputPhrase" class="vertical-sakku-textarea" placeholder="ここに一句入力してください" autocomplete="off" maxlength="50" oninput="handleVerticalSakkuInput(this)" rows="1"></textarea>
+        </div>
 
-            <!-- ▼▼ 季寄せスマートドック（キーボードと共存する静かなトレイ） ▼▼ -->
-            <div class="step1-saijiki-wrapper">
-                <div class="step1-saijiki-trigger" onclick="toggleStep1SaijikiTray()">
-                    <span id="step1TrayIcon">▿</span>
-                    <span id="step1TrayText">季寄せ</span>
+        <div class="btn-group step1-btn-group">
+            <button class="btn btn-outline gothic-btn" onclick="cancelEmuMode()">戻る</button>
+            <button class="btn gothic-btn" onclick="goToStep2()">次へ</button>
+        </div>
+    </div>
+
+    <!-- 🌸 【作句用】季寄せフロートモーダル（静かに浮き上がるシート） -->
+    <div id="step1KiyoseModal" class="card-overlay hidden" onclick="closeStep1KiyoseModal()">
+        <div class="modal-card-content step1-kiyose-modal-sheet" onclick="event.stopPropagation()">
+            <span class="modal-close-corner" onclick="closeStep1KiyoseModal()">✕</span>
+            <h3 class="modal-title" style="font-size: 0.95rem; margin-bottom: 8px;">季寄せ</h3>
+
+            <!-- トレイヘッダー（季節タブ ＆ 検索バー） -->
+            <div class="step1-tray-header">
+                <div class="step1-season-tabs">
+                    <span id="sttabHaru" class="text-tab active" onclick="switchStep1Season('haru')">春</span>
+                    <span class="text-tab-divider">｜</span>
+                    <span id="sttabNatsu" class="text-tab" onclick="switchStep1Season('natsu')">夏</span>
+                    <span class="text-tab-divider">｜</span>
+                    <span id="sttabAki" class="text-tab" onclick="switchStep1Season('aki')">秋</span>
+                    <span class="text-tab-divider">｜</span>
+                    <span id="sttabHuyu" class="text-tab" onclick="switchStep1Season('huyu')">冬</span>
+                    <span class="text-tab-divider">｜</span>
+                    <span id="sttabShinnen" class="text-tab" onclick="switchStep1Season('shinnen')">新年</span>
                 </div>
-                
-                <div id="step1SaijikiTray" class="step1-saijiki-tray hidden">
-                    <!-- トレイヘッダー（季節タブ ＆ 検索バー） -->
-                    <div class="step1-tray-header">
-                        <div class="step1-season-tabs">
-                            <span id="sttabHaru" class="text-tab active" onclick="switchStep1Season('haru')">春</span>
-                            <span class="text-tab-divider">｜</span>
-                            <span id="sttabNatsu" class="text-tab" onclick="switchStep1Season('natsu')">夏</span>
-                            <span class="text-tab-divider">｜</span>
-                            <span id="sttabAki" class="text-tab" onclick="switchStep1Season('aki')">秋</span>
-                            <span class="text-tab-divider">｜</span>
-                            <span id="sttabHuyu" class="text-tab" onclick="switchStep1Season('huyu')">冬</span>
-                            <span class="text-tab-divider">｜</span>
-                            <span id="sttabShinnen" class="text-tab" onclick="switchStep1Season('shinnen')">新年</span>
-                        </div>
-                        <div id="step1SearchWrapper" class="subtle-search-wrapper step1-search-box" onclick="expandStep1SearchInput()">
-                            <span class="search-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
-                            <input type="text" id="step1SearchInput" class="subtle-search-input" placeholder="季語検索" oninput="onStep1SearchChanged()" onblur="collapseStep1SearchIfEmpty()">
-                            <span id="clearStep1SearchBtn" class="search-clear-btn hidden" onclick="clearStep1Search(event)">✕</span>
-                        </div>
-                    </div>
-                    <!-- トレイ内並び順切り替えスイッチ -->
-                    <div class="step1-mode-switch">
-                        <span id="stmodeGojuon" class="mode-tab active" onclick="switchStep1Mode('gojuon')">五十音順</span>
-                        <span class="mode-tab-divider">・</span>
-                        <span id="stmodeJikou" class="mode-tab" onclick="switchStep1Mode('jikou')">時候順</span>
-                    </div>
-                    <!-- トレイ内透かし見出し -->
-                    <div id="step1Watermark" class="saijiki-watermark step1-watermark hidden">
-                        <span id="stWmTiming" class="wm-timing">三春</span>
-                        <span id="stWmCat" class="wm-cat">時候</span>
-                    </div>
-                    <!-- 季語リスト（タップで季語カードを開く） -->
-                    <div id="step1KigoList" class="horizontal-scroll-container step1-kigo-scroll-list">
-                    </div>
-                    <!-- トレイ内五十音ジャンプバー（スクロールバーのすぐ下・右から左：わ〜あ） -->
-                    <div id="step1GojuonBar" class="gojuon-jump-bar step1-jump-bar">
-                        <span class="jump-tab" onclick="jumpToStep1Gojuon('わ')">わ</span>
-                        <span class="jump-tab-dot">・</span>
-                        <span class="jump-tab" onclick="jumpToStep1Gojuon('ら')">ら</span>
-                        <span class="jump-tab-dot">・</span>
-                        <span class="jump-tab" onclick="jumpToStep1Gojuon('や')">や</span>
-                        <span class="jump-tab-dot">・</span>
-                        <span class="jump-tab" onclick="jumpToStep1Gojuon('ま')">ま</span>
-                        <span class="jump-tab-dot">・</span>
-                        <span class="jump-tab" onclick="jumpToStep1Gojuon('は')">は</span>
-                        <span class="jump-tab-dot">・</span>
-                        <span class="jump-tab" onclick="jumpToStep1Gojuon('な')">な</span>
-                        <span class="jump-tab-dot">・</span>
-                        <span class="jump-tab" onclick="jumpToStep1Gojuon('た')">た</span>
-                        <span class="jump-tab-dot">・</span>
-                        <span class="jump-tab" onclick="jumpToStep1Gojuon('さ')">さ</span>
-                        <span class="jump-tab-dot">・</span>
-                        <span class="jump-tab" onclick="jumpToStep1Gojuon('か')">か</span>
-                        <span class="jump-tab-dot">・</span>
-                        <span class="jump-tab" onclick="jumpToStep1Gojuon('あ')">あ</span>
-                    </div>
+                <div id="step1SearchWrapper" class="subtle-search-wrapper step1-search-box" onclick="expandStep1SearchInput()">
+                    <span class="search-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
+                    <input type="text" id="step1SearchInput" class="subtle-search-input" placeholder="季語検索" oninput="onStep1SearchChanged()" onblur="collapseStep1SearchIfEmpty()">
+                    <span id="clearStep1SearchBtn" class="search-clear-btn hidden" onclick="clearStep1Search(event)">✕</span>
                 </div>
+            </div>
+            <!-- トレイ内並び順切り替えスイッチ -->
+            <div class="step1-mode-switch">
+                <span id="stmodeGojuon" class="mode-tab active" onclick="switchStep1Mode('gojuon')">五十音順</span>
+                <span class="mode-tab-divider">・</span>
+                <span id="stmodeJikou" class="mode-tab" onclick="switchStep1Mode('jikou')">時候順</span>
+            </div>
+            <!-- トレイ内透かし見出し -->
+            <div id="step1Watermark" class="saijiki-watermark step1-watermark hidden">
+                <span id="stWmTiming" class="wm-timing">三春</span>
+                <span id="stWmCat" class="wm-cat">時候</span>
+            </div>
+            <!-- 季語リスト（タップで季語カードを開く） -->
+            <div id="step1KigoList" class="horizontal-scroll-container step1-kigo-scroll-list"></div>
+            <!-- トレイ内五十音ジャンプバー -->
+            <div id="step1GojuonBar" class="gojuon-jump-bar step1-jump-bar">
+                <span class="jump-tab" onclick="jumpToStep1Gojuon('わ')">わ</span>
+                <span class="jump-tab-dot">・</span>
+                <span class="jump-tab" onclick="jumpToStep1Gojuon('ら')">ら</span>
+                <span class="jump-tab-dot">・</span>
+                <span class="jump-tab" onclick="jumpToStep1Gojuon('や')">や</span>
+                <span class="jump-tab-dot">・</span>
+                <span class="jump-tab" onclick="jumpToStep1Gojuon('ま')">ま</span>
+                <span class="jump-tab-dot">・</span>
+                <span class="jump-tab" onclick="jumpToStep1Gojuon('は')">は</span>
+                <span class="jump-tab-dot">・</span>
+                <span class="jump-tab" onclick="jumpToStep1Gojuon('な')">な</span>
+                <span class="jump-tab-dot">・</span>
+                <span class="jump-tab" onclick="jumpToStep1Gojuon('た')">た</span>
+                <span class="jump-tab-dot">・</span>
+                <span class="jump-tab" onclick="jumpToStep1Gojuon('さ')">さ</span>
+                <span class="jump-tab-dot">・</span>
+                <span class="jump-tab" onclick="jumpToStep1Gojuon('か')">か</span>
+                <span class="jump-tab-dot">・</span>
+                <span class="jump-tab" onclick="jumpToStep1Gojuon('あ')">あ</span>
             </div>
         </div>
     </div>
@@ -848,6 +849,6 @@ function handleRequest(e) {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.2.0"></script>
+    <script src="app.js?v=2.3.0"></script>
 </body>
 </html>

@@ -1247,6 +1247,7 @@ function closeKigoCard() {
 
 function composeWithKigo(kigoName) {
     closeKigoCard();
+    closeStep1KiyoseModal();
     startEmuMode();
     const input = document.getElementById('inputPhrase');
     if (input) {
@@ -1254,25 +1255,45 @@ function composeWithKigo(kigoName) {
         currentHaikuData.phrase = kigoName;
         currentHaikuData.kigo = kigoName;
         currentHaikuData.parentKigo = kigoName;
+        handleVerticalSakkuInput(input);
         input.focus();
     }
 }
 
 // ========================================================
-// 🖋️ 【詠む】ステップ1 季寄せスマートトレイ
+// 🖋️ 【詠む】ステップ1 縦書き作句 ＆ 季寄せフロートモーダル
 // ========================================================
-function toggleStep1SaijikiTray() {
-    const tray = document.getElementById('step1SaijikiTray');
-    const icon = document.getElementById('step1TrayIcon');
-    if (!tray) return;
+function handleVerticalSakkuInput(textareaEl) {
+    if (!textareaEl) return;
+    const text = textareaEl.value || '';
+    const charCount = text.length;
 
-    const isHidden = tray.classList.contains('hidden');
-    tray.classList.toggle('hidden', !isHidden);
-    if (icon) icon.textContent = isHidden ? '▴' : '▿';
-
-    if (isHidden) {
-        renderStep1KigoList();
+    // 17文字超、25文字超で自動的にフォント縮小クラスを付与
+    if (charCount > 24) {
+        textareaEl.classList.remove('long-phrase');
+        textareaEl.classList.add('very-long-phrase');
+    } else if (charCount > 16) {
+        textareaEl.classList.remove('very-long-phrase');
+        textareaEl.classList.add('long-phrase');
+    } else {
+        textareaEl.classList.remove('long-phrase', 'very-long-phrase');
     }
+}
+
+function focusVerticalSakkuInput() {
+    const input = document.getElementById('inputPhrase');
+    if (input) input.focus();
+}
+
+function openStep1KiyoseModal() {
+    renderStep1KigoList();
+    const modal = document.getElementById('step1KiyoseModal');
+    if (modal) modal.classList.remove('hidden');
+}
+
+function closeStep1KiyoseModal() {
+    const modal = document.getElementById('step1KiyoseModal');
+    if (modal) modal.classList.add('hidden');
 }
 
 function switchStep1Season(season) {
@@ -3308,13 +3329,14 @@ function startEmuMode() {
     editingHaikuObj = null;
     currentHaikuData.oldPhrase = ''; 
     document.getElementById('inputPhrase').value = '';
+    handleVerticalSakkuInput(document.getElementById('inputPhrase'));
     document.getElementById('authorInput').value = userSettings.authorName || '風月';
     document.getElementById('authorKanaInput').value = userSettings.authorKana || 'ふうげつ';
     setTodaySakkuDate();
     hideAuthorSuggestions();
     goToStep(1);
     const input = document.getElementById('inputPhrase');
-    if (input) input.focus();
+    if (input) setTimeout(() => input.focus(), 50);
 }
 
 function cancelEmuMode() {
@@ -3666,6 +3688,7 @@ function editSelectedHaiku() {
     currentHaikuData.oldPhrase = activeSelectedHaiku.phrase; 
     
     document.getElementById('inputPhrase').value = activeSelectedHaiku.phrase;
+    handleVerticalSakkuInput(document.getElementById('inputPhrase'));
     document.getElementById('kigoInput').value = activeSelectedHaiku.parentKigo || activeSelectedHaiku.kigo || '';
     if (activeSelectedHaiku.season) document.getElementById('seasonSelect').value = activeSelectedHaiku.season;
     if (activeSelectedHaiku.detailSeason) document.getElementById('detailSeasonSelect').value = activeSelectedHaiku.detailSeason;
@@ -3676,6 +3699,8 @@ function editSelectedHaiku() {
 
     hideAuthorSuggestions();
     goToStep(1);
+    const input = document.getElementById('inputPhrase');
+    if (input) setTimeout(() => input.focus(), 50);
 }
 
 function goToStep(stepNumber) {
