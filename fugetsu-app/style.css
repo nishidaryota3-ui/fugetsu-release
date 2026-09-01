@@ -558,18 +558,27 @@ body.font-gothic-mode * {
     font-size: min(2.1vh, 14.5px) !important;
 }
 
-/* PC（幅768px以上）は大画面に合わせてしっかり大きく！ */
+/* PC（幅768px以上）は大画面に合わせてしっかり大きく大迫力！ */
 @media (min-width: 768px) {
     .step1-direct-vertical-input {
-        font-size: 26px !important;
-        height: 65vh;
-        max-height: 600px;
+        font-size: min(4.2vh, 38px) !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.18em !important;
+        line-height: 1.35 !important;
+        height: 75vh !important;
+        max-height: 780px !important;
+        min-height: 480px !important;
+        width: 3.2em !important;
+        padding: 10px 14px !important;
     }
     .step1-direct-vertical-input.phrase-len-mid {
-        font-size: 23px !important;
+        font-size: min(3.8vh, 34px) !important;
     }
     .step1-direct-vertical-input.phrase-len-max {
-        font-size: 20px !important;
+        font-size: min(3.4vh, 31px) !important;
+    }
+    .step1-direct-vertical-input::placeholder {
+        font-size: min(3.8vh, 32px) !important;
     }
 }
 
