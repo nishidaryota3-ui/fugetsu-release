@@ -141,6 +141,22 @@ function parseDateLabel(dateStr) {
     return { groupKey: '0000-00-00', exactKey: '0000-00-00', label: '年代不詳' };
 }
 
+// 📱 PWA インストールプロンプト制御
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+});
+
+function triggerPwaInstall() {
+    if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        deferredInstallPrompt.userChoice.then(() => {
+            deferredInstallPrompt = null;
+        });
+    }
+}
+
 // ========================================================
 // 初期化 & データ読み込み
 // ========================================================
