@@ -611,9 +611,10 @@ function updateKuchoPitchUI(pitch) {
 
 function setKuchoDisplayMode(mode) {
     userSettings.kuchoDisplayMode = mode;
-    saveSettings();
+    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
     updateKuchoDisplayModeUI(mode);
     renderYomuList();
+    closeAuthorSelectModal();
 }
 
 function onKuchoPitchSliderChanged(val) {
@@ -622,7 +623,31 @@ function onKuchoPitchSliderChanged(val) {
     const label = document.getElementById('kuchoPitchValueLabel');
     if (label) label.textContent = `${pitch}px`;
     document.documentElement.style.setProperty('--kucho-pitch', `${pitch}px`);
-    saveSettings();
+    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
+}
+
+let kuchoSingleTouchStartX = 0;
+let kuchoSingleTouchStartY = 0;
+
+function handleKuchoSingleTouchStart(e) {
+    if (!e.touches || e.touches.length === 0) return;
+    kuchoSingleTouchStartX = e.touches[0].clientX;
+    kuchoSingleTouchStartY = e.touches[0].clientY;
+}
+
+function handleKuchoSingleTouchEnd(e) {
+    if (!e.changedTouches || e.changedTouches.length === 0) return;
+    const diffX = e.changedTouches[0].clientX - kuchoSingleTouchStartX;
+    const diffY = e.changedTouches[0].clientY - kuchoSingleTouchStartY;
+
+    // 縦スクロールと誤爆しないように、横の移動量が大きく40px以上のとき
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 40) {
+        if (diffX < 0) {
+            changeKuchoSingleHaiku(1); // 左スワイプ（次へ）
+        } else {
+            changeKuchoSingleHaiku(-1); // 右スワイプ（前へ）
+        }
+    }
 }
 
 function openAuthorSelectModal() {
@@ -852,6 +877,7 @@ function closeAuthorSelectModal() {
 
 function selectAuthorFilter(author) {
     currentAuthorFilter = author;
+    currentKuchoSingleIndex = 0;
     updateHeaderTitle();
     closeAuthorSelectModal();
     renderYomuList();
@@ -3483,6 +3509,7 @@ function startYomuMode() {
 
 function switchReadTab(status) {
     currentReadTab = status;
+    currentKuchoSingleIndex = 0;
     document.getElementById('tabKansei').classList.toggle('active', status === '完成句');
     document.getElementById('tabShitagaki').classList.toggle('active', status === '下書き');
     renderYomuList();
@@ -3649,7 +3676,7 @@ function renderKuchoSingleView() {
 
     if (!currentKuchoHaikus || currentKuchoHaikus.length === 0) {
         const phraseEl = document.getElementById('kuchoSinglePhrase');
-        if (phraseEl) phraseEl.textContent = '';
+        if (phraseEl) phraseEl.textContent = `該当する${currentReadTab}はありません`;
         const counterEl = document.getElementById('kuchoSingleCounter');
         if (counterEl) counterEl.textContent = `0 / 0`;
         return;

@@ -12,11 +12,11 @@
     <meta name="application-name" content="句帳風月">
     <meta name="theme-color" content="#faf9f6">
     
-    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=3.0.0">
-    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=3.0.0">
-    <link rel="manifest" href="manifest.json?v=3.0.0">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=3.0.1">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=3.0.1">
+    <link rel="manifest" href="manifest.json?v=3.0.1">
 
-    <link rel="stylesheet" href="style.css?v=3.0.0">
+    <link rel="stylesheet" href="style.css?v=3.0.1">
 </head>
 <body>
 
@@ -110,9 +110,9 @@
         </div>
 
         <!-- 📖 一句ずつ表示コンテナ（おみくじ風鑑賞 ＆ 「i」日付表示） -->
-        <div id="readSingleContainer" class="read-single-container hidden">
+        <div id="readSingleContainer" class="read-single-container hidden" ontouchstart="handleKuchoSingleTouchStart(event)" ontouchend="handleKuchoSingleTouchEnd(event)">
             <!-- 右上：「i」ボタン ＆ 日付ポップアップ（アラビア数字 2026/9/1） -->
-            <div class="omikuji-top-right">
+            <div class="kucho-single-top-right">
                 <button id="kuchoSingleInfoBtn" class="flat-icon-btn" onclick="toggleKuchoSingleDateInfo()" title="作句日を見る" aria-label="作句日">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="10"></circle>
@@ -120,8 +120,8 @@
                         <line x1="12" y1="8" x2="12.01" y2="8"></line>
                     </svg>
                 </button>
-                <div id="kuchoSingleInfoBox" class="omikuji-info-box hidden" onclick="hideKuchoSingleDateInfo()" title="タップで隠す">
-                    <div id="kuchoSingleInfoDate" class="omikuji-info-author"></div>
+                <div id="kuchoSingleInfoBox" class="kucho-single-info-box hidden" onclick="hideKuchoSingleDateInfo()" title="タップで隠す">
+                    <div id="kuchoSingleInfoDate" class="kucho-single-info-date"></div>
                 </div>
             </div>
 
@@ -129,7 +129,7 @@
             <button id="kuchoSinglePrevBtn" class="nav-arrow arrow-right" onclick="changeKuchoSingleHaiku(-1)">＞</button> 
             <button id="kuchoSingleNextBtn" class="nav-arrow arrow-left" onclick="changeKuchoSingleHaiku(1)">＜</button>  
             
-            <div class="haiku-screen" onclick="onCurrentSingleHaikuClicked()">
+            <div class="haiku-screen" onclick="onCurrentSingleHaikuClicked()" style="cursor: pointer;">
                 <p id="kuchoSinglePhrase" class="phrase"></p>
             </div>
             
@@ -906,6 +906,6 @@ function handleRequest(e) {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=3.0.0"></script>
+    <script src="app.js?v=3.0.1"></script>
 </body>
 </html>
