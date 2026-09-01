@@ -189,6 +189,11 @@ window.onload = function() {
     // クラウドからの自動双方向同期チェック
     setTimeout(fetchHaikusFromCloud, 800);
 
+    // 電波復帰時（オンライン復帰時）の自動同期リスナー
+    window.addEventListener('online', () => {
+        setTimeout(fetchHaikusFromCloud, 800);
+    });
+
     // 暗号キーのリアルタイムリスナー起動
     initSyncKeyListener();
 };
@@ -2623,8 +2628,11 @@ async function fetchHaikusFromCloud(isManual = false) {
             }
 
             if (rows.length > 0) {
-                let mergedCount = 0;
-                rows.forEach(r => {
+                // 1. スプレッドシート（正本）から取得した句の一覧をパース
+                const cloudHaikus = [];
+                const cloudPhraseSet = new Set();
+
+                rows.forEach((r, idx) => {
                     let phrase = '';
                     let author = '';
                     let authorKana = '';
@@ -2637,7 +2645,6 @@ async function fetchHaikusFromCloud(isManual = false) {
                     let sakkuDate = '';
 
                     if (Array.isArray(r)) {
-                        // GASの12列行配列 [phrase, author, authorKana, kigo, parentKigo, parentKana, season, detailSeason, _, _, status, sakkuDate]
                         phrase = (r[0] || '').toString().trim();
                         if (phrase === '俳句' || phrase === 'phrase' || !phrase) return; // ヘッダー行スキップ
                         author = (r[1] || '').toString().trim() || userSettings.authorName || '風月';
@@ -2651,6 +2658,7 @@ async function fetchHaikusFromCloud(isManual = false) {
                         sakkuDate = (r[11] || '').toString().trim();
                     } else if (typeof r === 'object' && r.phrase) {
                         phrase = r.phrase.trim();
+                        if (!phrase) return;
                         author = r.author || userSettings.authorName || '風月';
                         authorKana = r.authorKana || userSettings.authorKana || '';
                         kigo = r.kigo || '';
@@ -2662,9 +2670,11 @@ async function fetchHaikusFromCloud(isManual = false) {
                         sakkuDate = r.sakkuDate || '';
                     }
 
-                    if (phrase && !haikuHistory.some(h => h.phrase === phrase)) {
-                        haikuHistory.push({
-                            id: 'cloud_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                    if (phrase) {
+                        cloudPhraseSet.add(phrase);
+                        const existing = haikuHistory.find(h => h.phrase === phrase);
+                        cloudHaikus.push({
+                            id: existing ? existing.id : ('cloud_' + Date.now() + '_' + idx),
                             phrase,
                             author,
                             authorKana,
@@ -2675,20 +2685,33 @@ async function fetchHaikusFromCloud(isManual = false) {
                             detailSeason,
                             status,
                             sakkuDate,
-                            createdAt: Date.now()
+                            createdAt: existing ? existing.createdAt : (Date.now() - (rows.length - idx))
                         });
-                        mergedCount++;
                     }
                 });
 
-                if (mergedCount > 0) {
-                    saveLocalHaikus();
-                    if (document.getElementById('readScreen').classList.contains('active')) {
-                        renderYomuList();
-                    }
-                    showToast(`☁️ スプレッドシートから ${mergedCount}句 を同期しました`);
+                // 2. オフライン中に端末ローカルで作成された句（SSに未反映の句）を検出・保護
+                const offlineCreatedHaikus = haikuHistory.filter(h => h.phrase && !cloudPhraseSet.has(h.phrase));
+                if (offlineCreatedHaikus.length > 0) {
+                    offlineCreatedHaikus.forEach(offItem => {
+                        cloudHaikus.unshift(offItem);
+                        // スプレッドシートへ自動バックグラウンド追記
+                        syncHaikuToCloud(offItem, 'save');
+                    });
                 }
-                return { success: true, count: mergedCount };
+
+                // 3. スプレッドシートの正本状態でローカル句帳を完全一致同期
+                haikuHistory = cloudHaikus;
+                saveLocalHaikus();
+
+                if (document.getElementById('readScreen').classList.contains('active')) {
+                    renderYomuList();
+                }
+
+                if (isManual) {
+                    showToast(`☁️ スプレッドシートと完全同期しました（${cloudHaikus.length}句）`);
+                }
+                return { success: true, count: cloudHaikus.length };
             } else {
                 return { success: true, count: 0 };
             }
