@@ -12,11 +12,11 @@
     <meta name="application-name" content="句帳風月">
     <meta name="theme-color" content="#faf9f6">
     
-    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=2.1.3">
-    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=2.1.3">
-    <link rel="manifest" href="manifest.json?v=2.1.3">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=2.2.0">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=2.2.0">
+    <link rel="manifest" href="manifest.json?v=2.2.0">
 
-    <link rel="stylesheet" href="style.css?v=2.1.3">
+    <link rel="stylesheet" href="style.css?v=2.2.0">
 </head>
 <body>
 
@@ -426,13 +426,55 @@
                     </div>
                     <div class="settings-checkbox-group" style="padding-top: 2px;">
                         <label class="settings-checkbox-row">
-                            <input type="checkbox" id="settingStartupOmikuji" onchange="onSettingCheckboxChanged()">
-                            <span>起動時におみ句じを表示</span>
-                        </label>
-                        <label class="settings-checkbox-row">
                             <input type="checkbox" id="settingHideHomeKiyose" onchange="onSettingCheckboxChanged()">
                             <span>ホーム画面から「季寄せ」を削除</span>
                         </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-divider"></div>
+
+            <!-- 七、 おみ句じ機能の設定 -->
+            <div class="menu-pillar-section">
+                <div class="pillar-accordion-header" onclick="toggleSettingsAccordion('settingSection7')">
+                    <span class="pillar-section-title">七、 おみ句じ機能の設定</span>
+                    <span id="settingArrow7" class="pillar-accordion-arrow">▿</span>
+                </div>
+                <div id="settingSection7" class="pillar-accordion-body hidden">
+                    <p class="settings-desc" style="font-size: 0.72rem; color: #888; margin-top: 4px; margin-bottom: 10px; line-height: 1.4;">
+                        おみ句じとは画面左下にいる猫が振ってくれる句のくじ引きです。
+                    </p>
+
+                    <div class="settings-checkbox-group" style="margin-bottom: 12px;">
+                        <label class="settings-checkbox-row">
+                            <input type="checkbox" id="settingStartupOmikuji" onchange="onSettingCheckboxChanged()">
+                            <span>起動時におみ句じを表示</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 6px;">
+                        <label class="form-label" style="margin-bottom: 6px; font-weight: 600;">おみ句じで表示される句の設定</label>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;">
+                            <label class="settings-checkbox-row" style="cursor: pointer;">
+                                <input type="radio" name="omikujiScopeRadio" value="ALL" onchange="onOmikujiScopeChanged('ALL')">
+                                <span style="font-size: 0.82rem;">全句を表示</span>
+                            </label>
+                            <label class="settings-checkbox-row" style="cursor: pointer;">
+                                <input type="radio" name="omikujiScopeRadio" value="MINE" onchange="onOmikujiScopeChanged('MINE')">
+                                <span style="font-size: 0.82rem;">自分の句だけを表示</span>
+                            </label>
+                            <label class="settings-checkbox-row" style="cursor: pointer;">
+                                <input type="radio" name="omikujiScopeRadio" value="AUTHORS" onchange="onOmikujiScopeChanged('AUTHORS')">
+                                <span style="font-size: 0.82rem;">特定の作者だけを表示</span>
+                            </label>
+                        </div>
+
+                        <!-- 特定作者選択ボックス（特定の作者が選択されている時のみ表示） -->
+                        <div id="omikujiAuthorsBox" class="hidden" style="max-height: 140px; overflow-y: auto; border: 1px solid #ede8e1; border-radius: 4px; padding: 6px 10px; background: #faf9f6; box-sizing: border-box;">
+                            <div id="omikujiAuthorsList" style="display: flex; flex-direction: column; gap: 5px;"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -806,6 +848,6 @@ function handleRequest(e) {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.1.3"></script>
+    <script src="app.js?v=2.2.0"></script>
 </body>
 </html>

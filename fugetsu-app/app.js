@@ -67,7 +67,9 @@ let userSettings = {
     homeKiyose: false,
     fontSizeMode: 'normal', // 'normal' | 'large'
     fontFamily: 'mincho',   // 'mincho' | 'gothic'
-    cloudSyncUrl: ''        // Googleスプレッドシート/クラウド同期URL
+    cloudSyncUrl: '',       // Googleスプレッドシート/クラウド同期URL
+    omikujiScope: 'ALL',    // 'ALL' | 'MINE' | 'AUTHORS'
+    omikujiSelectedAuthors: [] // 特定の作者リスト
 };
 
 let currentHaikuData = {
@@ -1892,11 +1894,11 @@ function toggleSettingsAccordion(sectionId) {
     const isHidden = sectionEl.classList.contains('hidden');
     
     // すべてのセクションを一旦閉じる
-    ['settingSection1', 'settingSection2', 'settingSection3', 'settingSectionTrash', 'settingSection5', 'settingSection6'].forEach((id) => {
+    ['settingSection1', 'settingSection2', 'settingSection3', 'settingSectionTrash', 'settingSection5', 'settingSection6', 'settingSection7'].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
     });
-    ['settingArrow1', 'settingArrow2', 'settingArrow3', 'settingArrowTrash', 'settingArrow5', 'settingArrow6'].forEach(aid => {
+    ['settingArrow1', 'settingArrow2', 'settingArrow3', 'settingArrowTrash', 'settingArrow5', 'settingArrow6', 'settingArrow7'].forEach(aid => {
         const arrow = document.getElementById(aid);
         if (arrow) arrow.textContent = '▿';
     });
@@ -1910,6 +1912,7 @@ function toggleSettingsAccordion(sectionId) {
         else if (sectionId === 'settingSectionTrash') arrowId = 'settingArrowTrash';
         else if (sectionId === 'settingSection5') arrowId = 'settingArrow5';
         else if (sectionId === 'settingSection6') arrowId = 'settingArrow6';
+        else if (sectionId === 'settingSection7') arrowId = 'settingArrow7';
         const arrow = document.getElementById(arrowId);
         if (arrow) arrow.textContent = '▴';
     }
@@ -1917,11 +1920,11 @@ function toggleSettingsAccordion(sectionId) {
 
 function openSettingsModal() {
     // すべてのアコーディオンを閉じた状態にする
-    ['settingSection1', 'settingSection2', 'settingSection3', 'settingSectionTrash', 'settingSection5', 'settingSection6'].forEach((id) => {
+    ['settingSection1', 'settingSection2', 'settingSection3', 'settingSectionTrash', 'settingSection5', 'settingSection6', 'settingSection7'].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
     });
-    ['settingArrow1', 'settingArrow2', 'settingArrow3', 'settingArrowTrash', 'settingArrow5', 'settingArrow6'].forEach(aid => {
+    ['settingArrow1', 'settingArrow2', 'settingArrow3', 'settingArrowTrash', 'settingArrow5', 'settingArrow6', 'settingArrow7'].forEach(aid => {
         const arrow = document.getElementById(aid);
         if (arrow) arrow.textContent = '▿';
     });
@@ -1935,6 +1938,22 @@ function openSettingsModal() {
     const hideHomeKiyoseChk = document.getElementById('settingHideHomeKiyose');
     if (hideHomeKiyoseChk) hideHomeKiyoseChk.checked = !!userSettings.hideHomeKiyose;
 
+    // おみ句じ句の範囲設定
+    const currentScope = userSettings.omikujiScope || 'ALL';
+    const radios = document.getElementsByName('omikujiScopeRadio');
+    radios.forEach(r => {
+        r.checked = (r.value === currentScope);
+    });
+    const authorsBox = document.getElementById('omikujiAuthorsBox');
+    if (authorsBox) {
+        if (currentScope === 'AUTHORS') {
+            authorsBox.classList.remove('hidden');
+            renderOmikujiAuthorsList();
+        } else {
+            authorsBox.classList.add('hidden');
+        }
+    }
+
     const cloudInput = document.getElementById('settingCloudSyncUrl');
     if (cloudInput) cloudInput.value = userSettings.cloudSyncUrl || '';
     updateCloudStatusBadge();
@@ -1942,6 +1961,78 @@ function openSettingsModal() {
 
     renderTrashList();
     document.getElementById('settingsModal').classList.remove('hidden');
+}
+
+function onOmikujiScopeChanged(scope) {
+    userSettings.omikujiScope = scope;
+    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
+
+    const authorsBox = document.getElementById('omikujiAuthorsBox');
+    if (authorsBox) {
+        if (scope === 'AUTHORS') {
+            authorsBox.classList.remove('hidden');
+            renderOmikujiAuthorsList();
+        } else {
+            authorsBox.classList.add('hidden');
+        }
+    }
+}
+
+function renderOmikujiAuthorsList() {
+    const listEl = document.getElementById('omikujiAuthorsList');
+    if (!listEl) return;
+
+    const myName = userSettings.authorName || '風月';
+    const authorCounts = {};
+    haikuHistory.filter(h => h.status === '完成句').forEach(h => {
+        const a = h.author || myName;
+        authorCounts[a] = (authorCounts[a] || 0) + 1;
+    });
+
+    const authors = Object.keys(authorCounts).sort((a, b) => {
+        if (a === myName) return -1;
+        if (b === myName) return 1;
+        return a.localeCompare(b, 'ja');
+    });
+
+    if (authors.length === 0) {
+        listEl.innerHTML = '<div style="font-size: 0.74rem; color: #999; padding: 4px 0;">作者が登録されていません</div>';
+        return;
+    }
+
+    if (!Array.isArray(userSettings.omikujiSelectedAuthors)) {
+        userSettings.omikujiSelectedAuthors = [];
+    }
+    const selectedSet = new Set(userSettings.omikujiSelectedAuthors);
+
+    listEl.innerHTML = authors.map(author => {
+        const safeAuthor = escapeHtml(author);
+        const count = authorCounts[author];
+        const isChecked = selectedSet.has(author) ? 'checked' : '';
+        return `
+            <label style="display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; color: #444; cursor: pointer; padding: 3px 0; border-bottom: 1px solid #f0ede8;">
+                <span style="display: flex; align-items: center; gap: 6px;">
+                    <input type="checkbox" value="${safeAuthor}" ${isChecked} onchange="onOmikujiAuthorToggle('${safeAuthor}', this.checked)" style="cursor: pointer;">
+                    <span>${safeAuthor}</span>
+                </span>
+                <span style="font-size: 0.72rem; color: #888;">${count}句</span>
+            </label>
+        `;
+    }).join('');
+}
+
+function onOmikujiAuthorToggle(author, isChecked) {
+    if (!Array.isArray(userSettings.omikujiSelectedAuthors)) {
+        userSettings.omikujiSelectedAuthors = [];
+    }
+    if (isChecked) {
+        if (!userSettings.omikujiSelectedAuthors.includes(author)) {
+            userSettings.omikujiSelectedAuthors.push(author);
+        }
+    } else {
+        userSettings.omikujiSelectedAuthors = userSettings.omikujiSelectedAuthors.filter(a => a !== author);
+    }
+    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
 }
 
 function closeSettingsModal() {
@@ -3439,10 +3530,30 @@ function deleteSelectedDraft() {
 // 🎲 おみ句じ鑑賞（全作者均等シャッフル ＆ ブラインド鑑賞）
 // ========================================================
 function triggerRandomOmikuji() {
-    const kanseiHaikus = haikuHistory.filter(h => h.status === '完成句');
+    let kanseiHaikus = haikuHistory.filter(h => h.status === '完成句');
     if (kanseiHaikus.length === 0) { alert('鑑賞できる完成句がありません。'); return; }
 
     const myName = userSettings.authorName || '風月';
+    const scope = userSettings.omikujiScope || 'ALL';
+
+    if (scope === 'MINE') {
+        kanseiHaikus = kanseiHaikus.filter(h => (h.author || myName) === myName);
+    } else if (scope === 'AUTHORS') {
+        const selectedAuthors = userSettings.omikujiSelectedAuthors || [];
+        if (selectedAuthors.length > 0) {
+            const authorSet = new Set(selectedAuthors);
+            kanseiHaikus = kanseiHaikus.filter(h => authorSet.has(h.author || myName));
+        } else {
+            alert('おみ句じで表示する作者が選択されていません。\n「設定 ➔ 七、おみ句じ機能の設定」で作者を選択してください。');
+            return;
+        }
+    }
+
+    if (kanseiHaikus.length === 0) {
+        alert('指定された条件（自分の句／特定作者）に該当する完成句がありません。');
+        return;
+    }
+
     const authorMap = {};
     kanseiHaikus.forEach(h => {
         const a = h.author || myName;
