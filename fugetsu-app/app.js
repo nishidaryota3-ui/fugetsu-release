@@ -99,7 +99,27 @@ function toKanjiNum(str) {
     return String(str).split('').map(char => numMap[char] || char).join('');
 }
 
+function normalizeSakkuDate(rawDate) {
+    if (!rawDate) return '';
+    let str = String(rawDate).trim();
+    if (!str) return '';
+
+    // ISO 8601 形式（2026-08-31T15:00:00.000Z など、GAS/JSONがUTCで出力した日付）を端末ローカル日時に完全復元
+    if (str.includes('T') || str.endsWith('Z')) {
+        const d = new Date(str);
+        if (!isNaN(d.getTime())) {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+    }
+
+    return str;
+}
+
 function parseDateLabel(dateStr) {
+    dateStr = normalizeSakkuDate(dateStr);
     if (!dateStr) return { groupKey: '0000-00-00', exactKey: '0000-00-00', label: '年代不詳' };
     let str = String(dateStr).trim().replace(/[/.]/g, '-');
     const parts = str.split('-').map(p => p.trim()).filter(Boolean);
@@ -471,6 +491,7 @@ function setTodaySakkuDate() {
 }
 
 function populateSakkuDateFields(dateStr) {
+    dateStr = normalizeSakkuDate(dateStr);
     const yInput = document.getElementById('sakkuYearInput');
     const mInput = document.getElementById('sakkuMonthInput');
     const dInput = document.getElementById('sakkuDayInput');
@@ -2825,7 +2846,7 @@ async function fetchHaikusFromCloud(isManual = false) {
                         season = (r[6] || '').toString().trim();
                         detailSeason = (r[7] || '').toString().trim();
                         status = (r[10] || '').toString().trim() || '完成句';
-                        sakkuDate = (r[11] || '').toString().trim();
+                        sakkuDate = normalizeSakkuDate((r[11] || '').toString().trim());
                     } else if (typeof r === 'object' && r.phrase) {
                         phrase = r.phrase.trim();
                         if (!phrase) return;
@@ -2837,7 +2858,7 @@ async function fetchHaikusFromCloud(isManual = false) {
                         season = r.season || '';
                         detailSeason = r.detailSeason || '';
                         status = r.status || '完成句';
-                        sakkuDate = r.sakkuDate || '';
+                        sakkuDate = normalizeSakkuDate(r.sakkuDate || '');
                     }
 
                     if (phrase) {
@@ -2940,7 +2961,7 @@ function parseAndMergeCsvHaikus(csvText) {
             let season = seasonMap[rawSeason] || (rawSeason ? rawSeason : 'muki');
             let detailSeason = (detailSeasonIdx !== -1 && row[detailSeasonIdx]) ? row[detailSeasonIdx].trim() : '';
             let status = (statusIdx !== -1 && row[statusIdx]) ? row[statusIdx].trim() : '完成句';
-            let sakkuDate = (sakkuDateIdx !== -1 && row[sakkuDateIdx]) ? row[sakkuDateIdx].trim() : '';
+            let sakkuDate = (sakkuDateIdx !== -1 && row[sakkuDateIdx]) ? normalizeSakkuDate(row[sakkuDateIdx].trim()) : '';
 
             // 季語が空欄なら歳時記DBから自動補完
             if (!kigo && saijikiDatabase && saijikiDatabase.length > 0) {
