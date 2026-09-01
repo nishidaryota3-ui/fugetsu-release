@@ -501,63 +501,70 @@ body.font-gothic-mode * {
     transform: scale(0.96);
 }
 
-.step1-haiku-screen {
+.step1-haiku-stage {
+    position: relative;
     flex: 1;
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: text;
-    user-select: text;
-    -webkit-user-select: text;
+    user-select: none;
+    -webkit-user-select: none;
     padding: 10px 0;
     box-sizing: border-box;
 }
 
-.step1-editable-phrase {
-    writing-mode: vertical-rl;
-    -webkit-writing-mode: vertical-rl;
-    text-orientation: upright;
-    font-family: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
-    font-size: min(3.8vh, 28px);
-    line-height: 1.25;
-    letter-spacing: 0.15em;
-    font-weight: 500;
-    color: #2b2b2b;
-    background: transparent;
-    border: none;
-    outline: none;
-    text-align: center;
-    caret-color: #8c8476;
-    box-sizing: border-box;
-    padding: 4px 6px;
-    white-space: nowrap !important; /* 完全に1行表示 */
+.step1-ghost-display {
+    pointer-events: none;
     min-height: 1.5em;
     min-width: 1.2em;
+    color: #2b2b2b;
+    position: relative;
     display: inline-block;
-    cursor: text;
-    user-select: text;
-    -webkit-user-select: text;
 }
 
-.step1-editable-phrase:empty::before {
+.step1-ghost-display:empty::before {
     content: attr(data-placeholder);
     color: #b8b0a5;
     opacity: 0.65;
-    font-family: inherit;
-    font-size: min(3.0vh, 20px);
+    font-size: min(3.2vh, 22px);
     letter-spacing: 0.18em;
     pointer-events: none;
     white-space: nowrap;
 }
 
-.step1-editable-phrase:focus {
-    outline: none;
-    border: none;
+/* 点滅カーソルのシミュレーション（フォーカス時に末尾で上品に点滅） */
+.step1-haiku-stage.focused .step1-ghost-display::after {
+    content: "";
+    display: inline-block;
+    width: 2px;
+    height: 1.1em;
+    background-color: #8c8476;
+    margin-top: 4px;
+    animation: blinkCaret 1.1s step-end infinite;
+    vertical-align: top;
 }
 
-body.large-text-mode .step1-editable-phrase {
-    font-size: min(4.6vh, 32px);
+@keyframes blinkCaret {
+    from, to { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* ゴースト入力欄（全域に透明配置） */
+.step1-ghost-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    cursor: text;
+    z-index: 10;
+    font-size: 16px; /* iOS Safariの自動ズーム防止 */
 }
 
 .step1-kiyose-modal-sheet {
@@ -582,10 +589,14 @@ body.large-text-mode .step1-editable-phrase {
 
 .phrase { 
     writing-mode: vertical-rl; -webkit-writing-mode: vertical-rl; 
-    font-size: min(3.1vh, 28px); 
-    line-height: 1.25; letter-spacing: 0.15em; font-weight: 500; 
+    font-size: min(4.2vh, 32px); 
+    line-height: 1.3; letter-spacing: 0.15em; font-weight: 500; 
     white-space: nowrap; text-align: center; display: block; 
     overflow: visible; 
+}
+
+body.large-text-mode .phrase {
+    font-size: min(5.2vh, 38px);
 }
 
 .btn-group { display: flex; gap: 12px; justify-content: center; width: 100%; max-width: 400px; z-index: 40; flex-shrink: 0; }

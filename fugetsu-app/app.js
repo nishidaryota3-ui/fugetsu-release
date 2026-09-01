@@ -1247,19 +1247,44 @@ function closeKigoCard() {
 }
 
 function getStep1Phrase() {
-    const el = document.getElementById('inputPhrase');
-    if (!el) return '';
-    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') return (el.value || '').trim();
-    return (el.innerText || el.textContent || '').replace(/\r?\n/g, '').trim();
+    const input = document.getElementById('inputPhrase');
+    return input ? (input.value || '').trim() : '';
 }
 
 function setStep1Phrase(text) {
-    const el = document.getElementById('inputPhrase');
-    if (!el) return;
-    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-        el.value = text;
-    } else {
-        el.textContent = text;
+    const input = document.getElementById('inputPhrase');
+    if (input) input.value = text;
+    const displayEl = document.getElementById('step1DisplayPhrase');
+    if (displayEl) {
+        displayEl.textContent = text;
+        applyPhraseLengthClass(displayEl, text);
+    }
+}
+
+function onGhostInputChange(inputEl) {
+    if (!inputEl) return;
+    const text = inputEl.value || '';
+    const displayEl = document.getElementById('step1DisplayPhrase');
+    if (displayEl) {
+        displayEl.textContent = text;
+        applyPhraseLengthClass(displayEl, text);
+    }
+}
+
+function onGhostKeyDown(e) {
+    // 日本語変換の確定中（isComposing / keyCode 229）はEnterで次へ行かない！
+    if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) {
+        e.preventDefault();
+        goToStep2();
+    }
+}
+
+function focusGhostInput() {
+    const input = document.getElementById('inputPhrase');
+    if (input) {
+        input.focus();
+        const stage = document.querySelector('.step1-haiku-stage');
+        if (stage) stage.classList.add('focused');
     }
 }
 
@@ -1271,42 +1296,7 @@ function composeWithKigo(kigoName) {
     currentHaikuData.phrase = kigoName;
     currentHaikuData.kigo = kigoName;
     currentHaikuData.parentKigo = kigoName;
-    focusVerticalSakkuInput();
-}
-
-// ========================================================
-// 🖋️ 【詠む】ステップ1 縦書き作句 ＆ 季寄せフロートモーダル
-// ========================================================
-function onStep1KeyDown(e) {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        goToStep2();
-    }
-}
-
-function onStep1ContentInput(el) {
-    if (!el) return;
-    const raw = el.innerText || '';
-    if (raw.includes('\n') || raw.includes('\r')) {
-        const clean = raw.replace(/\r?\n/g, '');
-        el.textContent = clean;
-    }
-}
-
-function focusVerticalSakkuInput() {
-    const el = document.getElementById('inputPhrase');
-    if (!el) return;
-    el.focus();
-    try {
-        if (window.getSelection && document.createRange) {
-            const range = document.createRange();
-            range.selectNodeContents(el);
-            range.collapse(false);
-            const sel = window.getSelection();
-            sel.removeAllRanges();
-            sel.addRange(range);
-        }
-    } catch (_) {}
+    focusGhostInput();
 }
 
 function openStep1KiyoseModal() {
@@ -3358,7 +3348,7 @@ function startEmuMode() {
     setTodaySakkuDate();
     hideAuthorSuggestions();
     goToStep(1);
-    setTimeout(focusVerticalSakkuInput, 60);
+    setTimeout(focusGhostInput, 60);
 }
 
 function cancelEmuMode() {
@@ -3720,7 +3710,7 @@ function editSelectedHaiku() {
 
     hideAuthorSuggestions();
     goToStep(1);
-    setTimeout(focusVerticalSakkuInput, 60);
+    setTimeout(focusGhostInput, 60);
 }
 
 function goToStep(stepNumber) {
@@ -3910,7 +3900,7 @@ function resetForm() {
     currentHaikuData.oldPhrase = '';
     setTodaySakkuDate();
     goToStep(1);
-    setTimeout(focusVerticalSakkuInput, 60);
+    setTimeout(focusGhostInput, 60);
 }
 
 // ========================================================
