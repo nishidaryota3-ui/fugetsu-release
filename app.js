@@ -1125,6 +1125,7 @@ function renderSaijikiKigoList() {
 // 🌸 季語解説ポップアップカード（うてなモデル＋マイ歳時記）
 // ========================================================
 function openKigoCard(parentKigoName, fromContext = null) {
+    closeStep1KiyoseModal();
     const overlay = document.getElementById('kigoCardOverlay');
     if (!overlay) return;
 
@@ -1265,18 +1266,11 @@ function composeWithKigo(kigoName) {
 // ========================================================
 function handleVerticalSakkuInput(textareaEl) {
     if (!textareaEl) return;
-    const text = textareaEl.value || '';
-    const charCount = text.length;
-
-    // 17文字超、25文字超で自動的にフォント縮小クラスを付与
-    if (charCount > 24) {
-        textareaEl.classList.remove('long-phrase');
-        textareaEl.classList.add('very-long-phrase');
-    } else if (charCount > 16) {
-        textareaEl.classList.remove('very-long-phrase');
-        textareaEl.classList.add('long-phrase');
-    } else {
-        textareaEl.classList.remove('long-phrase', 'very-long-phrase');
+    // 改行が含まれた場合はスペースに変換して完全1行を維持
+    if (textareaEl.value.includes('\n')) {
+        const selStart = textareaEl.selectionStart;
+        textareaEl.value = textareaEl.value.replace(/\r?\n/g, ' ');
+        textareaEl.selectionStart = textareaEl.selectionEnd = selStart;
     }
 }
 

@@ -12,11 +12,11 @@
     <meta name="application-name" content="句帳風月">
     <meta name="theme-color" content="#faf9f6">
     
-    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=2.3.0">
-    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=2.3.0">
-    <link rel="manifest" href="manifest.json?v=2.3.0">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=2.3.1">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=2.3.1">
+    <link rel="manifest" href="manifest.json?v=2.3.1">
 
-    <link rel="stylesheet" href="style.css?v=2.3.0">
+    <link rel="stylesheet" href="style.css?v=2.3.1">
 </head>
 <body>
 
@@ -651,9 +651,11 @@ function handleRequest(e) {
 
     <!-- 🖋️ ステップ1：句の入力（完全縦書き作句空間） -->
     <div id="step1" class="step-screen">
-        <div class="step1-top-bar">
-            <div class="step-title" style="text-align: left; width: auto; padding: 0;">【一】 句の入力</div>
-            <button type="button" class="step1-top-kiyose-btn" onclick="openStep1KiyoseModal()">季寄せ</button>
+        <div class="step1-header-area">
+            <div class="step-title">【一】 句の入力</div>
+            <div class="step1-sub-bar">
+                <button type="button" class="step1-top-kiyose-btn" onclick="openStep1KiyoseModal()">季寄せ</button>
+            </div>
         </div>
         
         <!-- 🌸 完全無垢な縦書き作句キャンバス -->
@@ -849,6 +851,6 @@ function handleRequest(e) {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.3.0"></script>
+    <script src="app.js?v=2.3.1"></script>
 </body>
 </html>

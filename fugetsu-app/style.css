@@ -461,16 +461,22 @@ body.font-gothic-mode * {
 .step-title { font-size: 0.95rem; color: #8c8476; letter-spacing: 0.15em; text-align: center; width: 100%; padding-bottom: 5px; flex-shrink: 0; font-weight: 500; z-index: 40; }
 
 /* 🖋️ ステップ1：完全無垢な縦書き作句空間 */
-.step1-top-bar {
+.step1-header-area {
     width: 100%;
     max-width: 400px;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    padding: 0 4px;
     margin-bottom: 5px;
     flex-shrink: 0;
     z-index: 30;
+}
+.step1-sub-bar {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 6px;
+    margin-top: 2px;
 }
 .step1-top-kiyose-btn {
     background: #ffffff;
@@ -517,7 +523,7 @@ body.font-gothic-mode * {
     text-orientation: upright;
     font-family: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
     font-size: min(4.0vh, 26px);
-    line-height: 1.85;
+    line-height: 1.25;
     letter-spacing: 0.15em;
     font-weight: 500;
     color: #2b2b2b;
@@ -529,13 +535,14 @@ body.font-gothic-mode * {
     height: 100%;
     max-height: 100%;
     width: auto;
-    min-width: 45px;
+    min-width: 40px;
     caret-color: #8c8476;
     box-sizing: border-box;
-    padding: 0 10px;
-    overflow: visible;
-    white-space: pre-wrap;
-    word-break: break-all;
+    padding: 4px 6px;
+    white-space: nowrap !important; /* 完全に1行表示を維持 */
+    overflow-x: hidden !important;
+    overflow-y: auto !important;   /* 長い場合は自然に縦スクロール */
+    word-break: normal;
     user-select: text;
     -webkit-user-select: text;
 }
@@ -550,21 +557,8 @@ body.font-gothic-mode * {
     -webkit-writing-mode: vertical-rl;
 }
 
-/* 17文字以上・25文字以上の自動文字サイズ調整 */
-.vertical-sakku-textarea.long-phrase {
-    font-size: min(3.2vh, 20px);
-    line-height: 1.65;
-}
-.vertical-sakku-textarea.very-long-phrase {
-    font-size: min(2.6vh, 16px);
-    line-height: 1.5;
-}
-
 body.large-text-mode .vertical-sakku-textarea {
     font-size: min(4.6vh, 30px);
-}
-body.large-text-mode .vertical-sakku-textarea.long-phrase {
-    font-size: min(3.6vh, 23px);
 }
 
 .step1-kiyose-modal-sheet {
