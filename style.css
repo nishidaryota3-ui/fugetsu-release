@@ -592,7 +592,7 @@ body.font-gothic-mode * {
     align-items: center;
     padding: 10px 0;
     box-sizing: border-box;
-    cursor: text;
+    cursor: default;
 }
 
 #inputPhrase.step1-direct-vertical-input {

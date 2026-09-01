@@ -258,6 +258,18 @@ window.onload = function() {
 
     // 暗号キーのリアルタイムリスナー起動
     initSyncKeyListener();
+
+    // 📱 キーボード開閉・画面サイズ変更時の動的フォント再計算
+    const onViewportResize = () => {
+        const step1Screen = document.getElementById('step1');
+        if (step1Screen && step1Screen.classList.contains('active')) {
+            adjustStep1FontSize();
+        }
+    };
+    window.addEventListener('resize', onViewportResize);
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', onViewportResize);
+    }
 };
 
 function loadUserSettings() {
@@ -1386,6 +1398,17 @@ function onStep1DirectInput(el) {
     adjustStep1FontSize(el);
 }
 
+function onStep1ContainerClicked(e) {
+    if (e && e.target && e.target.id === 'inputPhrase') {
+        return;
+    }
+    const el = document.getElementById('inputPhrase');
+    if (el && document.activeElement === el) {
+        el.blur();
+        setTimeout(() => adjustStep1FontSize(el), 120);
+    }
+}
+
 function adjustStep1FontSize(el) {
     if (!el) el = document.getElementById('inputPhrase');
     if (!el) return;
@@ -1402,13 +1425,12 @@ function adjustStep1FontSize(el) {
     const effectiveCount = Math.max(charCount, 10);
 
     // letter-spacing 0.12em 分を含めた1文字あたりの占有高さ ≒ fontSize * 1.12
-    // availableHeight >= effectiveCount * fontSize * 1.12
-    // fontSize <= availableHeight / (effectiveCount * 1.12)
     let fontSize = Math.floor(availableHeight / (effectiveCount * 1.12));
 
-    // 上限・下限のクランプ（上品さを保つ）
-    const maxSize = 30; // これ以上大きくしない（品位を保つ）
-    const minSize = 12; // これ以下にはしない（読めなくなる）
+    // 上限・下限のクランプ（PCは30px、スマホは上品な23pxを上限にする）
+    const isDesktop = window.innerWidth >= 768;
+    const maxSize = isDesktop ? 30 : 23;
+    const minSize = 12;
     fontSize = Math.min(fontSize, maxSize);
     fontSize = Math.max(fontSize, minSize);
 

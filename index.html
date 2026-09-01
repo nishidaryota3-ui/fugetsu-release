@@ -12,11 +12,11 @@
     <meta name="application-name" content="句帳風月">
     <meta name="theme-color" content="#faf9f6">
     
-    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=3.0.5">
-    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=3.0.5">
-    <link rel="manifest" href="manifest.json?v=3.0.5">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=3.0.6">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=3.0.6">
+    <link rel="manifest" href="manifest.json?v=3.0.6">
 
-    <link rel="stylesheet" href="style.css?v=3.0.5">
+    <link rel="stylesheet" href="style.css?v=3.0.6">
 </head>
 <body>
 
@@ -713,9 +713,9 @@ function handleRequest(e) {
             </div>
         </div>
         
-        <!-- 🌸 20文字完全1行・直接縦書き作句ステージ（スクロールインスクロール完全根絶） -->
-        <div class="step1-vertical-container" onclick="focusStep1DirectInput()">
-            <textarea id="inputPhrase" class="step1-direct-vertical-input" placeholder="ここに一句入力してください" autocomplete="off" spellcheck="false" maxlength="20" rows="1" oninput="onStep1DirectInput(this)" onkeydown="onStep1DirectKeyDown(event)"></textarea>
+        <!-- 🌸 20文字完全1行・直接縦書き作句ステージ（余白タップでキーボードを閉じる） -->
+        <div class="step1-vertical-container" onclick="onStep1ContainerClicked(event)">
+            <textarea id="inputPhrase" class="step1-direct-vertical-input" placeholder="ここに一句入力してください" autocomplete="off" spellcheck="false" maxlength="20" rows="1" oninput="onStep1DirectInput(this)" onkeydown="onStep1DirectKeyDown(event)" onblur="adjustStep1FontSize(this)" onfocus="adjustStep1FontSize(this)" onclick="event.stopPropagation()"></textarea>
         </div>
 
         <div class="btn-group step1-btn-group">
@@ -906,6 +906,6 @@ function handleRequest(e) {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=3.0.5"></script>
+    <script src="app.js?v=3.0.6"></script>
 </body>
 </html>
