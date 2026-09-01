@@ -162,9 +162,10 @@ function triggerPwaInstall() {
 // ========================================================
 window.onload = function() {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').then((reg) => {
-            // アプリ起動時に毎回バックグラウンドで最新アップデートを確認
-            reg.update().catch(() => {});
+        navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {
+            return navigator.serviceWorker.register('./sw.js');
+        }).then((reg) => {
+            if (reg) reg.update().catch(() => {});
         }).catch(() => {});
 
         let refreshing = false;
