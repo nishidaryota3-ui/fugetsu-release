@@ -1255,26 +1255,48 @@ function setStep1Phrase(text) {
     const el = document.getElementById('inputPhrase');
     if (el) {
         el.value = text;
-        onStep1DirectInput(el);
+        adjustStep1FontSize(el);
     }
 }
 
 function onStep1DirectInput(el) {
     if (!el) return;
-    // 改行が含まれた場合はスペースに変換して完全1行を維持
+    // 改行を除去して完全1行を維持
     if (el.value.includes('\n') || el.value.includes('\r')) {
         const start = el.selectionStart;
-        el.value = el.value.replace(/\r?\n/g, ' ');
+        el.value = el.value.replace(/\r?\n/g, '');
         el.selectionStart = el.selectionEnd = start;
     }
+    adjustStep1FontSize(el);
+}
 
-    const len = el.value.length;
-    el.classList.remove('phrase-len-mid', 'phrase-len-max');
-    if (len >= 17) {
-        el.classList.add('phrase-len-max');
-    } else if (len >= 13) {
-        el.classList.add('phrase-len-mid');
-    }
+function adjustStep1FontSize(el) {
+    if (!el) el = document.getElementById('inputPhrase');
+    if (!el) return;
+
+    // テキストエリアの実際のピクセル高さを取得
+    const style = getComputedStyle(el);
+    const paddingTop = parseFloat(style.paddingTop) || 0;
+    const paddingBottom = parseFloat(style.paddingBottom) || 0;
+    const availableHeight = el.clientHeight - paddingTop - paddingBottom;
+
+    // 文字数（最低1文字＝プレースホルダー用）
+    const charCount = Math.max(el.value.length, 1);
+    // 表示用の文字数（少なくとも10文字分のスペースは想定して、大きすぎないように）
+    const effectiveCount = Math.max(charCount, 10);
+
+    // letter-spacing 0.12em 分を含めた1文字あたりの占有高さ ≒ fontSize * 1.12
+    // availableHeight >= effectiveCount * fontSize * 1.12
+    // fontSize <= availableHeight / (effectiveCount * 1.12)
+    let fontSize = Math.floor(availableHeight / (effectiveCount * 1.12));
+
+    // 上限・下限のクランプ（上品さを保つ）
+    const maxSize = 30; // これ以上大きくしない（品位を保つ）
+    const minSize = 12; // これ以下にはしない（読めなくなる）
+    fontSize = Math.min(fontSize, maxSize);
+    fontSize = Math.max(fontSize, minSize);
+
+    el.style.fontSize = fontSize + 'px';
 }
 
 function onStep1DirectKeyDown(e) {
@@ -1287,7 +1309,10 @@ function onStep1DirectKeyDown(e) {
 
 function focusStep1DirectInput() {
     const el = document.getElementById('inputPhrase');
-    if (el) el.focus();
+    if (el) {
+        el.focus();
+        adjustStep1FontSize(el);
+    }
 }
 
 function composeWithKigo(kigoName) {
