@@ -1247,45 +1247,36 @@ function closeKigoCard() {
 }
 
 function getStep1Phrase() {
-    const input = document.getElementById('inputPhrase');
-    return input ? (input.value || '').trim() : '';
+    const el = document.getElementById('inputPhrase');
+    return el ? (el.value || '').trim() : '';
 }
 
 function setStep1Phrase(text) {
-    const input = document.getElementById('inputPhrase');
-    if (input) input.value = text;
-    const displayEl = document.getElementById('step1DisplayPhrase');
-    if (displayEl) {
-        displayEl.textContent = text;
-        applyPhraseLengthClass(displayEl, text);
+    const el = document.getElementById('inputPhrase');
+    if (el) el.value = text;
+}
+
+function onStep1DirectInput(el) {
+    if (!el) return;
+    // 改行が含まれた場合はスペースに変換して完全1行を維持
+    if (el.value.includes('\n') || el.value.includes('\r')) {
+        const start = el.selectionStart;
+        el.value = el.value.replace(/\r?\n/g, ' ');
+        el.selectionStart = el.selectionEnd = start;
     }
 }
 
-function onGhostInputChange(inputEl) {
-    if (!inputEl) return;
-    const text = inputEl.value || '';
-    const displayEl = document.getElementById('step1DisplayPhrase');
-    if (displayEl) {
-        displayEl.textContent = text;
-        applyPhraseLengthClass(displayEl, text);
-    }
-}
-
-function onGhostKeyDown(e) {
-    // 日本語変換の確定中（isComposing / keyCode 229）はEnterで次へ行かない！
+function onStep1DirectKeyDown(e) {
+    // 漢字変換確定中（isComposing / keyCode 229）はEnterで次へ行かない！
     if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) {
         e.preventDefault();
         goToStep2();
     }
 }
 
-function focusGhostInput() {
-    const input = document.getElementById('inputPhrase');
-    if (input) {
-        input.focus();
-        const stage = document.querySelector('.step1-haiku-stage');
-        if (stage) stage.classList.add('focused');
-    }
+function focusStep1DirectInput() {
+    const el = document.getElementById('inputPhrase');
+    if (el) el.focus();
 }
 
 function composeWithKigo(kigoName) {
@@ -1296,7 +1287,7 @@ function composeWithKigo(kigoName) {
     currentHaikuData.phrase = kigoName;
     currentHaikuData.kigo = kigoName;
     currentHaikuData.parentKigo = kigoName;
-    focusGhostInput();
+    focusStep1DirectInput();
 }
 
 function openStep1KiyoseModal() {
@@ -3348,7 +3339,7 @@ function startEmuMode() {
     setTodaySakkuDate();
     hideAuthorSuggestions();
     goToStep(1);
-    setTimeout(focusGhostInput, 60);
+    setTimeout(focusStep1DirectInput, 60);
 }
 
 function cancelEmuMode() {
@@ -3710,7 +3701,7 @@ function editSelectedHaiku() {
 
     hideAuthorSuggestions();
     goToStep(1);
-    setTimeout(focusGhostInput, 60);
+    setTimeout(focusStep1DirectInput, 60);
 }
 
 function goToStep(stepNumber) {
@@ -3900,7 +3891,7 @@ function resetForm() {
     currentHaikuData.oldPhrase = '';
     setTodaySakkuDate();
     goToStep(1);
-    setTimeout(focusGhostInput, 60);
+    setTimeout(focusStep1DirectInput, 60);
 }
 
 // ========================================================
