@@ -12,11 +12,11 @@
     <meta name="application-name" content="句帳風月">
     <meta name="theme-color" content="#faf9f6">
     
-    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=2.3.1">
-    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=2.3.1">
-    <link rel="manifest" href="manifest.json?v=2.3.1">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=2.4.0">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=2.4.0">
+    <link rel="manifest" href="manifest.json?v=2.4.0">
 
-    <link rel="stylesheet" href="style.css?v=2.3.1">
+    <link rel="stylesheet" href="style.css?v=2.4.0">
 </head>
 <body>
 
@@ -658,9 +658,9 @@ function handleRequest(e) {
             </div>
         </div>
         
-        <!-- 🌸 完全無垢な縦書き作句キャンバス -->
-        <div class="vertical-sakku-canvas" onclick="focusVerticalSakkuInput()">
-            <textarea id="inputPhrase" class="vertical-sakku-textarea" placeholder="ここに一句入力してください" autocomplete="off" maxlength="50" oninput="handleVerticalSakkuInput(this)" rows="1"></textarea>
+        <!-- 🌸 プレビュー画面と完全同一の無垢な縦書きキャンバス（ボックスなし・二重スクロールゼロ） -->
+        <div class="haiku-screen step1-haiku-screen" onclick="focusVerticalSakkuInput()">
+            <p id="inputPhrase" class="phrase step1-editable-phrase" contenteditable="true" spellcheck="false" autocomplete="off" autocapitalize="off" data-placeholder="ここに一句入力してください" oninput="onStep1ContentInput(this)" onkeydown="onStep1KeyDown(event)"></p>
         </div>
 
         <div class="btn-group step1-btn-group">
@@ -851,6 +851,6 @@ function handleRequest(e) {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.3.1"></script>
+    <script src="app.js?v=2.4.0"></script>
 </body>
 </html>

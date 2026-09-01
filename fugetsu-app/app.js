@@ -1246,37 +1246,67 @@ function closeKigoCard() {
     if (overlay) overlay.classList.add('hidden');
 }
 
+function getStep1Phrase() {
+    const el = document.getElementById('inputPhrase');
+    if (!el) return '';
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') return (el.value || '').trim();
+    return (el.innerText || el.textContent || '').replace(/\r?\n/g, '').trim();
+}
+
+function setStep1Phrase(text) {
+    const el = document.getElementById('inputPhrase');
+    if (!el) return;
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+        el.value = text;
+    } else {
+        el.textContent = text;
+    }
+}
+
 function composeWithKigo(kigoName) {
     closeKigoCard();
     closeStep1KiyoseModal();
     startEmuMode();
-    const input = document.getElementById('inputPhrase');
-    if (input) {
-        input.value = kigoName;
-        currentHaikuData.phrase = kigoName;
-        currentHaikuData.kigo = kigoName;
-        currentHaikuData.parentKigo = kigoName;
-        handleVerticalSakkuInput(input);
-        input.focus();
-    }
+    setStep1Phrase(kigoName);
+    currentHaikuData.phrase = kigoName;
+    currentHaikuData.kigo = kigoName;
+    currentHaikuData.parentKigo = kigoName;
+    focusVerticalSakkuInput();
 }
 
 // ========================================================
 // 🖋️ 【詠む】ステップ1 縦書き作句 ＆ 季寄せフロートモーダル
 // ========================================================
-function handleVerticalSakkuInput(textareaEl) {
-    if (!textareaEl) return;
-    // 改行が含まれた場合はスペースに変換して完全1行を維持
-    if (textareaEl.value.includes('\n')) {
-        const selStart = textareaEl.selectionStart;
-        textareaEl.value = textareaEl.value.replace(/\r?\n/g, ' ');
-        textareaEl.selectionStart = textareaEl.selectionEnd = selStart;
+function onStep1KeyDown(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        goToStep2();
+    }
+}
+
+function onStep1ContentInput(el) {
+    if (!el) return;
+    const raw = el.innerText || '';
+    if (raw.includes('\n') || raw.includes('\r')) {
+        const clean = raw.replace(/\r?\n/g, '');
+        el.textContent = clean;
     }
 }
 
 function focusVerticalSakkuInput() {
-    const input = document.getElementById('inputPhrase');
-    if (input) input.focus();
+    const el = document.getElementById('inputPhrase');
+    if (!el) return;
+    el.focus();
+    try {
+        if (window.getSelection && document.createRange) {
+            const range = document.createRange();
+            range.selectNodeContents(el);
+            range.collapse(false);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
+    } catch (_) {}
 }
 
 function openStep1KiyoseModal() {
@@ -3322,15 +3352,13 @@ function startEmuMode() {
     updateCatVisibility(false);
     editingHaikuObj = null;
     currentHaikuData.oldPhrase = ''; 
-    document.getElementById('inputPhrase').value = '';
-    handleVerticalSakkuInput(document.getElementById('inputPhrase'));
+    setStep1Phrase('');
     document.getElementById('authorInput').value = userSettings.authorName || '風月';
     document.getElementById('authorKanaInput').value = userSettings.authorKana || 'ふうげつ';
     setTodaySakkuDate();
     hideAuthorSuggestions();
     goToStep(1);
-    const input = document.getElementById('inputPhrase');
-    if (input) setTimeout(() => input.focus(), 50);
+    setTimeout(focusVerticalSakkuInput, 60);
 }
 
 function cancelEmuMode() {
@@ -3681,8 +3709,7 @@ function editSelectedHaiku() {
     editingHaikuObj = activeSelectedHaiku;
     currentHaikuData.oldPhrase = activeSelectedHaiku.phrase; 
     
-    document.getElementById('inputPhrase').value = activeSelectedHaiku.phrase;
-    handleVerticalSakkuInput(document.getElementById('inputPhrase'));
+    setStep1Phrase(activeSelectedHaiku.phrase);
     document.getElementById('kigoInput').value = activeSelectedHaiku.parentKigo || activeSelectedHaiku.kigo || '';
     if (activeSelectedHaiku.season) document.getElementById('seasonSelect').value = activeSelectedHaiku.season;
     if (activeSelectedHaiku.detailSeason) document.getElementById('detailSeasonSelect').value = activeSelectedHaiku.detailSeason;
@@ -3693,8 +3720,7 @@ function editSelectedHaiku() {
 
     hideAuthorSuggestions();
     goToStep(1);
-    const input = document.getElementById('inputPhrase');
-    if (input) setTimeout(() => input.focus(), 50);
+    setTimeout(focusVerticalSakkuInput, 60);
 }
 
 function goToStep(stepNumber) {
@@ -3759,7 +3785,7 @@ function findSimilarExistingHaiku(phrase, excludePhrase = '') {
 }
 
 function goToStep2() {
-    const phraseInput = document.getElementById('inputPhrase').value.trim();
+    const phraseInput = getStep1Phrase();
     if (!phraseInput) { alert('句を入力してください。'); return; }
 
     // 85%以上の類似句（または同じ句）が既に登録されているかチェック
@@ -3879,11 +3905,12 @@ function finishAndReturn() {
 }
 
 function resetForm() {
-    document.getElementById('inputPhrase').value = '';
+    setStep1Phrase('');
     document.getElementById('kigoInput').value = '';
     currentHaikuData.oldPhrase = '';
     setTodaySakkuDate();
     goToStep(1);
+    setTimeout(focusVerticalSakkuInput, 60);
 }
 
 // ========================================================
