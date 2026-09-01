@@ -517,8 +517,8 @@ body.font-gothic-mode * {
     -webkit-writing-mode: vertical-rl;
     text-orientation: upright;
     font-family: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
-    font-size: min(3.8vh, 28px);
-    line-height: 1.3;
+    font-size: min(3.0vh, 20px);
+    line-height: 1.25;
     letter-spacing: 0.15em;
     font-weight: 500;
     color: #2b2b2b;
@@ -529,9 +529,9 @@ body.font-gothic-mode * {
     text-align: start;
     
     /* 20文字が確実に収まる十分な高さ（インナースクロール完全禁止） */
-    height: 72vh;
-    max-height: 580px;
-    min-height: 320px;
+    height: 70vh;
+    max-height: 520px;
+    min-height: 280px;
     width: 2.2em;
     min-width: 45px;
     
@@ -539,26 +539,52 @@ body.font-gothic-mode * {
     box-sizing: border-box;
     padding: 6px 8px;
     
-    white-space: nowrap !important; /* 完全に1行表示（2行目を完全排除） */
-    overflow: hidden !important;    /* インナースクロールを完全抹消！ */
+    white-space: nowrap !important; /* 完全に1行表示 */
+    overflow: hidden !important;    /* インナースクロール完全禁止 */
     word-break: normal;
     
     user-select: text;
     -webkit-user-select: text;
+    transition: font-size 0.15s ease;
+}
+
+/* 13〜16文字時の自動縮小（上下はみ出し防止） */
+.step1-direct-vertical-input.phrase-len-mid {
+    font-size: min(2.5vh, 17px) !important;
+}
+
+/* 17〜20文字時の自動縮小（20文字完全収容） */
+.step1-direct-vertical-input.phrase-len-max {
+    font-size: min(2.1vh, 14.5px) !important;
+}
+
+/* PC（幅768px以上）は大画面に合わせてしっかり大きく！ */
+@media (min-width: 768px) {
+    .step1-direct-vertical-input {
+        font-size: 26px !important;
+        height: 65vh;
+        max-height: 600px;
+    }
+    .step1-direct-vertical-input.phrase-len-mid {
+        font-size: 23px !important;
+    }
+    .step1-direct-vertical-input.phrase-len-max {
+        font-size: 20px !important;
+    }
 }
 
 .step1-direct-vertical-input::placeholder {
     color: #b8b0a5;
     opacity: 0.65;
     font-family: inherit;
-    font-size: min(3.0vh, 22px);
+    font-size: min(2.8vh, 19px);
     letter-spacing: 0.18em;
     writing-mode: vertical-rl;
     -webkit-writing-mode: vertical-rl;
 }
 
 body.large-text-mode .step1-direct-vertical-input {
-    font-size: min(4.6vh, 34px);
+    font-size: min(3.8vh, 25px);
 }
 
 .step1-kiyose-modal-sheet {
@@ -583,14 +609,14 @@ body.large-text-mode .step1-direct-vertical-input {
 
 .phrase { 
     writing-mode: vertical-rl; -webkit-writing-mode: vertical-rl; 
-    font-size: min(4.2vh, 32px); 
-    line-height: 1.3; letter-spacing: 0.15em; font-weight: 500; 
+    font-size: min(3.1vh, 28px); 
+    line-height: 1.25; letter-spacing: 0.15em; font-weight: 500; 
     white-space: nowrap; text-align: center; display: block; 
     overflow: visible; 
 }
 
 body.large-text-mode .phrase {
-    font-size: min(5.2vh, 38px);
+    font-size: min(4.0vh, 34px);
 }
 
 .btn-group { display: flex; gap: 12px; justify-content: center; width: 100%; max-width: 400px; z-index: 40; flex-shrink: 0; }

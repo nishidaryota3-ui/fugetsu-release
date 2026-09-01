@@ -1253,7 +1253,10 @@ function getStep1Phrase() {
 
 function setStep1Phrase(text) {
     const el = document.getElementById('inputPhrase');
-    if (el) el.value = text;
+    if (el) {
+        el.value = text;
+        onStep1DirectInput(el);
+    }
 }
 
 function onStep1DirectInput(el) {
@@ -1263,6 +1266,14 @@ function onStep1DirectInput(el) {
         const start = el.selectionStart;
         el.value = el.value.replace(/\r?\n/g, ' ');
         el.selectionStart = el.selectionEnd = start;
+    }
+
+    const len = el.value.length;
+    el.classList.remove('phrase-len-mid', 'phrase-len-max');
+    if (len >= 17) {
+        el.classList.add('phrase-len-max');
+    } else if (len >= 13) {
+        el.classList.add('phrase-len-mid');
     }
 }
 

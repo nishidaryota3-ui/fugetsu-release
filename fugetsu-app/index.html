@@ -12,11 +12,11 @@
     <meta name="application-name" content="句帳風月">
     <meta name="theme-color" content="#faf9f6">
     
-    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=2.6.0">
-    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=2.6.0">
-    <link rel="manifest" href="manifest.json?v=2.6.0">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=2.7.0">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=2.7.0">
+    <link rel="manifest" href="manifest.json?v=2.7.0">
 
-    <link rel="stylesheet" href="style.css?v=2.6.0">
+    <link rel="stylesheet" href="style.css?v=2.7.0">
 </head>
 <body>
 
@@ -660,7 +660,7 @@ function handleRequest(e) {
         
         <!-- 🌸 20文字完全1行・直接縦書き作句ステージ（スクロールインスクロール完全根絶） -->
         <div class="step1-vertical-container" onclick="focusStep1DirectInput()">
-            <textarea id="inputPhrase" class="step1-direct-vertical-input" placeholder="ここに一句入力してください" autocomplete="off" spellcheck="false" maxlength="40" rows="1" oninput="onStep1DirectInput(this)" onkeydown="onStep1DirectKeyDown(event)"></textarea>
+            <textarea id="inputPhrase" class="step1-direct-vertical-input" placeholder="ここに一句入力してください" autocomplete="off" spellcheck="false" maxlength="20" rows="1" oninput="onStep1DirectInput(this)" onkeydown="onStep1DirectKeyDown(event)"></textarea>
         </div>
 
         <div class="btn-group step1-btn-group">
@@ -851,6 +851,6 @@ function handleRequest(e) {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=2.6.0"></script>
+    <script src="app.js?v=2.7.0"></script>
 </body>
 </html>
