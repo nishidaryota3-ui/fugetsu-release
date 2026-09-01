@@ -557,27 +557,27 @@ body.font-gothic-mode * {
     font-size: min(2.2vh, 15px) !important;
 }
 
-/* PC（幅768px以上）は大画面に合わせてしっかり大きく大迫力！ */
+/* PC（幅768px以上）：上品で洗練された黄金比サイズ（17〜20文字でも絶対にはみ出ない！） */
 @media (min-width: 768px) {
     #inputPhrase.step1-direct-vertical-input {
-        font-size: min(4.2vh, 38px) !important;
-        font-weight: 600 !important;
-        letter-spacing: 0.18em !important;
-        line-height: 1.35 !important;
-        height: 75vh !important;
-        max-height: 780px !important;
-        min-height: 480px !important;
-        width: 3.5em !important;
-        padding: 10px 14px !important;
+        font-size: min(3.2vh, 24px) !important;
+        font-weight: 500 !important;
+        letter-spacing: 0.14em !important;
+        line-height: 1.25 !important;
+        height: 68vh !important;
+        max-height: 520px !important;
+        min-height: 320px !important;
+        width: 2.6em !important;
+        padding: 8px 10px !important;
     }
     #inputPhrase.step1-direct-vertical-input.phrase-len-mid {
-        font-size: min(3.8vh, 34px) !important;
+        font-size: min(2.8vh, 21.5px) !important;
     }
     #inputPhrase.step1-direct-vertical-input.phrase-len-max {
-        font-size: min(3.4vh, 31px) !important;
+        font-size: min(2.4vh, 19.5px) !important;
     }
     #inputPhrase.step1-direct-vertical-input::placeholder {
-        font-size: min(4.2vh, 38px) !important;
+        font-size: min(2.8vh, 22px) !important;
     }
 }
 
@@ -585,19 +585,19 @@ body.font-gothic-mode * {
     color: #b8b0a5;
     opacity: 0.65;
     font-family: inherit;
-    font-size: min(3.0vh, 20px);
+    font-size: min(2.8vh, 19px);
     letter-spacing: 0.18em;
     writing-mode: vertical-rl;
     -webkit-writing-mode: vertical-rl;
 }
 
 body.large-text-mode #inputPhrase.step1-direct-vertical-input {
-    font-size: min(3.6vh, 26px) !important;
+    font-size: min(3.2vh, 24px) !important;
 }
 
 @media (min-width: 768px) {
     body.large-text-mode #inputPhrase.step1-direct-vertical-input {
-        font-size: min(4.6vh, 42px) !important;
+        font-size: min(3.4vh, 25px) !important;
     }
 }
 
