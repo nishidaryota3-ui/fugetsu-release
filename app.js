@@ -2850,6 +2850,16 @@ async function fetchHaikusFromCloud(isManual = false) {
                     renderYomuList();
                 }
 
+                // 句帳メニュー（句帳の切り替え）が開いていれば、同期完了後の
+                // 最新の作者一覧で再描画する（開いたタイミングが同期完了前だと
+                // 一部の作者しか出ていないまま固定されてしまうため）
+                const authorModal = document.getElementById('authorSelectModal');
+                if (authorModal && !authorModal.classList.contains('hidden')) {
+                    const wasPillar1Open = !document.getElementById('pillarSection1')?.classList.contains('hidden');
+                    openAuthorSelectModal();
+                    if (wasPillar1Open) toggleMenuAccordion('pillarSection1');
+                }
+
                 if (isManual) {
                     showToast(`☁️ スプレッドシートと完全同期しました（${cloudHaikus.length}句）`);
                 }
