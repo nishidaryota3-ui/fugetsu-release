@@ -58,8 +58,14 @@ self.addEventListener('fetch', (event) => {
   }
 
   // 画像・データファイルなどはキャッシュ優先
+  // 画像はバージョン番号（?v=）の有無に関わらず同じキャッシュを再利用する
+  // （インストール時は「./icon.png」で保存されるため、クエリ付きの実際の
+  //   リクエストと一致せずオフライン時に読み込めなくなる問題への対処）
+  const isImage = /\.(png|jpe?g|svg|gif|webp|ico)(\?|$)/.test(url);
+  const matchOptions = isImage ? { ignoreSearch: true } : undefined;
+
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
+    caches.match(event.request, matchOptions).then((cachedResponse) => {
       if (cachedResponse) return cachedResponse;
       return fetch(event.request).then((response) => {
         if (response && response.status === 200) {
@@ -67,7 +73,7 @@ self.addEventListener('fetch', (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
         }
         return response;
-      });
+      }).catch(() => new Response('', { status: 504, statusText: 'Offline' }));
     })
   );
 });
