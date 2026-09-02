@@ -10,6 +10,21 @@ const STORAGE_KEY_LAST_BACKUP = 'fugetsu_last_backup_time';
 
 let trashList = [];
 
+// 句帳内の作者一覧キャッシュ（haikuHistory更新時のみ再計算し、入力のたびの全件走査を避ける）
+let cachedHaikuAuthorsMap = null;
+
+function getHaikuAuthorsMap() {
+    if (!cachedHaikuAuthorsMap) {
+        cachedHaikuAuthorsMap = new Map();
+        haikuHistory.forEach(h => {
+            if (h.author && !cachedHaikuAuthorsMap.has(h.author)) {
+                cachedHaikuAuthorsMap.set(h.author, { name: h.author, kana: h.authorKana || '' });
+            }
+        });
+    }
+    return cachedHaikuAuthorsMap;
+}
+
 // 代表的な歴代俳人マスター（入力補完用）
 const FAMOUS_AUTHORS_MASTER = [
     { name: '松尾芭蕉', kana: 'まつおばしょう' },
@@ -341,6 +356,7 @@ function loadLocalHaikus() {
         const saved = localStorage.getItem(STORAGE_KEY_HAIKU);
         if (saved) {
             haikuHistory = JSON.parse(saved);
+            cachedHaikuAuthorsMap = null;
         } else {
             haikuHistory = [
                 {
@@ -407,6 +423,7 @@ function loadLocalHaikus() {
 
 function saveLocalHaikus() {
     try {
+        cachedHaikuAuthorsMap = null;
         localStorage.setItem(STORAGE_KEY_HAIKU, JSON.stringify(haikuHistory));
         saveSnapshotHistory();
     } catch (e) {
@@ -476,11 +493,9 @@ function onAuthorInputChanged(val) {
     // 2. マスター
     FAMOUS_AUTHORS_MASTER.forEach(item => allAuthorsMap.set(item.name, item));
 
-    // 3. 句帳内の作者
-    haikuHistory.forEach(h => {
-        if (h.author && !allAuthorsMap.has(h.author)) {
-            allAuthorsMap.set(h.author, { name: h.author, kana: h.authorKana || '' });
-        }
+    // 3. 句帳内の作者（キャッシュ済みのMapを使い回す）
+    getHaikuAuthorsMap().forEach((item, name) => {
+        if (!allAuthorsMap.has(name)) allAuthorsMap.set(name, item);
     });
 
     const matches = Array.from(allAuthorsMap.values()).filter(item => {
