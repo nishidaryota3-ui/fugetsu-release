@@ -655,9 +655,9 @@ function handleKuchoSingleTouchEnd(e) {
     // 縦スクロールと誤爆しないように、横の移動量が大きく40px以上のとき
     if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 40) {
         if (diffX < 0) {
-            changeKuchoSingleHaiku(1); // 左スワイプ（次へ）
+            changeKuchoSingleHaiku(-1); // 左スワイプ（前へ）
         } else {
-            changeKuchoSingleHaiku(-1); // 右スワイプ（前へ）
+            changeKuchoSingleHaiku(1); // 右スワイプ（次へ）
         }
     }
 }
@@ -3951,10 +3951,10 @@ function initKeyboardEvents() {
         if (readScreen && readScreen.classList.contains('active') && userSettings.kuchoDisplayMode === 'single') {
             if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
                 e.preventDefault();
-                changeKuchoSingleHaiku(-1);
+                changeKuchoSingleHaiku(1);
             } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
                 e.preventDefault();
-                changeKuchoSingleHaiku(1);
+                changeKuchoSingleHaiku(-1);
             }
         }
     });
