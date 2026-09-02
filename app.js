@@ -3423,9 +3423,10 @@ function applyPhraseLengthClass(element, text) {
     }
 }
 
-function renderYomuList() {
+function renderYomuList(preserveScroll = false) {
     const container = document.getElementById('readHaikuList');
     if (!container) return;
+    const savedScrollLeft = preserveScroll ? container.scrollLeft : null;
     container.innerHTML = '';
 
     const filterQuery = document.getElementById('kigoFilterInput') ? document.getElementById('kigoFilterInput').value.trim().toLowerCase() : '';
@@ -3530,7 +3531,9 @@ function renderYomuList() {
         scrollContainer.appendChild(card);
     });
 
-    requestAnimationFrame(() => { scrollContainer.scrollLeft = scrollContainer.scrollWidth; });
+    requestAnimationFrame(() => {
+        scrollContainer.scrollLeft = (preserveScroll && savedScrollLeft !== null) ? savedScrollLeft : scrollContainer.scrollWidth;
+    });
 }
 
 let currentKuchoHaikus = [];
@@ -3643,7 +3646,7 @@ function changeHaikuStatus(targetStatus) {
         saveLocalHaikus();
         syncHaikuToCloud(haikuHistory[idx], 'changeStatus');
     }
-    if (document.getElementById('readScreen').classList.contains('active')) renderYomuList();
+    if (document.getElementById('readScreen').classList.contains('active')) renderYomuList(true);
 }
 
 function deleteSelectedDraft() {
@@ -3665,7 +3668,7 @@ function deleteSelectedDraft() {
         renderTrashList();
         showToast('句をごみ箱に移動しました（いつでも復元可能）');
     }
-    if (document.getElementById('readScreen').classList.contains('active')) renderYomuList();
+    if (document.getElementById('readScreen').classList.contains('active')) renderYomuList(true);
 }
 
 // ========================================================
