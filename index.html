@@ -12,11 +12,11 @@
     <meta name="application-name" content="句帳風月">
     <meta name="theme-color" content="#faf9f6">
     
-    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=3.0.12">
-    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=3.0.12">
-    <link rel="manifest" href="manifest.json?v=3.0.12">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=3.0.13">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=3.0.13">
+    <link rel="manifest" href="manifest.json?v=3.0.13">
 
-    <link rel="stylesheet" href="style.css?v=3.0.12">
+    <link rel="stylesheet" href="style.css?v=3.0.13">
 </head>
 <body>
 
@@ -626,9 +626,12 @@
             <span class="modal-close-corner" onclick="closeCloudGuideModal()">✕</span>
             <h3 class="modal-title" style="font-size: 0.90rem; text-align: center; margin-bottom: 8px; white-space: nowrap;">google自動完全同期</h3>
             
-            <p class="settings-desc" style="font-size: 0.74rem; color: #666; margin-bottom: 8px; line-height: 1.4;">
+            <p class="settings-desc" style="font-size: 0.74rem; color: #666; margin-bottom: 4px; line-height: 1.4;">
                 句を詠むたびにGoogleスプレッドシートへ自動保存されます。
             </p>
+            <div style="width: 100%; text-align: right; margin-bottom: 4px;">
+                <span class="pillar-text-link" style="font-size: 0.72rem; text-decoration: underline; cursor: pointer;" onclick="openGasSetupHelpModal()">設定手順を見る ➔</span>
+            </div>
 
             <div style="display: flex; gap: 8px; align-items: center;">
                 <input type="url" id="settingCloudSyncUrl" class="text-input" style="flex: 2; font-size: 0.82rem; padding: 7px 10px;" placeholder="GASウェブアプリURLを貼付">
@@ -669,6 +672,42 @@ function handleRequest(e) {
   return ContentService.createTextOutput(JSON.stringify({status:'success'})).setMimeType(ContentService.MimeType.JSON);
 }</textarea>
             </div>
+        </div>
+    </div>
+
+    <!-- google自動完全同期・設定手順モーダル -->
+    <div id="gasSetupHelpModal" class="card-overlay hidden" onclick="closeGasSetupHelpModal()">
+        <div class="modal-card-content" style="max-width: 380px; text-align: left; max-height: 85vh; overflow-y: auto;" onclick="event.stopPropagation()">
+            <span class="modal-close-corner" onclick="closeGasSetupHelpModal()">✕</span>
+            <h3 class="modal-title" style="font-size: 0.90rem; text-align: center; margin-bottom: 4px;">設定手順</h3>
+            <p class="settings-desc" style="font-size: 0.72rem; color: #999; text-align: center; margin-bottom: 10px;">
+                少し工程が多いですが、一度設定すれば以後は自動です。
+            </p>
+
+            <ol style="font-size: 0.78rem; color: #444; line-height: 1.7; padding-left: 1.2em; margin: 0;">
+                <li>Googleスプレッドシートを新しく作成する</li>
+                <li>メニューの「拡張機能」→「Apps Script」を開く</li>
+                <li>表示されたコードを全部消して、この画面の「コードをコピー」で貼り付ける</li>
+                <li>保存（フロッピーのアイコン）→右上の「デプロイ」→「新しいデプロイ」</li>
+                <li>「種類の選択」の歯車アイコンから「ウェブアプリ」を選ぶ</li>
+                <li>「アクセスできるユーザー」を「全員」にして「デプロイ」を押す</li>
+                <li>Googleアカウントでのログインを求められたらログインする</li>
+            </ol>
+
+            <div style="width: 100%; background: #fbf6ea; border: 1px solid #ecdfc0; border-radius: 8px; padding: 10px 12px; margin-top: 12px;">
+                <p style="font-size: 0.74rem; color: #7a6a3f; line-height: 1.6; margin: 0;">
+                    ⚠️ ここで「Google で確認されていないアプリです」という画面が出ますが、<strong>心配いりません。</strong>
+                    これは自分専用に作った設定だからGoogleがまだ知らないだけで、危険なものではありません。
+                    「詳細」を開き、「（安全ではないページ）に移動」を選んで進んでください。
+                </p>
+            </div>
+
+            <ol start="8" style="font-size: 0.78rem; color: #444; line-height: 1.7; padding-left: 1.2em; margin: 10px 0 0;">
+                <li>発行された「ウェブアプリのURL」をコピーする</li>
+                <li>この画面に戻り、URLを貼り付けて「保存」を押して完了</li>
+            </ol>
+
+            <button type="button" class="btn btn-outline" style="margin-top: 14px; width: 100%; padding: 9px 0; font-size: 0.8rem;" onclick="closeGasSetupHelpModal()">閉じる</button>
         </div>
     </div>
 
@@ -877,6 +916,6 @@ function handleRequest(e) {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=3.0.12"></script>
+    <script src="app.js?v=3.0.13"></script>
 </body>
 </html>

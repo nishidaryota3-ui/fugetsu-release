@@ -2652,6 +2652,16 @@ function closeCloudGuideModal() {
     if (modal) modal.classList.add('hidden');
 }
 
+function openGasSetupHelpModal() {
+    const modal = document.getElementById('gasSetupHelpModal');
+    if (modal) modal.classList.remove('hidden');
+}
+
+function closeGasSetupHelpModal() {
+    const modal = document.getElementById('gasSetupHelpModal');
+    if (modal) modal.classList.add('hidden');
+}
+
 // ☁️ クラウド自動同期（Googleスプレッドシート等への二重保存 ＆ 双方向受信）
 async function saveCloudSyncSettings() {
     const urlInput = document.getElementById('settingCloudSyncUrl');
