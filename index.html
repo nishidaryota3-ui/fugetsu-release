@@ -12,11 +12,11 @@
     <meta name="application-name" content="句帳風月">
     <meta name="theme-color" content="#faf9f6">
     
-    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=3.0.11">
-    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=3.0.11">
-    <link rel="manifest" href="manifest.json?v=3.0.11">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=3.0.12">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=3.0.12">
+    <link rel="manifest" href="manifest.json?v=3.0.12">
 
-    <link rel="stylesheet" href="style.css?v=3.0.11">
+    <link rel="stylesheet" href="style.css?v=3.0.12">
 </head>
 <body>
 
@@ -407,11 +407,8 @@
                 </div>
                 <div id="settingSection3" class="pillar-accordion-body hidden">
                     <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px; padding-left: 10px;">
-                        <div class="pillar-text-link" onclick="openSyncKeyHelpModal()">
-                            ① 暗号キー接続
-                        </div>
                         <div class="pillar-text-link" onclick="openCloudGuideModal()">
-                            ② google自動完全同期
+                            google自動完全同期
                         </div>
                     </div>
                 </div>
@@ -623,33 +620,7 @@
         </div>
     </div>
 
-    <!-- ① 暗号キー接続モーダル -->
-    <div id="syncKeyHelpModal" class="card-overlay hidden" onclick="closeSyncKeyHelpModal()">
-        <div class="modal-card-content" style="max-width: 360px; text-align: left;" onclick="event.stopPropagation()">
-            <span class="modal-close-corner" onclick="closeSyncKeyHelpModal()">✕</span>
-            <h3 class="modal-title" style="font-size: 0.90rem; text-align: center; margin-bottom: 8px; white-space: nowrap;">暗号キー接続</h3>
-            
-            <p class="settings-desc" style="font-size: 0.74rem; color: #666; margin-bottom: 12px; line-height: 1.4;">
-                暗号キーを入力するだけで、同じ暗号キーを持つ端末同士がリアルタイムに完全同期します。
-            </p>
-
-            <!-- 1行サンドイッチ方式: [キーを発行] [829-334] [接続] -->
-            <div style="display: flex; gap: 6px; align-items: center;">
-                <button type="button" class="btn btn-outline" style="padding: 7px 8px; font-size: 0.74rem; white-space: nowrap;" onclick="generateSyncKey()">キーを発行</button>
-                <input type="text" id="inputSyncKey" class="text-input" style="flex: 1; min-width: 0; font-size: 0.84rem; padding: 7px 6px; text-align: center;" placeholder="暗号キー">
-                <button type="button" class="btn btn-outline" style="padding: 7px 12px; font-size: 0.74rem; white-space: nowrap;" onclick="connectSyncKey()">接続</button>
-            </div>
-
-            <!-- 状態表示テキスト（余計なボタンは排除） -->
-            <div id="syncStatusText" style="margin-top: 10px; font-size: 0.76rem; text-align: center; color: #888;">未接続</div>
-
-            <p class="settings-desc" style="font-size: 0.70rem; color: #999; margin-top: 8px; text-align: center; line-height: 1.3;">
-                ※両方の端末でアプリを開いているときに同期されます。
-            </p>
-        </div>
-    </div>
-
-    <!-- ② Google自動完全同期モーダル -->
+    <!-- Google自動完全同期モーダル -->
     <div id="cloudGuideModal" class="card-overlay hidden" onclick="closeCloudGuideModal()">
         <div class="modal-card-content" style="max-width: 360px; text-align: left; max-height: 85vh; overflow-y: auto;" onclick="event.stopPropagation()">
             <span class="modal-close-corner" onclick="closeCloudGuideModal()">✕</span>
@@ -906,6 +877,6 @@ function handleRequest(e) {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=3.0.11"></script>
+    <script src="app.js?v=3.0.12"></script>
 </body>
 </html>
