@@ -424,7 +424,7 @@ function saveSnapshotHistory() {
             count: haikuHistory.length,
             haikus: haikuHistory
         });
-        if (snapshots.length > 5) snapshots = snapshots.slice(0, 5);
+        if (snapshots.length > 1) snapshots = snapshots.slice(0, 1);
         localStorage.setItem(STORAGE_KEY_SNAPSHOTS, JSON.stringify(snapshots));
     } catch (e) {}
 }
