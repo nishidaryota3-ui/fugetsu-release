@@ -106,6 +106,27 @@ function escapeHtml(str) {
         .replace(/'/g, '&#039;');
 }
 
+// ========================================================
+// ルビ記法（青空文庫形式）対応
+// 例：間八《かんぱち》         → 直前の連続する漢字列に自動で掛かる
+// 例：座頭｜語《がた》り       → ｜（全角パイプ）で指定した範囲だけに掛かる
+// ========================================================
+function renderPhraseRubyHtml(text) {
+    if (!text) return '';
+    let html = escapeHtml(text);
+    // ｜で明示された範囲へのルビ（パイプ自体は表示から除去）
+    html = html.replace(/｜([^｜《》]+)《([^《》]+)》/g, '<ruby>$1<rt>$2</rt></ruby>');
+    // パイプが無い場合は、直前の連続する漢字列に自動で掛かる
+    html = html.replace(/([一-龠々〆ヵヶ]+)《([^《》]+)》/g, '<ruby>$1<rt>$2</rt></ruby>');
+    return html;
+}
+
+// フォントサイズ判定用：ルビ記法（｜《》）を除いた見た目上の文字数
+function getPhraseVisibleLength(text) {
+    if (!text) return 0;
+    return String(text).replace(/｜/g, '').replace(/《[^》]*》/g, '').length;
+}
+
 function getTodayDateString() {
     const today = new Date();
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -1351,7 +1372,7 @@ function openKigoCard(parentKigoName, fromContext = null) {
                 const author = w.author || (userSettings.authorName || '風月');
                 worksHtml += `
                     <div class="kigo-work-single-col">
-                        ${escapeHtml(w.phrase)}　<span class="kigo-work-author">${escapeHtml(author)}</span>
+                        ${renderPhraseRubyHtml(w.phrase)}　<span class="kigo-work-author">${escapeHtml(author)}</span>
                     </div>
                 `;
             });
@@ -1372,7 +1393,7 @@ function openKigoCard(parentKigoName, fromContext = null) {
                 const author = w.author || (userSettings.authorName || '風月');
                 worksHtml += `
                     <div class="kigo-work-single-col">
-                        ${escapeHtml(w.phrase)}　<span class="kigo-work-author">${escapeHtml(author)}</span>
+                        ${renderPhraseRubyHtml(w.phrase)}　<span class="kigo-work-author">${escapeHtml(author)}</span>
                     </div>
                 `;
             });
@@ -1809,7 +1830,7 @@ function printSelectedBooklet() {
             `;
         }
         // 本文ページ
-        const linesHtml = (pageObj.haikus || []).map(h => `<div class="print-phrase-line">${escapeHtml(h.phrase)}</div>`).join('');
+        const linesHtml = (pageObj.haikus || []).map(h => `<div class="print-phrase-line">${renderPhraseRubyHtml(h.phrase)}</div>`).join('');
         const nombreHtml = pageObj.pageNumber ? `- ${pageObj.pageNumber} -` : '';
         return `
             <div class="sheet-half">
@@ -2349,7 +2370,7 @@ function renderTrashList() {
         
         const textSpan = document.createElement('span');
         textSpan.className = 'trash-haiku-text';
-        textSpan.textContent = item.phrase;
+        textSpan.innerHTML = renderPhraseRubyHtml(item.phrase);
         
         const restoreBtn = document.createElement('button');
         restoreBtn.type = 'button';
@@ -3585,7 +3606,7 @@ function clearKigoFilter(event) {
 // ========================================================
 function applyPhraseLengthClass(element, text) {
     if (!element) return;
-    const len = (text || '').length;
+    const len = getPhraseVisibleLength(text);
     element.classList.remove('long-phrase', 'extra-long-phrase');
     if (len >= 22) {
         element.classList.add('extra-long-phrase');
@@ -3694,7 +3715,7 @@ function renderYomuList() {
         
         const phraseDiv = document.createElement('div');
         phraseDiv.className = 'saijiki-phrase';
-        phraseDiv.textContent = item.phrase;
+        phraseDiv.innerHTML = renderPhraseRubyHtml(item.phrase);
         applyPhraseLengthClass(phraseDiv, item.phrase);
         card.appendChild(phraseDiv);
         
@@ -3725,7 +3746,7 @@ function renderKuchoSingleView() {
     const cur = currentKuchoHaikus[currentKuchoSingleIndex];
     const phraseEl = document.getElementById('kuchoSinglePhrase');
     if (phraseEl) {
-        phraseEl.textContent = cur.phrase;
+        phraseEl.innerHTML = renderPhraseRubyHtml(cur.phrase);
         applyPhraseLengthClass(phraseEl, cur.phrase);
     }
 
@@ -3778,7 +3799,7 @@ function onCurrentSingleHaikuClicked() {
 window.onHaikuCardClicked = function(haikuObj) {
     activeSelectedHaiku = haikuObj;
     const modalPhraseEl = document.getElementById('modalPhrase');
-    modalPhraseEl.textContent = haikuObj.phrase;
+    modalPhraseEl.innerHTML = renderPhraseRubyHtml(haikuObj.phrase);
     applyPhraseLengthClass(modalPhraseEl, haikuObj.phrase);
     const actionsContainer = document.getElementById('modalActions');
 
@@ -3919,7 +3940,7 @@ function changeOmikujiHaiku(direction) {
 function renderOmikujiDisplay() {
     const cur = omikujiPool[omikujiIndex];
     const phraseEl = document.getElementById('omikujiPhrase');
-    phraseEl.textContent = cur.phrase;
+    phraseEl.innerHTML = renderPhraseRubyHtml(cur.phrase);
     applyPhraseLengthClass(phraseEl, cur.phrase);
     document.getElementById('prevBtn').classList.toggle('disabled', omikujiIndex === 0);
     document.getElementById('nextBtn').classList.toggle('disabled', omikujiIndex === omikujiPool.length - 1);
@@ -4133,7 +4154,7 @@ function goToStep3() {
     currentHaikuData.sakkuDate = getFormattedSakkuDateFromFields();
 
     const previewPhraseEl = document.getElementById('previewPhrase');
-    previewPhraseEl.textContent = currentHaikuData.phrase;
+    previewPhraseEl.innerHTML = renderPhraseRubyHtml(currentHaikuData.phrase);
     applyPhraseLengthClass(previewPhraseEl, currentHaikuData.phrase);
     document.getElementById('previewAuthor').textContent = currentHaikuData.author;
     let seasonJa = {'haru':'春', 'natsu':'夏', 'aki':'秋', 'huyu':'冬', 'shinnen':'新年', 'muki':'無季'}[currentHaikuData.season] || currentHaikuData.season;

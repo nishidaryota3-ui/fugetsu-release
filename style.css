@@ -1028,6 +1028,10 @@ body.large-text-mode .phrase {
 .saijiki-kigo-text ruby { ruby-position: over; -webkit-ruby-position: over; }
 .saijiki-kigo-text rt { font-size: 0.45em; color: #888888; letter-spacing: 0.05em; }
 
+/* 俳句本文中のルビ記法（《》）共通スタイル。縦書き表示では横位置は
+   ブラウザの既定（右側）に任せ、ここでは大きさ・色のみ整える。 */
+rt { font-size: 0.5em; color: #777777; letter-spacing: 0.02em; }
+
 .kigo-count-badge {
     writing-mode: vertical-rl;
     -webkit-writing-mode: vertical-rl;
