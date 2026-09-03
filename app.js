@@ -285,11 +285,11 @@ window.onload = function() {
     setTimeout(checkBackupReminder, 1200);
 
     // クラウドからの自動双方向同期チェック
-    setTimeout(fetchHaikusFromCloud, 800);
+    setTimeout(runAutoCloudSync, 800);
 
     // 電波復帰時（オンライン復帰時）の自動同期リスナー
     window.addEventListener('online', () => {
-        setTimeout(fetchHaikusFromCloud, 800);
+        setTimeout(runAutoCloudSync, 800);
     });
 
     // 📱 キーボード開閉・画面サイズ変更時の動的フォント再計算
@@ -2340,6 +2340,10 @@ function restoreFromTrash(itemId) {
         haikuHistory.unshift(item);
         saveLocalHaikus();
         saveTrashList();
+        // クラウド側が「削除済み」フラグのままだと、他端末には復活が伝わらない。
+        // 同じ本文で保存し直すことで、既存行を見つけてフラグを解除する
+        // （新規行として重複登録されることはない）。
+        syncHaikuToCloud(item, 'save');
         renderTrashList();
         if (document.getElementById('readScreen').classList.contains('active')) renderYomuList();
         showToast('句帳に復元しました！');
@@ -2731,6 +2735,17 @@ function syncHaikuToCloud(haikuObj, action = 'save', oldPhrase = '') {
     }
 }
 
+// 🔕 自動同期（起動時・オンライン復帰時）のラッパー。
+// 連携を使っていない人には何も表示せず、連携済みの人が失敗した時だけ
+// 控えめに知らせる（今まで失敗は完全に無音で、気づく手段が無かった）。
+async function runAutoCloudSync() {
+    if (!userSettings.cloudSyncUrl || !userSettings.cloudSyncUrl.startsWith('http')) return;
+    const result = await fetchHaikusFromCloud(false);
+    if (result && !result.success) {
+        showToast('☁️ 同期に失敗しました（後で自動的に再試行します）');
+    }
+}
+
 // 📥 クラウド（スプレッドシート）から最新データを双方向受信・マージ
 async function fetchHaikusFromCloud(isManual = false) {
     let rawUrl = userSettings.cloudSyncUrl;
@@ -2773,6 +2788,7 @@ async function fetchHaikusFromCloud(isManual = false) {
                 // 1. スプレッドシート（正本）から取得した句の一覧をパース
                 const cloudHaikus = [];
                 const cloudPhraseSet = new Set();
+                const deletedPhraseSet = new Set(); // 「削除済み」フラグが立っている句
 
                 rows.forEach((r, idx) => {
                     let phrase = '';
@@ -2813,6 +2829,11 @@ async function fetchHaikusFromCloud(isManual = false) {
                     }
 
                     if (phrase) {
+                        // 「削除済み」フラグが立った行は正本には含めない
+                        if (status === '削除済み') {
+                            deletedPhraseSet.add(phrase);
+                            return;
+                        }
                         cloudPhraseSet.add(phrase);
                         const existing = haikuHistory.find(h => h.phrase === phrase);
                         cloudHaikus.push({
@@ -2827,13 +2848,36 @@ async function fetchHaikusFromCloud(isManual = false) {
                             detailSeason,
                             status,
                             sakkuDate,
-                            createdAt: existing ? existing.createdAt : (Date.now() - (rows.length - idx))
+                            // スプレッドシート上の行の並び（idx）を基準にする。
+                            // 各端末が同期した時刻を元にすると、同じ句でも端末ごとに
+                            // 違う値になり、日付が同じ句の並び順がズレる原因になっていた。
+                            createdAt: existing ? existing.createdAt : idx
                         });
                     }
                 });
 
-                // 2. オフライン中に端末ローカルで作成された句（SSに未反映の句）を検出・保護
-                const offlineCreatedHaikus = haikuHistory.filter(h => h.phrase && !cloudPhraseSet.has(h.phrase));
+                // 2. 「削除済み」フラグの句が、まだこの端末にローカルで残っていれば
+                //    ごみ箱へ回収する（他端末での削除を正しく反映し、誤って
+                //    「新規の句」として送り返してしまう＝復活を防ぐ）
+                deletedPhraseSet.forEach(phrase => {
+                    const localIdx = haikuHistory.findIndex(h => h.phrase === phrase);
+                    if (localIdx !== -1) {
+                        const item = haikuHistory[localIdx];
+                        if (!trashList.some(t => t.phrase === phrase)) {
+                            trashList.unshift(Object.assign({}, item, {
+                                deletedAt: Date.now(),
+                                originalStatus: item.status
+                            }));
+                            saveTrashList();
+                        }
+                        haikuHistory.splice(localIdx, 1);
+                    }
+                });
+
+                // 3. オフライン中に端末ローカルで作成された句（SSに未反映の句）を検出・保護
+                //    ただし「削除済み」フラグの句は除外する（他端末での削除を、
+                //    未反映の新規句と誤認して復活させてしまうのを防ぐ）
+                const offlineCreatedHaikus = haikuHistory.filter(h => h.phrase && !cloudPhraseSet.has(h.phrase) && !deletedPhraseSet.has(h.phrase));
                 if (offlineCreatedHaikus.length > 0) {
                     offlineCreatedHaikus.forEach(offItem => {
                         cloudHaikus.unshift(offItem);
@@ -2842,7 +2886,7 @@ async function fetchHaikusFromCloud(isManual = false) {
                     });
                 }
 
-                // 3. スプレッドシートの正本状態でローカル句帳を完全一致同期
+                // 4. スプレッドシートの正本状態でローカル句帳を完全一致同期
                 haikuHistory = cloudHaikus;
                 saveLocalHaikus();
 

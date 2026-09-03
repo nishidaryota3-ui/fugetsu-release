@@ -12,11 +12,11 @@
     <meta name="application-name" content="句帳風月">
     <meta name="theme-color" content="#faf9f6">
     
-    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=3.0.15">
-    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=3.0.15">
-    <link rel="manifest" href="manifest.json?v=3.0.15">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=3.0.16">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=3.0.16">
+    <link rel="manifest" href="manifest.json?v=3.0.16">
 
-    <link rel="stylesheet" href="style.css?v=3.0.15">
+    <link rel="stylesheet" href="style.css?v=3.0.16">
 </head>
 <body>
 
@@ -651,25 +651,34 @@
 }
 function doPost(e) { return handleRequest(e); }
 function handleRequest(e) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName('俳句集成') || ss.getSheets()[0];
-  var p = e.parameter, action = p.action || 'save', oldPhrase = p.oldPhrase || '', targetRow = 0;
-  if (oldPhrase !== '') {
-    var cell = sheet.getRange("A:A").createTextFinder(oldPhrase).matchEntireCell(true).findNext();
-    if (cell) targetRow = cell.getRow();
+  var lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName('俳句集成') || ss.getSheets()[0];
+    var p = e.parameter, action = p.action || 'save', oldPhrase = p.oldPhrase || '', targetRow = 0;
+    if (oldPhrase !== '') {
+      var cell = sheet.getRange("A:A").createTextFinder(oldPhrase).matchEntireCell(true).findNext();
+      if (cell) targetRow = cell.getRow();
+    }
+    if (action === 'delete') {
+      // 行は物理削除せず「削除済み」フラグを立てるだけにする。
+      // 他端末がまだ古いデータを持っていても、この印を見て
+      // 削除を正しく認識でき、誤って復活させることがなくなる。
+      if (targetRow > 1) sheet.getRange(targetRow, 11).setValue('削除済み');
+      return ContentService.createTextOutput(JSON.stringify({status:'deleted'})).setMimeType(ContentService.MimeType.JSON);
+    }
+    if (action === 'changeStatus') {
+      if (targetRow > 1) sheet.getRange(targetRow, 11).setValue(p.status || '下書き');
+      return ContentService.createTextOutput(JSON.stringify({status:'status_changed'})).setMimeType(ContentService.MimeType.JSON);
+    }
+    var rowData = [p.phrase||'', p.author||'風月', p.authorKana||'ふうげつ', p.kigo||'', p.parentKigo||'', p.parentKana||'', p.season||'', p.detailSeason||'', '', '', p.status||'完成句', p.sakkuDate||''];
+    if (targetRow > 1) sheet.getRange(targetRow, 1, 1, rowData.length).setValues([rowData]);
+    else sheet.appendRow(rowData);
+    return ContentService.createTextOutput(JSON.stringify({status:'success'})).setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    lock.releaseLock();
   }
-  if (action === 'delete') {
-    if (targetRow > 1) sheet.deleteRow(targetRow);
-    return ContentService.createTextOutput(JSON.stringify({status:'deleted'})).setMimeType(ContentService.MimeType.JSON);
-  }
-  if (action === 'changeStatus') {
-    if (targetRow > 1) sheet.getRange(targetRow, 11).setValue(p.status || '下書き');
-    return ContentService.createTextOutput(JSON.stringify({status:'status_changed'})).setMimeType(ContentService.MimeType.JSON);
-  }
-  var rowData = [p.phrase||'', p.author||'風月', p.authorKana||'ふうげつ', p.kigo||'', p.parentKigo||'', p.parentKana||'', p.season||'', p.detailSeason||'', '', '', p.status||'完成句', p.sakkuDate||''];
-  if (targetRow > 1) sheet.getRange(targetRow, 1, 1, rowData.length).setValues([rowData]);
-  else sheet.appendRow(rowData);
-  return ContentService.createTextOutput(JSON.stringify({status:'success'})).setMimeType(ContentService.MimeType.JSON);
 }</textarea>
             </div>
         </div>
@@ -916,6 +925,6 @@ function handleRequest(e) {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=3.0.15"></script>
+    <script src="app.js?v=3.0.16"></script>
 </body>
 </html>
