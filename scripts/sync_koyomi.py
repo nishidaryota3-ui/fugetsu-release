@@ -18,6 +18,9 @@ import csv
 import io
 import json
 import math
+import re
+import subprocess
+import datetime
 import os
 import urllib.request
 
@@ -390,4 +393,38 @@ out_path = os.path.join(WORKSPACE_DIR, "data", "koyomi.json")
 with open(out_path, "w", encoding="utf-8") as f:
     json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
 print(f"  -> 書き出し完了: {out_path}")
+
+# ============================================================
+# 5. キャッシュバージョンの自動更新
+# ============================================================
+print("\n[5/5] キャッシュバージョン（更新番号）を更新中...")
+app_js_path = os.path.join(WORKSPACE_DIR, "app.js")
+with open(app_js_path, "r", encoding="utf-8") as f:
+    app_code = f.read()
+
+m = re.search(r"data/koyomi\.json\?v=2\.0\.(\d+)", app_code)
+current_v = int(m.group(1)) if m else 33
+new_v = current_v + 1
+app_code_new = re.sub(r"data/koyomi\.json\?v=[\d.]+", f"data/koyomi.json?v=2.0.{new_v}", app_code)
+with open(app_js_path, "w", encoding="utf-8") as f:
+    f.write(app_code_new)
+print(f"  -> バージョン更新: v2.0.{current_v} -> v2.0.{new_v}")
+
+# ============================================================
+# 6. Git Commit & Push
+# ============================================================
+print("\n[6/6] GitHubへ自動配信（Push）中...")
+now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+commit_msg = f"Auto-sync koyomi database from spreadsheet ({now_str})\n\nCo-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
+
+status_res = subprocess.run(['git', 'status', '--porcelain', 'data/koyomi.json', 'app.js'],
+                             capture_output=True, text=True, cwd=WORKSPACE_DIR)
+if not status_res.stdout.strip():
+    print("  -> データに変更がありませんでした（既に最新版です）。")
+else:
+    subprocess.run(['git', 'add', 'data/koyomi.json', 'app.js'], check=True, cwd=WORKSPACE_DIR)
+    subprocess.run(['git', 'commit', '-m', commit_msg], check=True, cwd=WORKSPACE_DIR)
+    subprocess.run(['git', 'push', 'origin', 'main'], check=True, cwd=WORKSPACE_DIR)
+    print("  -> GitHubへのPushが完了しました！")
+
 print("\n✅ 暦データベースの同期が完了しました！")
