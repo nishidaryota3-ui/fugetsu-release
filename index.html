@@ -12,11 +12,11 @@
     <meta name="application-name" content="句帳風月">
     <meta name="theme-color" content="#faf9f6">
     
-    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=3.0.18">
-    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=3.0.18">
-    <link rel="manifest" href="manifest.json?v=3.0.18">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=3.0.19">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=3.0.19">
+    <link rel="manifest" href="manifest.json?v=3.0.19">
 
-    <link rel="stylesheet" href="style.css?v=3.0.18">
+    <link rel="stylesheet" href="style.css?v=3.0.19">
 </head>
 <body>
 
@@ -211,6 +211,12 @@
                             <span id="kuchoPitchValueLabel" style="font-size: 0.8rem; color: #777;">50px</span>
                         </div>
                         <input type="range" id="kuchoPitchSlider" min="15" max="120" value="50" step="5" style="width: 100%; accent-color: #2b2b2b; cursor: pointer;" oninput="onKuchoPitchSliderChanged(this.value)">
+                    </div>
+                    <div id="kuchoDateDisplaySettingRow" class="print-setting-row" style="margin-bottom: 4px;">
+                        <label style="display: flex; align-items: center; gap: 8px; width: 100%; cursor: pointer;">
+                            <input type="checkbox" id="kuchoShowDateCheckbox" checked onchange="onKuchoShowDateChanged(this.checked)" style="accent-color: #2b2b2b; width: 16px; height: 16px; cursor: pointer;">
+                            <span class="print-setting-label" style="margin: 0;">日付表示あり</span>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -925,6 +931,6 @@ function handleRequest(e) {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=3.0.18"></script>
+    <script src="app.js?v=3.0.19"></script>
 </body>
 </html>

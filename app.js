@@ -637,6 +637,7 @@ function updateKuchoDisplayModeUI(mode) {
     const scrollBtn = document.getElementById('kuchoModeScrollBtn');
     const singleBtn = document.getElementById('kuchoModeSingleBtn');
     const pitchRow = document.getElementById('kuchoPitchSettingRow');
+    const dateRow = document.getElementById('kuchoDateDisplaySettingRow');
     if (scrollBtn && singleBtn) {
         scrollBtn.classList.toggle('active', mode === 'scroll');
         singleBtn.classList.toggle('active', mode === 'single');
@@ -644,6 +645,20 @@ function updateKuchoDisplayModeUI(mode) {
     if (pitchRow) {
         pitchRow.style.display = (mode === 'scroll') ? 'block' : 'none';
     }
+    if (dateRow) {
+        dateRow.style.display = (mode === 'scroll') ? 'block' : 'none';
+    }
+}
+
+function updateKuchoShowDateUI(show) {
+    const checkbox = document.getElementById('kuchoShowDateCheckbox');
+    if (checkbox) checkbox.checked = show;
+}
+
+function onKuchoShowDateChanged(checked) {
+    userSettings.kuchoShowDate = checked;
+    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
+    renderYomuList();
 }
 
 function updateKuchoPitchUI(pitch) {
@@ -711,8 +726,10 @@ function openAuthorSelectModal() {
     // 表示設定の初期UI反映
     const currentMode = userSettings.kuchoDisplayMode || 'scroll';
     const currentPitch = userSettings.kuchoPitch !== undefined ? userSettings.kuchoPitch : 50;
+    const currentShowDate = userSettings.kuchoShowDate !== false;
     updateKuchoDisplayModeUI(currentMode);
     updateKuchoPitchUI(currentPitch);
+    updateKuchoShowDateUI(currentShowDate);
 
     const myName = userSettings.authorName || '風月';
     
@@ -3556,9 +3573,10 @@ function renderYomuList(preserveScroll = false) {
     if (singleContainer) singleContainer.classList.add('hidden');
     if (scrollContainer) scrollContainer.classList.remove('hidden');
 
+    const showDate = userSettings.kuchoShowDate !== false;
     let lastGroupKey = '';
     targetHaikus.forEach(item => {
-        if (item._parsedDate.groupKey !== lastGroupKey) {
+        if (showDate && item._parsedDate.groupKey !== lastGroupKey) {
             lastGroupKey = item._parsedDate.groupKey;
             const divider = document.createElement('div');
             divider.className = 'date-divider-card';
