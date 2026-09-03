@@ -466,7 +466,7 @@ function saveSnapshotHistory() {
 
 async function loadInternalDatabases() {
     try {
-        const respKoyomi = await fetch('data/koyomi.json?v=2.0.33');
+        const respKoyomi = await fetch('data/koyomi.json?v=2.0.34');
         if (respKoyomi.ok) {
             koyomiDatabase = await respKoyomi.json();
             renderKoyomiFromLocal();
