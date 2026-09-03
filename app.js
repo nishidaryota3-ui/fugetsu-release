@@ -3411,9 +3411,12 @@ function cancelEmuMode() {
 
 function startYomuMode(preserveScroll = false) {
     updateHeaderTitle();
-    renderYomuList(preserveScroll);
+    // 読む画面を先に表示状態にしてからrenderYomuList()を呼ぶ。
+    // 逆順だと、非表示のうちにcontainer.scrollLeftを読み取ることになり、
+    // 常に0（先頭）として保存されてしまい、位置維持が機能しなかった。
     document.querySelectorAll('.step-screen').forEach(el => el.classList.remove('active'));
     document.getElementById('readScreen').classList.add('active');
+    renderYomuList(preserveScroll);
     updateCatVisibility(false);
 }
 
