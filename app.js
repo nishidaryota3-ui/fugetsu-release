@@ -674,7 +674,6 @@ function setKuchoDisplayMode(mode) {
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(userSettings));
     updateKuchoDisplayModeUI(mode);
     renderYomuList();
-    closeAuthorSelectModal();
 }
 
 function onKuchoPitchSliderChanged(val) {
