@@ -1,0 +1,174 @@
+:root {
+    --ph-bg: #faf9f6;
+    --ph-ink: #2b2b2b;
+    --ph-accent: #8c8476;
+    --ph-line: #e3ddd0;
+    --ph-card: #ffffff;
+    --ph-sun: #d99a3a;
+    --font-mincho: "游明朝", "Yu Mincho", "ヒラギノ明朝 ProN", "Hiragino Mincho ProN", "Shippori Mincho", "MS P明朝", serif;
+    --font-gothic: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background-color: var(--ph-bg);
+    color: var(--ph-ink);
+    font-family: var(--font-gothic);
+    line-height: 1.6;
+    padding: calc(24px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom));
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.ph-header {
+    text-align: center;
+    margin-bottom: 28px;
+}
+.ph-header h1 {
+    font-family: var(--font-mincho);
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+.ph-sub {
+    margin-top: 6px;
+    font-size: 0.85rem;
+    color: var(--ph-accent);
+}
+
+.ph-input-card {
+    background: var(--ph-card);
+    border: 1px solid var(--ph-line);
+    border-radius: 14px;
+    padding: 18px 16px;
+    margin-bottom: 24px;
+}
+.ph-date-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.ph-field {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.75rem;
+    color: var(--ph-accent);
+    gap: 4px;
+}
+.ph-field input {
+    font-family: var(--font-gothic);
+    font-size: 1rem;
+    padding: 8px 10px;
+    border: 1px solid var(--ph-line);
+    border-radius: 8px;
+    background: var(--ph-bg);
+    color: var(--ph-ink);
+    width: 100px;
+}
+.ph-field-narrow input { width: 64px; }
+
+.ph-field-gap select {
+    font-family: var(--font-gothic);
+    font-size: 0.9rem;
+    padding: 8px 10px;
+    border: 1px solid var(--ph-line);
+    border-radius: 8px;
+    background: var(--ph-bg);
+    color: var(--ph-ink);
+}
+
+.ph-search-btn {
+    font-family: var(--font-gothic);
+    font-size: 0.95rem;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 8px;
+    background: var(--ph-ink);
+    color: var(--ph-bg);
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+.ph-search-btn:hover { opacity: 0.85; }
+.ph-search-btn:active { opacity: 0.65; }
+.ph-search-btn:disabled { opacity: 0.4; cursor: default; }
+
+.ph-note {
+    margin-top: 12px;
+    font-size: 0.72rem;
+    color: var(--ph-accent);
+}
+.ph-status {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: var(--ph-accent);
+    min-height: 1.2em;
+}
+.ph-status.is-error { color: #b3543a; }
+
+.hidden { display: none !important; }
+
+.ph-target-section {
+    text-align: center;
+    margin-bottom: 32px;
+}
+.ph-date-heading {
+    font-family: var(--font-mincho);
+    font-size: 1.3rem;
+    margin-bottom: 12px;
+}
+
+.ph-diagram-wrap {
+    display: flex;
+    justify-content: center;
+}
+.ph-diagram-wrap svg { width: 100%; max-width: 360px; height: auto; }
+
+.ph-results-heading {
+    font-family: var(--font-mincho);
+    font-size: 1.1rem;
+    margin-bottom: 14px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--ph-line);
+}
+
+.ph-results-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ph-result-item {
+    background: var(--ph-card);
+    border: 1px solid var(--ph-line);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.ph-rank {
+    font-family: var(--font-mincho);
+    font-size: 1.3rem;
+    color: var(--ph-accent);
+    width: 2em;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.ph-result-diagram { flex-shrink: 0; }
+.ph-result-diagram svg { width: 84px; height: 84px; display: block; }
+
+.ph-result-info { flex: 1; min-width: 0; }
+.ph-result-date { font-size: 1rem; font-weight: 600; }
+.ph-result-pct { font-size: 0.85rem; color: var(--ph-accent); margin-top: 2px; }
+
+.ph-footer {
+    margin-top: 36px;
+    text-align: center;
+    font-size: 0.68rem;
+    color: var(--ph-accent);
+}

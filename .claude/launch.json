@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "wakusei-hikaku",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd '/private/tmp/claude-501/-Users-nishidaryota-Library-Mobile-Documents-com-apple-CloudDocs-kucho-fugetsu-v2-main/bf3f7202-edb3-4136-bf3c-43c34c9b01ac/scratchpad/preview-wakusei' && exec python3 -m http.server 8743"],
+      "port": 8743
+    }
+  ]
+}
