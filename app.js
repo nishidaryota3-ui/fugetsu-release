@@ -3406,12 +3406,12 @@ function startEmuMode() {
 
 function cancelEmuMode() {
     hideAuthorSuggestions();
-    if (editingHaikuObj) startYomuMode(); else goToStartScreen();
+    if (editingHaikuObj) startYomuMode(true); else goToStartScreen();
 }
 
-function startYomuMode() {
+function startYomuMode(preserveScroll = false) {
     updateHeaderTitle();
-    renderYomuList();
+    renderYomuList(preserveScroll);
     document.querySelectorAll('.step-screen').forEach(el => el.classList.remove('active'));
     document.getElementById('readScreen').classList.add('active');
     updateCatVisibility(false);
@@ -4062,7 +4062,7 @@ function submitHaiku(statusType) {
 function finishAndReturn() {
     editingHaikuObj = null;
     currentHaikuData.oldPhrase = '';
-    startYomuMode();
+    startYomuMode(true);
 }
 
 function resetForm() {
