@@ -3294,6 +3294,14 @@ function openKoyomiDetailModal() {
     // 6. その他・文学忌・伝統行事
     if (todayData.other) addSection('伝統行事・文学忌・その他', todayData.other);
 
+    // 該当する行事が一件もない日は、その旨を案内する
+    if (listEl.children.length === 0) {
+        const p = document.createElement('div');
+        p.className = 'koyomi-no-events';
+        p.textContent = '本日は特に記載のある行事はありません。';
+        listEl.appendChild(p);
+    }
+
     document.getElementById('koyomiDetailModal').classList.remove('hidden');
 }
 
@@ -4190,22 +4198,11 @@ function renderKoyomiFromLocal() {
         }
     }
 
-    // 神事・仏事・教会行事・その他・または複数の重要行事がある日は「i」ボタンを表示
-    const hasDetailEvents = (
-        (todayData.jinja && todayData.jinja.length > 0) ||
-        (todayData.tera && todayData.tera.length > 0) ||
-        (todayData.church && todayData.church.length > 0) ||
-        (todayData.other && todayData.other.length > 0) ||
-        (todayData.important && todayData.important.length > 1)
-    );
-
+    // 「i」ボタンは行事の有無に関わらず常に表示する（無い日は「無い」と分かるように、
+    // モーダル側で案内する）
     const infoBtn = document.getElementById('calInfoBtn');
     if (infoBtn) {
-        if (hasDetailEvents) {
-            infoBtn.classList.remove('hidden');
-        } else {
-            infoBtn.classList.add('hidden');
-        }
+        infoBtn.classList.remove('hidden');
     }
 }
 

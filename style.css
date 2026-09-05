@@ -521,6 +521,7 @@ body.font-gothic-mode * {
 .koyomi-detail-list { display: flex; flex-direction: column; gap: 12px; max-height: 52vh; overflow-y: auto; padding-right: 4px; }
 .koyomi-section-title { font-size: 0.78rem; color: #8c8476; font-weight: 600; letter-spacing: 0.1em; margin-bottom: 4px; border-left: 2.5px solid #8c8476; padding-left: 6px; }
 .koyomi-event-tags { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 0.5rem; }
+.koyomi-no-events { font-size: 0.8rem; color: #999; text-align: center; padding: 10px 0; }
 .koyomi-event-tag { font-size: 0.85rem; color: #333; background: rgba(0,0,0,0.03); border: 1px solid #e2ded7; border-radius: 4px; padding: 3px 7px; line-height: 1.3; }
 .koyomi-event-tag.holiday { color: #d25b4e; border-color: #f1c7c2; background: #fff8f7; }
 
