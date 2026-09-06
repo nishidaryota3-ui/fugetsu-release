@@ -2865,9 +2865,10 @@ async function fetchHaikusFromCloud(isManual = false) {
                             status,
                             sakkuDate,
                             // スプレッドシート上の行の並び（idx）を基準にする。
-                            // 各端末が同期した時刻を元にすると、同じ句でも端末ごとに
-                            // 違う値になり、日付が同じ句の並び順がズレる原因になっていた。
-                            createdAt: existing ? existing.createdAt : idx
+                            // 既存句であっても常に上書きする（過去にDate.now()方式で
+                            // 端末ごとバラバラに採番されてしまった句が、そのまま残って
+                            // しまうのを防ぎ、次の同期で全端末が同じ値に揃うようにする）
+                            createdAt: idx
                         });
                     }
                 });
