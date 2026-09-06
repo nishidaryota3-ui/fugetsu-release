@@ -7,6 +7,8 @@ const ASSETS_TO_CACHE = [
   './app.js',
   './manifest.json',
   './icon.png',
+  './icon-192.png',
+  './icon-180.png',
   './omikuji-cat.png',
   './icon_top_input.png',
   './icon_top_output.png',
