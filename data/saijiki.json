@@ -30312,6 +30312,15 @@
     "category": "生活"
   },
   {
+    "kigo": "籾がら",
+    "parentKigo": "籾",
+    "parentKana": "もみ",
+    "season": "aki",
+    "detailSeason": "仲秋",
+    "desc": "稲穂から実をとった状態のものを言う。昔はこれを筵に干したあと、臼で搗いて玄米と殻に分けていた。今では籾摺機を使う。",
+    "category": "時候"
+  },
+  {
     "kigo": "籾摺臼",
     "parentKigo": "籾摺",
     "parentKana": "もみすり",
@@ -32482,8 +32491,8 @@
   },
   {
     "kigo": "まごいね",
-    "parentKigo": "ひつぢ",
-    "parentKana": "ひつじぐさ",
+    "parentKigo": "穭",
+    "parentKana": "ひつじ",
     "season": "aki",
     "detailSeason": "晩秋",
     "desc": "稲を刈り取った後の切り株に、再び稲が青々と芽を伸ばす。これを穭という。",
@@ -32491,8 +32500,8 @@
   },
   {
     "kigo": "ひつぢ",
-    "parentKigo": "ひつぢ",
-    "parentKana": "ひつじぐさ",
+    "parentKigo": "穭",
+    "parentKana": "ひつじ",
     "season": "aki",
     "detailSeason": "晩秋",
     "desc": "稲を刈り取った後の切り株に、再び稲が青々と芽を伸ばす。これを穭という。",
@@ -32500,17 +32509,17 @@
   },
   {
     "kigo": "穭孫",
-    "parentKigo": "ひつぢ",
-    "parentKana": "ひつじぐさ",
+    "parentKigo": "穭",
+    "parentKana": "ひつじ",
     "season": "aki",
     "detailSeason": "晩秋",
     "desc": "稲を刈り取った後の切り株に、再び稲が青々と芽を伸ばす。これを穭という。",
     "category": "植物"
   },
   {
-    "kigo": "穭穂",
-    "parentKigo": "ひつぢ",
-    "parentKana": "ひつじぐさ",
+    "kigo": "穭",
+    "parentKigo": "穭",
+    "parentKana": "ひつじ",
     "season": "aki",
     "detailSeason": "晩秋",
     "desc": "稲を刈り取った後の切り株に、再び稲が青々と芽を伸ばす。これを穭という。",
@@ -35116,6 +35125,15 @@
     "detailSeason": "晩秋",
     "desc": "秋、トゲのあるイガが自然に割れて顔を出す艶やかなクリの実。栗ご飯、焼き栗、栗きんとんなど、ほくほくとした素朴な甘み。",
     "category": "植物"
+  },
+  {
+    "kigo": "栗めし",
+    "parentKigo": "栗",
+    "parentKana": "くり",
+    "season": "aki",
+    "detailSeason": "晩秋",
+    "desc": "秋、トゲのあるイガが自然に割れて顔を出す艶やかなクリの実。栗ご飯、焼き栗、栗きんとんなど、ほくほくとした素朴な甘み。",
+    "category": "時候"
   },
   {
     "kigo": "くりのこもち",
@@ -167913,6 +167931,15 @@
     "category": "植物"
   },
   {
+    "kigo": "ひつじぐさ",
+    "parentKigo": "睡蓮",
+    "parentKana": "すいれん",
+    "season": "natsu",
+    "detailSeason": "晩夏",
+    "desc": "池や沼の水面に浮かぶように咲くスイレン。昼に花を開き夕方に閉じる（眠る）ことから名付けられた、静謐で涼やかな水生植物。",
+    "category": "時候"
+  },
+  {
     "kigo": "杉風忌",
     "parentKigo": "杉風忌",
     "parentKana": "さんぷうき",
@@ -169612,6 +169639,15 @@
     "detailSeason": "晩夏",
     "desc": "夏の土用の頃、晴天の日をえらんで、衣類や書物を干したり、風に当てたりすること。黴や虫などの害を防ぐ。書物を曝すことを曝書という。寺社の宝物などの虫干しはお風入などともいう。",
     "category": "生活"
+  },
+  {
+    "kigo": "虫ぼし",
+    "parentKigo": "虫干",
+    "parentKana": "むしぼし",
+    "season": "natsu",
+    "detailSeason": "晩夏",
+    "desc": "夏の土用の頃、晴天の日をえらんで、衣類や書物を干したり、風に当てたりすること。黴や虫などの害を防ぐ。書物を曝すことを曝書という。寺社の宝物などの虫干しはお風入などともいう。",
+    "category": "時候"
   },
   {
     "kigo": "むしとりすみれ",
