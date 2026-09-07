@@ -2740,10 +2740,13 @@ function syncHaikuToCloud(haikuObj, action = 'save', oldPhrase = '') {
             }
 
             // GETリクエストで送信（ブラウザのPOST/CORS遮断・リダイレクト消失を完全回避）
+            // keepalive: 操作直後に画面を閉じたり他アプリに切り替えたりしても、
+            // 送信中のリクエストがキャンセルされず最後まで届くようにする
             const syncUrl = `${userSettings.cloudSyncUrl}?${params.toString()}`;
             fetch(syncUrl, {
                 method: 'GET',
-                mode: 'no-cors'
+                mode: 'no-cors',
+                keepalive: true
             }).catch(e => console.warn('Cloud sync background error:', e));
         } catch (e) {
             console.warn('Cloud sync error:', e);
@@ -2806,6 +2809,11 @@ async function fetchHaikusFromCloud(isManual = false) {
                 const cloudPhraseSet = new Set();
                 const deletedPhraseSet = new Set(); // 「削除済み」フラグが立っている句
 
+                // 句数が多いと毎回1件ずつ配列全体を線形探索するのが重くなるため、
+                // 事前にMap（索引）を作っておき、O(1)で既存句を引けるようにする
+                const localPhraseMap = new Map();
+                haikuHistory.forEach(h => { if (h.phrase) localPhraseMap.set(h.phrase, h); });
+
                 rows.forEach((r, idx) => {
                     let phrase = '';
                     let author = '';
@@ -2851,7 +2859,7 @@ async function fetchHaikusFromCloud(isManual = false) {
                             return;
                         }
                         cloudPhraseSet.add(phrase);
-                        const existing = haikuHistory.find(h => h.phrase === phrase);
+                        const existing = localPhraseMap.get(phrase);
                         cloudHaikus.push({
                             id: existing ? existing.id : ('cloud_' + Date.now() + '_' + idx),
                             phrase,
@@ -2876,20 +2884,27 @@ async function fetchHaikusFromCloud(isManual = false) {
                 // 2. 「削除済み」フラグの句が、まだこの端末にローカルで残っていれば
                 //    ごみ箱へ回収する（他端末での削除を正しく反映し、誤って
                 //    「新規の句」として送り返してしまう＝復活を防ぐ）
-                deletedPhraseSet.forEach(phrase => {
-                    const localIdx = haikuHistory.findIndex(h => h.phrase === phrase);
-                    if (localIdx !== -1) {
-                        const item = haikuHistory[localIdx];
-                        if (!trashList.some(t => t.phrase === phrase)) {
-                            trashList.unshift(Object.assign({}, item, {
-                                deletedAt: Date.now(),
-                                originalStatus: item.status
-                            }));
-                            saveTrashList();
+                // ※ こちらも1件ずつ配列全体を探すのではなく、Setでの
+                //    O(1)判定＋1回の走査にまとめて高速化
+                if (deletedPhraseSet.size > 0) {
+                    const trashPhraseSet = new Set(trashList.map(t => t.phrase));
+                    let trashChanged = false;
+                    haikuHistory = haikuHistory.filter(item => {
+                        if (item.phrase && deletedPhraseSet.has(item.phrase)) {
+                            if (!trashPhraseSet.has(item.phrase)) {
+                                trashList.unshift(Object.assign({}, item, {
+                                    deletedAt: Date.now(),
+                                    originalStatus: item.status
+                                }));
+                                trashPhraseSet.add(item.phrase);
+                                trashChanged = true;
+                            }
+                            return false;
                         }
-                        haikuHistory.splice(localIdx, 1);
-                    }
-                });
+                        return true;
+                    });
+                    if (trashChanged) saveTrashList();
+                }
 
                 // 3. オフライン中に端末ローカルで作成された句（SSに未反映の句）を検出・保護
                 //    ただし「削除済み」フラグの句は除外する（他端末での削除を、
