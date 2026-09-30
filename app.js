@@ -1301,7 +1301,12 @@ function renderSaijikiKigoList() {
 // ========================================================
 // 🌸 季語解説ポップアップカード（うてなモデル＋マイ歳時記）
 // ========================================================
+let kigoCardFromContext = null;
+
 function openKigoCard(parentKigoName, fromContext = null) {
+    // 作句中（ステップ1）の季語一覧から開いた場合、カードを閉じたときに
+    // 一覧へ戻れるよう、どこから開かれたかを覚えておく
+    kigoCardFromContext = fromContext;
     closeStep1KiyoseModal();
     const overlay = document.getElementById('kigoCardOverlay');
     if (!overlay) return;
@@ -1421,6 +1426,13 @@ function openKigoCard(parentKigoName, fromContext = null) {
 function closeKigoCard() {
     const overlay = document.getElementById('kigoCardOverlay');
     if (overlay) overlay.classList.add('hidden');
+
+    // 作句中の季語一覧から開いたカードなら、閉じた時に入力画面へ行ってしまわず
+    // 一歩前の季語一覧へ戻す
+    if (kigoCardFromContext === 'step1') {
+        openStep1KiyoseModal();
+    }
+    kigoCardFromContext = null;
 }
 
 function getStep1Phrase() {
@@ -1503,6 +1515,8 @@ function focusStep1DirectInput() {
 }
 
 function composeWithKigo(kigoName) {
+    // 「この季語で詠む」は季語一覧へ戻さず、そのまま作句画面へ進む
+    kigoCardFromContext = null;
     closeKigoCard();
     closeStep1KiyoseModal();
     startEmuMode();
@@ -1696,6 +1710,8 @@ function renderStep1KigoList() {
 
 // カーソル位置へ季語をスマート挿入
 function insertKigoToInput(kigoText) {
+    // 季語を入力に反映する操作なので、季語一覧へは戻さずそのまま作句画面へ
+    kigoCardFromContext = null;
     closeKigoCard();
 
     const input = document.getElementById('inputPhrase');
