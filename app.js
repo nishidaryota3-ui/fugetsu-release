@@ -2897,6 +2897,12 @@ async function fetchHaikusFromCloud(isManual = false) {
                     }
                 });
 
+                // 同じ文章の「生きた行」も存在する場合（修正で元の文章に戻した場合など）は
+                // 削除扱いにしない
+                deletedPhraseSet.forEach(p => {
+                    if (cloudPhraseSet.has(p)) deletedPhraseSet.delete(p);
+                });
+
                 // 2. 「削除済み」フラグの句が、まだこの端末にローカルで残っていれば
                 //    ごみ箱へ回収する（他端末での削除を正しく反映し、誤って
                 //    「新規の句」として送り返してしまう＝復活を防ぐ）
@@ -4115,6 +4121,19 @@ function submitHaiku(statusType) {
     }
     
     saveLocalHaikus();
+
+    // 句の文章を修正した場合、スプレッドシート上では行が新しい文章に上書きされるだけで
+    // 「修正前の句は無くなった」という印が残らない。修正前の句をまだ持っている別端末が
+    // 同期すると「新しく作った句」と区別できず、書き戻されて復活してしまう。
+    // そのため修正前の文章に「削除済み」の印を別行として残しておく（先に送る）。
+    const editedFrom = currentHaikuData.oldPhrase;
+    if (editedFrom && editedFrom !== newHaiku.phrase) {
+        syncHaikuToCloud(
+            Object.assign({}, newHaiku, { phrase: editedFrom, status: '削除済み' }),
+            'save',
+            '__edited_away__' + Date.now()
+        );
+    }
     syncHaikuToCloud(newHaiku, 'save', currentHaikuData.oldPhrase);
     goToStep(4);
 }
