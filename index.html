@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png?v=3.0.23">
     <link rel="manifest" href="manifest.json?v=3.0.23">
 
-    <link rel="stylesheet" href="style.css?v=3.0.23">
+    <link rel="stylesheet" href="style.css?v=3.0.27">
 </head>
 <body>
 
@@ -79,7 +79,7 @@
     <div id="readScreen" class="step-screen">
         <div class="read-header">
             <div class="read-header-top">
-                <div class="breadcrumb">
+                <div class="breadcrumb" id="readBreadcrumb">
                     <span class="link" onclick="goToStartScreen()">home</span>
                     <span class="separator">&lt;</span>
                     <span class="current">俳句を読む</span>
@@ -160,7 +160,7 @@
                 </svg>
             </button>
             <div id="omikujiInfoBox" class="omikuji-info-box hidden" onclick="hideOmikujiAuthor()" title="タップで隠す">
-                <div id="omikujiInfoAuthor" class="omikuji-info-author"></div>
+                <div id="omikujiInfoAuthor" class="omikuji-info-author" onclick="jumpToAuthorFromOmikuji(event)" title="この作者の句を読む"></div>
             </div>
         </div>
 
@@ -931,6 +931,6 @@ function handleRequest(e) {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=3.0.26"></script>
+    <script src="app.js?v=3.0.27"></script>
 </body>
 </html>

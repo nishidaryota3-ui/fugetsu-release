@@ -71,6 +71,8 @@ let currentStep1Season = 'haru';
 
 let omikujiPool = [];
 let omikujiIndex = 0;
+let readFromOmikuji = false;   // おみ句じの作者名から句集へ飛んできた状態か
+let omikujiSavedReadState = null; // 飛ぶ前の { authorFilter, readTab }
 let touchStartX = 0;
 let touchStartY = 0;
 
@@ -366,6 +368,32 @@ function updateHeaderTitle() {
         titleEl.textContent = '全句帳';
     } else {
         titleEl.textContent = `${currentAuthorFilter} 句集`;
+    }
+    updateReadBreadcrumb();
+}
+
+// 読む画面のパンくず。おみ句じの作者名から飛んできたときだけ「home ＜ おみ句じ ＜ ○○ 句集」にする
+function updateReadBreadcrumb() {
+    const bc = document.getElementById('readBreadcrumb');
+    if (!bc) return;
+    const makeSpan = (cls, text, onclick) => {
+        const el = document.createElement('span');
+        el.className = cls;
+        el.textContent = text;
+        if (onclick) el.onclick = onclick;
+        return el;
+    };
+    const sep = () => makeSpan('separator', '<');
+    bc.innerHTML = '';
+    bc.appendChild(makeSpan('link', 'home', goToStartScreen));
+    bc.appendChild(sep());
+    if (readFromOmikuji) {
+        bc.appendChild(makeSpan('link', 'おみ句じ', returnToOmikuji));
+        bc.appendChild(sep());
+        const title = document.getElementById('readTitleText');
+        bc.appendChild(makeSpan('current', title ? title.textContent : ''));
+    } else {
+        bc.appendChild(makeSpan('current', '俳句を読む'));
     }
 }
 
@@ -3448,6 +3476,8 @@ function updateCatVisibility(show) {
 }
 
 function goToStartScreen() {
+    readFromOmikuji = false;
+    omikujiSavedReadState = null;
     updateCatVisibility(true);
     document.querySelectorAll('.step-screen').forEach(el => el.classList.remove('active'));
     document.getElementById('startScreen').classList.add('active');
@@ -3842,6 +3872,8 @@ function triggerRandomOmikuji() {
     }
 
     omikujiIndex = 0;
+    readFromOmikuji = false;
+    omikujiSavedReadState = null;
     hideOmikujiAuthor(); // 最初は答えを隠す（ブラインド）
     renderOmikujiDisplay();
 
@@ -3885,6 +3917,50 @@ function hideOmikujiAuthor() {
     const box = document.getElementById('omikujiInfoBox');
     if (box) box.classList.add('hidden');
     if (btn) btn.classList.remove('hidden');
+}
+
+// 作者名タップ → その作者の完成句一覧へ（戻りは returnToOmikuji）
+function jumpToAuthorFromOmikuji(event) {
+    if (event) event.stopPropagation();
+    const cur = omikujiPool[omikujiIndex];
+    if (!cur) return;
+    const myName = userSettings.authorName || '風月';
+    const author = cur.author || myName;
+
+    omikujiSavedReadState = { authorFilter: currentAuthorFilter, readTab: currentReadTab };
+    readFromOmikuji = true;
+
+    currentAuthorFilter = (author === myName) ? null : author;
+    currentReadTab = '完成句';
+    currentKuchoSingleIndex = 0;
+    document.getElementById('tabKansei').classList.add('active');
+    document.getElementById('tabShitagaki').classList.remove('active');
+
+    const searchInput = document.getElementById('kigoFilterInput');
+    if (searchInput) searchInput.value = '';
+    const clearBtn = document.getElementById('clearKigoFilterBtn');
+    if (clearBtn) clearBtn.classList.add('hidden');
+    collapseSearchIfEmpty();
+
+    startYomuMode();
+}
+
+// 句集からおみ句じへ戻る（飛ぶ前の句・作者の切り替えを復元）
+function returnToOmikuji() {
+    const saved = omikujiSavedReadState;
+    readFromOmikuji = false;
+    omikujiSavedReadState = null;
+    if (saved) {
+        currentAuthorFilter = saved.authorFilter;
+        currentReadTab = saved.readTab;
+        document.getElementById('tabKansei').classList.toggle('active', currentReadTab === '完成句');
+        document.getElementById('tabShitagaki').classList.toggle('active', currentReadTab === '下書き');
+    }
+    currentKuchoSingleIndex = 0;
+    updateHeaderTitle();
+    document.querySelectorAll('.step-screen').forEach(el => el.classList.remove('active'));
+    document.getElementById('omikujiRoomScreen').classList.add('active');
+    updateCatVisibility(false);
 }
 
 function hideOmikujiInfo() {
