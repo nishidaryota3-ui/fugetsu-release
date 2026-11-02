@@ -3476,8 +3476,7 @@ function updateCatVisibility(show) {
 }
 
 function goToStartScreen() {
-    readFromOmikuji = false;
-    omikujiSavedReadState = null;
+    restoreReadStateAfterOmikuji();
     updateCatVisibility(true);
     document.querySelectorAll('.step-screen').forEach(el => el.classList.remove('active'));
     document.getElementById('startScreen').classList.add('active');
@@ -3945,19 +3944,23 @@ function jumpToAuthorFromOmikuji(event) {
     startYomuMode();
 }
 
-// 句集からおみ句じへ戻る（飛ぶ前の句・作者の切り替えを復元）
-function returnToOmikuji() {
+// おみ句じから飛んだ前の「俳句を読む」の状態（作者の切り替え・タブ）に戻す
+function restoreReadStateAfterOmikuji() {
     const saved = omikujiSavedReadState;
     readFromOmikuji = false;
     omikujiSavedReadState = null;
-    if (saved) {
-        currentAuthorFilter = saved.authorFilter;
-        currentReadTab = saved.readTab;
-        document.getElementById('tabKansei').classList.toggle('active', currentReadTab === '完成句');
-        document.getElementById('tabShitagaki').classList.toggle('active', currentReadTab === '下書き');
-    }
+    if (!saved) return;
+    currentAuthorFilter = saved.authorFilter;
+    currentReadTab = saved.readTab;
     currentKuchoSingleIndex = 0;
+    document.getElementById('tabKansei').classList.toggle('active', currentReadTab === '完成句');
+    document.getElementById('tabShitagaki').classList.toggle('active', currentReadTab === '下書き');
     updateHeaderTitle();
+}
+
+// 句集からおみ句じへ戻る（飛ぶ前の句・作者の切り替えを復元）
+function returnToOmikuji() {
+    restoreReadStateAfterOmikuji();
     document.querySelectorAll('.step-screen').forEach(el => el.classList.remove('active'));
     document.getElementById('omikujiRoomScreen').classList.add('active');
     updateCatVisibility(false);
