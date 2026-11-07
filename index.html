@@ -720,6 +720,7 @@
                     <button type="button" class="btn btn-outline" style="padding: 2px 8px; font-size: 0.70rem;" onclick="copyGasCode()">コードをコピー</button>
                 </div>
                 <textarea id="gasScriptCodeBlock" readonly class="gas-code-textarea" style="width: 100%; height: 95px; font-family: monospace; font-size: 0.70rem; padding: 6px; border: 1px solid #ddd; border-radius: 4px; background: #f8f8f8; resize: none;">function doGet(e) {
+  if (e && e.parameter && e.parameter.senku) return handleSenku(e.parameter);
   if (e && e.parameter && e.parameter.action) return handleRequest(e);
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName('俳句集成') || ss.getSheets()[0];
@@ -752,6 +753,38 @@ function handleRequest(e) {
     if (targetRow > 1) sheet.getRange(targetRow, 1, 1, rowData.length).setValues([rowData]);
     else sheet.appendRow(rowData);
     return ContentService.createTextOutput(JSON.stringify({status:'success'})).setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    lock.releaseLock();
+  }
+}
+// ===== 選句の端末間共有（「選句」シートに1件1行で保存）=====
+function handleSenku(p) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sh = ss.getSheetByName('選句') || ss.insertSheet('選句');
+    var out = function(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); };
+    var last = sh.getLastRow();
+    if (p.senku === 'put') {
+      var recs = JSON.parse(p.recs || '[]');
+      var rows = last > 0 ? sh.getRange(1, 1, last, 4).getValues() : [];
+      var rowOf = {}, tsOf = {};
+      for (var i = 0; i < rows.length; i++) { rowOf[rows[i][0]] = i + 1; tsOf[rows[i][0]] = Number(rows[i][3]) || 0; }
+      recs.forEach(function(r) {
+        var vals = [r.id, r.kind, JSON.stringify(r.data), r.ts, r.del ? 1 : 0];
+        if (rowOf[r.id]) {
+          if (r.ts >= tsOf[r.id]) sh.getRange(rowOf[r.id], 1, 1, 5).setValues([vals]);
+        } else {
+          sh.appendRow(vals);
+          rowOf[r.id] = sh.getLastRow();
+          tsOf[r.id] = r.ts;
+        }
+      });
+      return out({senku: true, status: 'ok'});
+    }
+    var all = last > 0 ? sh.getRange(1, 1, last, 5).getValues() : [];
+    return out({senku: true, rows: all});
   } finally {
     lock.releaseLock();
   }
@@ -1001,7 +1034,7 @@ function handleRequest(e) {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=3.0.29"></script>
-    <script src="senku.js?v=3.0.29"></script>
+    <script src="app.js?v=3.0.30"></script>
+    <script src="senku.js?v=3.0.30"></script>
 </body>
 </html>

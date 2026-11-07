@@ -3516,6 +3516,7 @@ function switchReadTab(status) {
     currentKuchoSingleIndex = 0;
     syncReadTabClasses();
     renderYomuList();
+    if (status === '選句' && typeof syncSenkuWithCloud === 'function') syncSenkuWithCloud({ announce: true });
 }
 
 function syncReadTabClasses() {
