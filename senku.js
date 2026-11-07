@@ -301,7 +301,7 @@ function senkuLongPress(el, h) {
 
 // 長押し → 上へスワイプで「入選」
 function attachSenkuAddGesture(el, getPhrase) {
-    const THRESH = 60;
+    const THRESH = 45;
     const reset = () => {
         el.classList.remove('senku-armed', 'senku-ready');
         el.style.transform = '';
@@ -313,8 +313,9 @@ function attachSenkuAddGesture(el, getPhrase) {
             el.style.transform = `translateY(${-Math.min(up, 90)}px)`;
             el.classList.toggle('senku-ready', up >= THRESH);
         },
-        onEnd({ dx, dy, cancelled }) {
-            const ok = !cancelled && -dy >= THRESH && Math.abs(dy) > Math.abs(dx);
+        onEnd({ dx, dy }) {
+            // スマホのブラウザが途中で操作を取り消した（cancelled）場合でも、十分に上へ動いていれば入選にする
+            const ok = -dy >= THRESH && Math.abs(dy) > Math.abs(dx);
             reset();
             if (ok) addToSenku(getPhrase());
         }

@@ -1876,6 +1876,8 @@ body.large-text-mode #previewPhrase.extra-long-phrase {
    📝 選句
    ======================================================== */
 .saijiki-haiku-card {
+    /* 縦方向の操作はブラウザに奪わせない（長押し→上スワイプの入選を、スマホで途中で取り消されないように） */
+    touch-action: pan-x;
     -webkit-user-select: none; user-select: none;
     -webkit-touch-callout: none;
     -webkit-tap-highlight-color: transparent;
@@ -1901,3 +1903,4 @@ body.large-text-mode #previewPhrase.extra-long-phrase {
 .senku-archive-empty { color: #888; font-size: 0.9rem; padding: 16px 0; }
 .senku-view-card { max-width: 720px; width: 94vw; }
 .senku-view-list { display: flex; flex-direction: row-reverse; justify-content: flex-start; align-items: center; width: 100%; height: 45vh; overflow-x: auto; overflow-y: hidden; }
+#readSingleContainer .haiku-screen { touch-action: none; }
