@@ -1,10 +1,11 @@
-const CACHE_NAME = 'fugetsu-release-v128';
+const CACHE_NAME = 'fugetsu-release-v129';
 
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './style.css',
   './app.js',
+  './senku.js',
   './manifest.json',
   './icon.png',
   './icon-192.png',

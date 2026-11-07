@@ -1872,3 +1872,32 @@ body.large-text-mode #previewPhrase.extra-long-phrase {
     opacity: 0.6;
 }
 
+/* ========================================================
+   📝 選句
+   ======================================================== */
+.saijiki-haiku-card {
+    -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+}
+.saijiki-haiku-card.senku-armed,
+.haiku-screen.senku-armed { opacity: 0.85; filter: drop-shadow(0 6px 10px rgba(0,0,0,0.18)); }
+.saijiki-haiku-card.senku-ready,
+.haiku-screen.senku-ready { opacity: 1; filter: drop-shadow(0 8px 14px rgba(120,150,100,0.55)); }
+.saijiki-haiku-card.senku-dragging { opacity: 0.7; background: rgba(0,0,0,0.04); border-radius: 8px; }
+
+.senku-bar { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 0 0 4px; font-size: 0.85rem; z-index: 50; position: relative; }
+.senku-count { color: #5c564d; letter-spacing: 0.08em; }
+.senku-empty { margin: auto; padding: 0 20px; max-width: 320px; text-align: center; color: #888; font-size: 0.9rem; line-height: 1.8; }
+.senku-note { font-size: 0.8rem; color: #777; line-height: 1.7; margin: 0; }
+.senku-form-row { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
+.senku-year-input { width: 90px !important; text-align: center; }
+.senku-month-select { width: 64px !important; text-align: center; }
+.senku-archive-list { display: flex; flex-direction: column; width: 100%; max-height: 55vh; overflow-y: auto; }
+.senku-archive-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 6px; border-bottom: 1px solid #ede8e1; cursor: pointer; text-align: left; }
+.senku-archive-row:active { opacity: 0.6; }
+.senku-archive-title { color: #2b2b2b; font-size: 0.95rem; letter-spacing: 0.05em; }
+.senku-archive-count { color: #8c8476; font-size: 0.8rem; white-space: nowrap; }
+.senku-archive-empty { color: #888; font-size: 0.9rem; padding: 16px 0; }
+.senku-view-card { max-width: 720px; width: 94vw; }
+.senku-view-list { display: flex; flex-direction: row-reverse; justify-content: flex-start; align-items: center; width: 100%; height: 45vh; overflow-x: auto; overflow-y: hidden; }

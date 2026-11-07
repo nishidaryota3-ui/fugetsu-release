@@ -766,7 +766,7 @@ function openAuthorSelectModal() {
     let totalCount = 0;
 
     haikuHistory.forEach(h => {
-        if (h.status === currentReadTab) {
+        if (h.status === (currentReadTab === '選句' ? '完成句' : currentReadTab)) {
             const a = h.author || myName;
             authorCounts[a] = (authorCounts[a] || 0) + 1;
             if (h.authorKana && !authorKanaMap[a]) {
@@ -3514,9 +3514,15 @@ function startYomuMode(preserveScroll = false) {
 function switchReadTab(status) {
     currentReadTab = status;
     currentKuchoSingleIndex = 0;
-    document.getElementById('tabKansei').classList.toggle('active', status === '完成句');
-    document.getElementById('tabShitagaki').classList.toggle('active', status === '下書き');
+    syncReadTabClasses();
     renderYomuList();
+}
+
+function syncReadTabClasses() {
+    [['tabKansei', '完成句'], ['tabShitagaki', '下書き'], ['tabSenku', '選句']].forEach(([id, status]) => {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('active', currentReadTab === status);
+    });
 }
 
 function expandSearchInput() {
@@ -3564,6 +3570,13 @@ function applyPhraseLengthClass(element, text) {
 function renderYomuList(preserveScroll = false) {
     const container = document.getElementById('readHaikuList');
     if (!container) return;
+    if (currentReadTab === '選句' && typeof renderSenkuTab === 'function') {
+        renderSenkuTab(preserveScroll);
+        return;
+    }
+    const senkuBarEl = document.getElementById('senkuBar');
+    if (senkuBarEl) senkuBarEl.classList.add('hidden');
+
     const savedScrollLeft = preserveScroll ? container.scrollLeft : null;
     container.innerHTML = '';
 
@@ -3660,6 +3673,7 @@ function renderYomuList(preserveScroll = false) {
         const card = document.createElement('div');
         card.className = 'saijiki-haiku-card';
         card.onclick = () => window.onHaikuCardClicked(item); 
+        if (typeof attachSenkuAddGesture === 'function') attachSenkuAddGesture(card, () => item.phrase);
         
         const phraseDiv = document.createElement('div');
         phraseDiv.className = 'saijiki-phrase';
@@ -3757,6 +3771,8 @@ window.onHaikuCardClicked = function(haikuObj) {
         actionsContainer.innerHTML = `
             <span class="text-action-btn primary" onclick="editSelectedHaiku()">修正</span>
             <span class="action-divider">|</span>
+            <span class="text-action-btn" onclick="addSelectedHaikuToSenku()">入選</span>
+            <span class="action-divider">|</span>
             <span class="text-action-btn" onclick="changeHaikuStatus('下書き')">下書きへ</span>
             <span class="action-divider">|</span>
             <span class="text-action-btn danger" onclick="deleteSelectedDraft()">削除</span>
@@ -3764,6 +3780,8 @@ window.onHaikuCardClicked = function(haikuObj) {
     } else {
         actionsContainer.innerHTML = `
             <span class="text-action-btn primary" onclick="editSelectedHaiku()">修正</span>
+            <span class="action-divider">|</span>
+            <span class="text-action-btn" onclick="addSelectedHaikuToSenku()">入選</span>
             <span class="action-divider">|</span>
             <span class="text-action-btn" onclick="changeHaikuStatus('完成句')">完成句へ</span>
             <span class="action-divider">|</span>
@@ -3932,8 +3950,7 @@ function jumpToAuthorFromOmikuji(event) {
     currentAuthorFilter = (author === myName) ? null : author;
     currentReadTab = '完成句';
     currentKuchoSingleIndex = 0;
-    document.getElementById('tabKansei').classList.add('active');
-    document.getElementById('tabShitagaki').classList.remove('active');
+    syncReadTabClasses();
 
     const searchInput = document.getElementById('kigoFilterInput');
     if (searchInput) searchInput.value = '';
@@ -3953,8 +3970,7 @@ function restoreReadStateAfterOmikuji() {
     currentAuthorFilter = saved.authorFilter;
     currentReadTab = saved.readTab;
     currentKuchoSingleIndex = 0;
-    document.getElementById('tabKansei').classList.toggle('active', currentReadTab === '完成句');
-    document.getElementById('tabShitagaki').classList.toggle('active', currentReadTab === '下書き');
+    syncReadTabClasses();
     updateHeaderTitle();
 }
 
@@ -3984,7 +4000,7 @@ function initKeyboardEvents() {
 
         // 📖 句帳（一句ずつ表示モード）でのキーボード操作
         const readScreen = document.getElementById('readScreen');
-        if (readScreen && readScreen.classList.contains('active') && userSettings.kuchoDisplayMode === 'single') {
+        if (readScreen && readScreen.classList.contains('active') && userSettings.kuchoDisplayMode === 'single' && currentReadTab !== '選句') {
             if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
                 e.preventDefault();
                 changeKuchoSingleHaiku(1);

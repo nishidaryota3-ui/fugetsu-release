@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png?v=3.0.23">
     <link rel="manifest" href="manifest.json?v=3.0.23">
 
-    <link rel="stylesheet" href="style.css?v=3.0.27">
+    <link rel="stylesheet" href="style.css?v=3.0.29">
 </head>
 <body>
 
@@ -103,6 +103,17 @@
             <span id="tabKansei" class="text-tab active" onclick="switchReadTab('完成句')">完成句</span>
             <span class="text-tab-divider">｜</span>
             <span id="tabShitagaki" class="text-tab" onclick="switchReadTab('下書き')">下書き</span>
+            <span class="text-tab-divider">｜</span>
+            <span id="tabSenku" class="text-tab" onclick="switchReadTab('選句')">選句</span>
+        </div>
+
+        <!-- 📝 選句タブ用の操作バー -->
+        <div id="senkuBar" class="senku-bar hidden">
+            <span id="senkuCount" class="senku-count"></span>
+            <span class="action-divider">|</span>
+            <span class="text-action-btn primary" onclick="openSenkuSaveModal()">選句を保存</span>
+            <span class="action-divider">|</span>
+            <span class="text-action-btn" onclick="openSenkuArchiveList()">過去の選句</span>
         </div>
 
         <!-- スクロール一覧表示 -->
@@ -337,6 +348,65 @@
             <span class="modal-close-corner" onclick="closeHaikuDetailModal()">✕</span>
             <div id="modalPhrase" class="modal-phrase-single-line"></div>
             <div id="modalActions" class="modal-text-actions"></div>
+        </div>
+    </div>
+
+    <!-- 📝 選句：句の修正 -->
+    <div id="senkuEditModal" class="card-overlay hidden" onclick="closeSenkuEditModal()">
+        <div class="modal-card-content" onclick="event.stopPropagation()">
+            <span class="modal-close-corner" onclick="closeSenkuEditModal()">✕</span>
+            <h3 class="modal-title">選句の句を修正</h3>
+            <p class="senku-note">ここで直しても、完成句・下書きの句には影響しません。<br>ルビは ｜漢字《かんじ》 の形で入力できます。</p>
+            <textarea id="senkuEditInput" class="text-input" rows="3" style="resize: none;"></textarea>
+            <div class="btn-group">
+                <button class="btn btn-outline" onclick="closeSenkuEditModal()">キャンセル</button>
+                <button class="btn" onclick="submitSenkuEdit()">修正する</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📝 選句：保存（年・月・サブタイトル）／題名の変更 -->
+    <div id="senkuSaveModal" class="card-overlay hidden" onclick="closeSenkuSaveModal()">
+        <div class="modal-card-content" onclick="event.stopPropagation()">
+            <span class="modal-close-corner" onclick="closeSenkuSaveModal()">✕</span>
+            <h3 id="senkuSaveTitle" class="modal-title">選句を保存</h3>
+            <p id="senkuSaveNote" class="senku-note"></p>
+            <div class="senku-form-row">
+                <input type="number" id="senkuYearInput" class="text-input senku-year-input" min="1900" max="2999" inputmode="numeric">
+                <span>年</span>
+                <select id="senkuMonthSelect" class="text-input senku-month-select"></select>
+                <span>月</span>
+            </div>
+            <input type="text" id="senkuSubtitleInput" class="text-input" placeholder="サブタイトル（例：うてな投句用）" autocomplete="off">
+            <div class="btn-group">
+                <button class="btn btn-outline" onclick="closeSenkuSaveModal()">キャンセル</button>
+                <button id="senkuSaveSubmit" class="btn" onclick="submitSenkuSave()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📝 選句：過去の選句の一覧 -->
+    <div id="senkuArchiveListModal" class="card-overlay hidden" onclick="closeSenkuArchiveList()">
+        <div class="modal-card-content" onclick="event.stopPropagation()">
+            <span class="modal-close-corner" onclick="closeSenkuArchiveList()">✕</span>
+            <h3 class="modal-title">過去の選句</h3>
+            <div id="senkuArchiveList" class="senku-archive-list"></div>
+        </div>
+    </div>
+
+    <!-- 📝 選句：保存した選句を読む -->
+    <div id="senkuArchiveViewModal" class="card-overlay hidden" onclick="closeSenkuArchiveView()">
+        <div class="modal-card-content senku-view-card" onclick="event.stopPropagation()">
+            <span class="modal-close-corner" onclick="closeSenkuArchiveView()">✕</span>
+            <h3 id="senkuViewTitle" class="modal-title"></h3>
+            <div id="senkuViewList" class="senku-view-list"></div>
+            <div class="modal-text-actions">
+                <span class="text-action-btn" onclick="backToSenkuArchiveList()">一覧へ</span>
+                <span class="action-divider">|</span>
+                <span class="text-action-btn" onclick="renameViewingSenkuArchive()">題名を変更</span>
+                <span class="action-divider">|</span>
+                <span class="text-action-btn danger" onclick="deleteViewingSenkuArchive()">削除</span>
+            </div>
         </div>
     </div>
 
@@ -931,6 +1001,7 @@ function handleRequest(e) {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=3.0.28"></script>
+    <script src="app.js?v=3.0.29"></script>
+    <script src="senku.js?v=3.0.29"></script>
 </body>
 </html>
