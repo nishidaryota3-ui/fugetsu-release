@@ -461,7 +461,7 @@ function renderSenkuTab(preserveScroll = false) {
         msg.className = 'senku-empty';
         if (group) msg.textContent = '句群は空です。';
         else if (box) msg.textContent = '箱は空です。句群の句を、上の箱の名前へドラッグして入れてください。';
-        else msg.textContent = '句群はまだありません。上の「句群」の「＋」で期間を決めて句を集めるか、完成句を長押しして上へスワイプしてください。';
+        else msg.textContent = '句群はまだありません。上の「句群」の「＋」で期間を決めて句を集めるか、完成句を上へスワイプしてください。';
         scroll.appendChild(msg);
         return;
     }
@@ -500,6 +500,8 @@ function renderSenkuTab(preserveScroll = false) {
 // 長押しジェスチャー（タッチ・マウス共通）
 //   長押し（約0.45秒、動かさない）で「つかんだ」状態になり、そのあと動かす
 //   instantMouse: マウスのときは、長押しせず、動かし始めたらすぐ「つかんだ」状態にする
+//   instantVertical: タッチのとき、はっきり縦に動かし始めたら、長押しせずすぐ「つかんだ」状態にする
+//                    （横に動かし始めたときは、ふつうのスクロールに任せる）
 // ========================================================
 function senkuLongPress(el, h) {
     const HOLD_MS = 450;
@@ -513,9 +515,9 @@ function senkuLongPress(el, h) {
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
     };
-    const arm = () => {
+    const arm = (instant) => {
         armed = true;
-        try { if (navigator.vibrate && !byMouse) navigator.vibrate(15); } catch (_) {}
+        try { if (navigator.vibrate && !byMouse && !instant) navigator.vibrate(15); } catch (_) {}
         if (h.onArm) h.onArm({ x: lx, y: ly });
     };
     const finish = (cancelled) => {
@@ -561,7 +563,9 @@ function senkuLongPress(el, h) {
             if (Math.abs(lx - sx) > SLOP || Math.abs(ly - sy) > SLOP) {
                 clearTimer();
                 if (h.instantMouse && byMouse) {
-                    arm();   // マウスは、動かし始めたらすぐ「つかんだ」状態にする
+                    arm(true);   // マウスは、動かし始めたらすぐ「つかんだ」状態にする
+                } else if (h.instantVertical && !byMouse && Math.abs(ly - sy) > Math.abs(lx - sx) * 1.5) {
+                    arm(true);   // タッチは、はっきり縦に動かしたときだけ、すぐ「つかんだ」状態にする
                 } else {
                     // 長押しになる前に動いた → ふつうのスクロール／タップとして任せる
                     active = false;
@@ -595,7 +599,7 @@ function senkuLongPress(el, h) {
     }, true);
 }
 
-// 読む画面：長押し → 上へスワイプで「入選」
+// 読む画面：上へスワイプで「入選」
 function attachSenkuAddGesture(el, getPhrase) {
     const THRESH = 45;
     const reset = () => {
@@ -603,6 +607,7 @@ function attachSenkuAddGesture(el, getPhrase) {
         el.style.transform = '';
     };
     senkuLongPress(el, {
+        instantVertical: true,
         onArm() { el.classList.add('senku-armed'); },
         onMove({ dy }) {
             const up = Math.max(0, -dy);
@@ -618,7 +623,7 @@ function attachSenkuAddGesture(el, getPhrase) {
     });
 }
 
-// 句群の中の句：つかんで、上にある箱の名前（または「＋」）へドラッグして入れる
+// 句群の中の句：上へスワイプして（または長押ししてつかんで）、上にある箱の名前（または「＋」）へ運んで入れる
 function attachSenkuGroupCardGestures(card, item) {
     let ghost = null, hover = null;
     const bar = () => document.getElementById('senkuBar');
@@ -643,6 +648,7 @@ function attachSenkuGroupCardGestures(card, item) {
 
     senkuLongPress(card, {
         instantMouse: true,
+        instantVertical: true,
         onArm() {
             const r = card.getBoundingClientRect();
             ghost = card.cloneNode(true);
@@ -667,7 +673,7 @@ function attachSenkuGroupCardGestures(card, item) {
     });
 }
 
-// 箱の中の句：つかんで、横へドラッグで並べ替え ／ 上か下へ引き出すと箱から外れる
+// 箱の中の句：上か下へスワイプすると箱から外れる ／ 長押ししてから横へドラッグで並べ替え
 function attachSenkuBoxCardGestures(card, container, orderIds, initialIds, item) {
     const THRESH = 45;
     let dragging = false, mode = null, pointerX = 0, lastSwapX = null, rafId = null;
@@ -692,6 +698,7 @@ function attachSenkuBoxCardGestures(card, container, orderIds, initialIds, item)
 
     senkuLongPress(card, {
         instantMouse: true,
+        instantVertical: true,
         onArm({ x }) {
             dragging = true;
             mode = null;
@@ -1256,7 +1263,7 @@ document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') syncSenkuWithCloud();
 });
 
-// 「一句ずつ表示」モードの句にも、長押し→上スワイプの入選を付ける
+// 「一句ずつ表示」モードの句にも、上スワイプの入選を付ける
 (function initSenkuSingleModeGesture() {
     const el = document.querySelector('#readSingleContainer .haiku-screen');
     if (!el) return;
