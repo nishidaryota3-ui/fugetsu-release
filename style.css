@@ -1890,14 +1890,26 @@ body.large-text-mode #previewPhrase.extra-long-phrase {
 
 /* 選句：タイトル（作者切り替え）は選句では使わないので隠し、その場所を段階の見出しにする */
 #readScreen.senku-mode #readTitleCenter { display: none; }
-.senku-stage-bar { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 4px 0 6px; font-size: 0.85rem; z-index: 50; position: relative; }
-.senku-stage { cursor: pointer; color: #8c8476; padding-bottom: 2px; border-bottom: 1px solid transparent; letter-spacing: 0.06em; white-space: nowrap; transition: color 0.2s, border-color 0.2s; }
-.senku-stage .n { margin-left: 4px; font-size: 0.72rem; color: #a8a193; }
-.senku-stage.active { color: #2b2b2b; border-bottom-color: #2b2b2b; }
-.senku-stage.active .n { color: #5c564d; }
+.senku-stage-bar { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 4px 0 6px; padding: 0 12px; font-size: 0.85rem; z-index: 50; position: relative; max-width: 100%; }
+.senku-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 14px; }
+.senku-row-label { color: #a8a193; font-size: 0.72rem; letter-spacing: 0.1em; }
+.senku-chip { cursor: pointer; color: #8c8476; padding-bottom: 2px; border-bottom: 1px solid transparent; letter-spacing: 0.06em; white-space: nowrap; max-width: 12em; overflow: hidden; text-overflow: ellipsis; transition: color 0.2s, border-color 0.2s; }
+.senku-chip .n { margin-left: 4px; font-size: 0.72rem; color: #a8a193; }
+.senku-chip.active { color: #2b2b2b; border-bottom-color: #2b2b2b; }
+.senku-chip.active .n { color: #5c564d; }
+.senku-more { cursor: pointer; color: #8c8476; padding: 0 2px; margin-left: -8px; }
+.senku-add { cursor: pointer; color: #8c8476; border: 1px dashed #c9c3b6; border-radius: 10px; padding: 0 9px; line-height: 1.4; }
+/* 句をつかんでいる間、入れる先（箱の名前と「＋」）を点線で示す */
+.senku-dropping [data-drop] { outline: 1px dashed #a8a193; outline-offset: 3px; border-radius: 4px; }
+.senku-dropping .senku-drop-hover { outline: 1px solid #6d8a5a; background: rgba(120, 150, 100, 0.22); }
+.senku-card { user-select: none; -webkit-user-select: none; }
+.senku-card.senku-lifted { opacity: 0.25; }
+.senku-ghost { position: fixed; z-index: 9999; pointer-events: none; margin: 0 !important; order: 0 !important; opacity: 0.92; background: #faf8f3; border-radius: 8px; filter: drop-shadow(0 8px 14px rgba(0,0,0,0.25)); }
+.senku-card.senku-ready { opacity: 0.5; filter: none; }
+.senku-menu-danger { color: #b04a3a; }
 .senku-actions { position: fixed; left: 0; right: 0; bottom: calc(16px + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 0.85rem; z-index: 60; }
-/* 次の段階へ進んだ句には、右に細い傍線をつける */
-.saijiki-haiku-card.senku-passed .saijiki-phrase { border-right: 1px solid #a8a193; padding-right: 8px; }
+/* どれかの箱に入れた句には、右に細い傍線をつける */
+.saijiki-haiku-card.senku-boxed .saijiki-phrase { border-right: 1px solid #a8a193; padding-right: 8px; }
 .senku-date-input { flex: 1; min-width: 0; width: auto !important; }
 .senku-check { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: #5c564d; cursor: pointer; }
 .senku-empty { margin: auto; padding: 0 20px; max-width: 320px; text-align: center; color: #888; font-size: 0.9rem; line-height: 1.8; }

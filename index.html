@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png?v=3.0.23">
     <link rel="manifest" href="manifest.json?v=3.0.23">
 
-    <link rel="stylesheet" href="style.css?v=3.0.34">
+    <link rel="stylesheet" href="style.css?v=3.0.35">
 </head>
 <body>
 
@@ -107,7 +107,7 @@
             <span id="tabSenku" class="text-tab" onclick="switchReadTab('選句')">選句</span>
         </div>
 
-        <!-- 📝 選句タブ用：選考の段階（一次・二次・三次・最終） -->
+        <!-- 📝 選句タブ用：句群と箱の名前の一覧（箱の名前は、句をドラッグして入れる先にもなる） -->
         <div id="senkuBar" class="senku-stage-bar hidden"></div>
 
         <!-- スクロール一覧表示 -->
@@ -116,10 +116,8 @@
 
         <!-- 📝 選句タブ用の操作（画面の下に置く） -->
         <div id="senkuActions" class="senku-actions hidden">
-            <span class="text-action-btn" onclick="openSenkuRangeModal()">範囲で入選</span>
-            <span class="action-divider">|</span>
-            <span class="text-action-btn primary" onclick="openSenkuSaveModal()">選句を保存</span>
-            <span class="action-divider">|</span>
+            <span id="senkuSaveBtn" class="text-action-btn primary" onclick="openSenkuSaveModal()">この箱を保存</span>
+            <span id="senkuSaveDivider" class="action-divider">|</span>
             <span class="text-action-btn" onclick="openSenkuArchiveList()">過去の選句</span>
         </div>
 
@@ -372,7 +370,7 @@
     <div id="senkuSaveModal" class="card-overlay hidden" onclick="closeSenkuSaveModal()">
         <div class="modal-card-content" onclick="event.stopPropagation()">
             <span class="modal-close-corner" onclick="closeSenkuSaveModal()">✕</span>
-            <h3 id="senkuSaveTitle" class="modal-title">選句を保存</h3>
+            <h3 id="senkuSaveTitle" class="modal-title">箱を保存</h3>
             <p id="senkuSaveNote" class="senku-note"></p>
             <div class="senku-form-row">
                 <input type="number" id="senkuYearInput" class="text-input senku-year-input" min="1900" max="2999" inputmode="numeric">
@@ -381,7 +379,6 @@
                 <span>月</span>
             </div>
             <input type="text" id="senkuSubtitleInput" class="text-input" placeholder="サブタイトル（例：うてな投句用）" autocomplete="off">
-            <label id="senkuClearRestRow" class="senku-check"><input type="checkbox" id="senkuClearRest"> 残りの句も選句から外す</label>
             <div class="btn-group">
                 <button class="btn btn-outline" onclick="closeSenkuSaveModal()">キャンセル</button>
                 <button id="senkuSaveSubmit" class="btn" onclick="submitSenkuSave()">保存</button>
@@ -389,22 +386,32 @@
         </div>
     </div>
 
-    <!-- 📝 選句：範囲で入選 -->
+    <!-- 📝 選句：範囲で句群を作る -->
     <div id="senkuRangeModal" class="card-overlay hidden" onclick="closeSenkuRangeModal()">
         <div class="modal-card-content" onclick="event.stopPropagation()">
             <span class="modal-close-corner" onclick="closeSenkuRangeModal()">✕</span>
-            <h3 class="modal-title">範囲で入選</h3>
-            <p class="senku-note">作句日がこの期間にある自分の完成句を、まとめて選句（一次）に入れます。</p>
+            <h3 class="modal-title">範囲で句群を作る</h3>
+            <p class="senku-note">作句日がこの期間にある自分の完成句を集めて、句群を作ります。</p>
             <div class="senku-form-row">
                 <input type="date" id="senkuRangeStart" class="text-input senku-date-input" onchange="updateSenkuRangePreview()">
                 <span>〜</span>
                 <input type="date" id="senkuRangeEnd" class="text-input senku-date-input" onchange="updateSenkuRangePreview()">
             </div>
+            <input type="text" id="senkuRangeName" class="text-input" placeholder="句群の名前" autocomplete="off" oninput="_senkuRangeNameEdited = true">
             <p id="senkuRangePreview" class="senku-note"></p>
             <div class="btn-group">
                 <button class="btn btn-outline" onclick="closeSenkuRangeModal()">キャンセル</button>
-                <button id="senkuRangeSubmit" class="btn" onclick="submitSenkuRange()">入選する</button>
+                <button id="senkuRangeSubmit" class="btn" onclick="submitSenkuRange()">句群を作る</button>
             </div>
+        </div>
+    </div>
+
+    <!-- 📝 選句：小さなメニュー（箱の選択・名前の変更など） -->
+    <div id="senkuMenuModal" class="card-overlay hidden" onclick="closeSenkuMenu()">
+        <div class="modal-card-content" onclick="event.stopPropagation()">
+            <span class="modal-close-corner" onclick="closeSenkuMenu()">✕</span>
+            <h3 id="senkuMenuTitle" class="modal-title"></h3>
+            <div id="senkuMenuList" class="senku-archive-list"></div>
         </div>
     </div>
 
@@ -425,6 +432,8 @@
             <div id="senkuViewList" class="senku-view-list"></div>
             <div class="modal-text-actions">
                 <span class="text-action-btn" onclick="backToSenkuArchiveList()">一覧へ</span>
+                <span class="action-divider">|</span>
+                <span class="text-action-btn primary" onclick="restoreViewingSenkuArchive()">箱に戻す</span>
                 <span class="action-divider">|</span>
                 <span class="text-action-btn" onclick="renameViewingSenkuArchive()">題名を変更</span>
                 <span class="action-divider">|</span>
@@ -1057,7 +1066,7 @@ function handleSenku(p) {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=3.0.32"></script>
-    <script src="senku.js?v=3.0.32"></script>
+    <script src="app.js?v=3.0.35"></script>
+    <script src="senku.js?v=3.0.35"></script>
 </body>
 </html>
