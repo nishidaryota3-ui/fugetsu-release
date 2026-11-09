@@ -1914,3 +1914,6 @@ body.large-text-mode #previewPhrase.extra-long-phrase {
 .senku-view-card { max-width: 720px; width: 94vw; }
 .senku-view-list { display: flex; flex-direction: row-reverse; justify-content: flex-start; align-items: center; width: 100%; height: min(62vh, 560px); overflow-x: auto; overflow-y: hidden; }
 #readSingleContainer .haiku-screen { touch-action: none; }
+/* 句が少ないときは中央に寄せ、多いときは左右にスクロールする（端の自動余白は、あふれたときは0になる） */
+.senku-view-list > :first-child { margin-right: auto; }
+.senku-view-list > :last-child { margin-left: auto; }
