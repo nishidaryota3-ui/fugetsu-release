@@ -1,28 +1,21 @@
 // ========================================================
-// 📝 選句（句群から、いくつでも作れる「箱」へ句を振り分けて、投句用の句を選ぶ機能）
-//   ・句群：期間で集めた句、または「入選」で拾った句の集まり（元の句のコピー）
-//   ・箱　：句群から句をドラッグして入れる入れ物。いくつでも作れ、同じ句を複数の箱に入れられる
-//   ・箱を「保存」すると、年月＋サブタイトル付きの記録になる（過去の選句から箱に戻せる）
-//   ・どの句も元の句（完成句・下書き）とは独立しているので、直したり外したりしても元には影響しない
+// 📝 選句（投句用に句をストックする機能）
+//   ・句帳の完成句／下書きの句を「入選」でコピーしてためる（元の句はそのまま）
+//   ・選句の中の句は元の句とは独立（修正・除外しても元に影響しない）
+//   ・「選句を保存」で年月＋サブタイトル付きの記録にして、選句を空に戻す
 // ========================================================
-const STORAGE_KEY_SENKU = 'fugetsu_release_senku2';
-const OLD_STORAGE_KEY_SENKU = 'fugetsu_release_senku';   // 旧方式（一次〜最終）のデータ。使わなくなったので消す
+const STORAGE_KEY_SENKU = 'fugetsu_release_senku';
 
-// どの記録にも id / ts（最後に変更した時刻）/ del（削除済みの印。端末間で削除を正しく伝えるため消さずに残す）がある
-//   groups   : 句群       {k:'group', id, name, auto('nyusen'＝「入選」の句群 / ''), pos}
-//   gitems   : 句群の句   {k:'gitem', id, gid, phrase, pos}
-//   boxes    : 箱         {k:'box', id, name, pos}
-//   bitems   : 箱の句     {k:'bitem', id, bid, phrase, pos}
-//   archives : 保存済み   {k:'sarch', id, year, month, subtitle, savedAt}
-//   sitems   : 保存済みの句 {k:'sitem', id, aid, phrase, pos}（1句ずつ別の記録なので、句数に上限はない）
-let senkuData = { groups: [], gitems: [], boxes: [], bitems: [], archives: [], sitems: [] };
-const SENKU_COLLECTIONS = { group: 'groups', gitem: 'gitems', box: 'boxes', bitem: 'bitems', sarch: 'archives', sitem: 'sitems' };
-
-let senkuView = null;   // いま開いている句群／箱 { type: 'group' | 'box', id }
+// items: 選句中の句 [{id, phrase, pos, lv, ts, del}]（pos の昇順が表示順。縦書きなので先頭が右端）
+// archives: 保存済みの選句 [{id, year, month, subtitle, phrases:[string], savedAt, ts, del}]
+//   ts = 最後に変更した時刻、del = 削除済みの印（端末間で削除を正しく伝えるため、消さずに残す）
+let senkuData = { items: [], archives: [] };
+// 選考の段階：lv が 2 以上なら一次を、3 以上なら二次を…通過した句（最終は lv=4）
+const SENKU_STAGES = ['一次', '二次', '三次', '最終'];
+let currentSenkuStage = 1;   // いま開いている段階タブ（1〜4）。その段階以上の句が見える
 let activeSenkuItem = null;
 let editingSenkuArchiveId = null;
 let viewingSenkuArchiveId = null;
-let savingSenkuBoxId = null;
 
 // 同じ瞬間に何百件も作っても番号がかぶらないよう、連番と長めの乱数を混ぜる
 let _senkuIdSeq = 0;
@@ -31,33 +24,31 @@ function newSenkuId() {
     return 's' + Date.now().toString(36) + _senkuIdSeq.toString(36).padStart(3, '0') + Math.random().toString(36).slice(2, 7);
 }
 
-// 記録を読み込み用の形に整える。種類が分からなければ null
-function senkuNormalize(kind, x, base) {
-    const o = { k: kind, id: x.id || newSenkuId(), ts: Number(x.ts) || base || 0, del: !!x.del };
-    const pos = typeof x.pos === 'number' ? x.pos : (Number(x.pos) || 0);
-    switch (kind) {
-        case 'group': return Object.assign(o, { name: x.name || '', auto: x.auto || '', pos: pos });
-        case 'gitem': return Object.assign(o, { gid: x.gid || '', phrase: x.phrase || '', pos: pos });
-        case 'box': return Object.assign(o, { name: x.name || '', pos: pos });
-        case 'bitem': return Object.assign(o, { bid: x.bid || '', phrase: x.phrase || '', pos: pos });
-        case 'sarch': return Object.assign(o, { year: x.year, month: x.month, subtitle: x.subtitle || '', savedAt: x.savedAt || 0 });
-        case 'sitem': return Object.assign(o, { aid: x.aid || '', phrase: x.phrase || '', pos: pos });
-        default: return null;
-    }
-}
-
 function loadSenkuData() {
-    try {
-        localStorage.removeItem(OLD_STORAGE_KEY_SENKU);
-    } catch (e) { /* ignore */ }
     try {
         const raw = localStorage.getItem(STORAGE_KEY_SENKU);
         if (!raw) return;
         const d = JSON.parse(raw);
-        Object.keys(SENKU_COLLECTIONS).forEach(kind => {
-            const key = SENKU_COLLECTIONS[kind];
-            senkuData[key] = (Array.isArray(d[key]) ? d[key] : []).map(x => senkuNormalize(kind, x, Date.now())).filter(Boolean);
-        });
+        const base = d.updatedAt || Date.now();
+        const rawItems = Array.isArray(d.items) ? d.items : (Array.isArray(d.current) ? d.current : []);
+        senkuData.items = rawItems.map((x, i) => ({
+            id: x.id || newSenkuId(),
+            phrase: x.phrase || '',
+            pos: typeof x.pos === 'number' ? x.pos : i,
+            lv: Math.min(4, Math.max(1, Number(x.lv) || 1)),
+            ts: x.ts || base,
+            del: !!x.del
+        }));
+        senkuData.archives = (Array.isArray(d.archives) ? d.archives : []).map(a => ({
+            id: a.id || newSenkuId(),
+            year: a.year,
+            month: a.month,
+            subtitle: a.subtitle || '',
+            phrases: Array.isArray(a.phrases) ? a.phrases : [],
+            savedAt: a.savedAt || 0,
+            ts: a.ts || a.savedAt || base,
+            del: !!a.del
+        }));
     } catch (e) {
         console.error('Failed to load senku:', e);
     }
@@ -71,52 +62,20 @@ function saveSenkuData() {
     }
 }
 
-const senkuByPos = (a, b) => (a.pos - b.pos) || (a.id < b.id ? -1 : 1);
-
-function senkuGroups() { return senkuData.groups.filter(x => !x.del).sort(senkuByPos); }
-function senkuBoxes() { return senkuData.boxes.filter(x => !x.del).sort(senkuByPos); }
-function senkuGroupItems(gid) { return senkuData.gitems.filter(x => !x.del && x.gid === gid).sort(senkuByPos); }
-function senkuBoxItems(bid) { return senkuData.bitems.filter(x => !x.del && x.bid === bid).sort(senkuByPos); }
-function senkuActiveArchives() { return senkuData.archives.filter(a => !a.del); }
-// 保存した選句の句（並び順に）
-function senkuArchivePhrases(a) {
-    return senkuData.sitems.filter(x => !x.del && x.aid === a.id).sort(senkuByPos).map(x => x.phrase);
-}
-function senkuNextPos(list) { return list.length ? list[list.length - 1].pos + 1 : 0; }
-
-function senkuMakeGroup(name, auto) {
-    const now = Date.now();
-    const g = { k: 'group', id: newSenkuId(), name: name, auto: auto || '', pos: senkuNextPos(senkuGroups()), ts: now, del: false };
-    senkuData.groups.push(g);
-    return g;
+// 選句中の句（削除済みを除き、並び順に）
+function senkuActiveItems() {
+    return senkuData.items
+        .filter(x => !x.del)
+        .sort((a, b) => (a.pos - b.pos) || (a.id < b.id ? -1 : 1));
 }
 
-function senkuUniqueBoxName(wanted) {
-    const names = new Set(senkuBoxes().map(b => b.name));
-    if (wanted) {
-        if (!names.has(wanted)) return wanted;
-        let i = 2;
-        while (names.has(`${wanted}(${i})`)) i++;
-        return `${wanted}(${i})`;
-    }
-    let n = senkuBoxes().length + 1;
-    while (names.has(`箱${n}`)) n++;
-    return `箱${n}`;
+// 指定した段階以上の句（段階タブに表示される句）
+function senkuStageItems(stage) {
+    return senkuActiveItems().filter(x => x.lv >= stage);
 }
 
-function senkuMakeBox(name) {
-    const b = { k: 'box', id: newSenkuId(), name: senkuUniqueBoxName(name), pos: senkuNextPos(senkuBoxes()), ts: Date.now(), del: false };
-    senkuData.boxes.push(b);
-    return b;
-}
-
-// 箱の中にその句を入れる（すでにあれば何もしない）。入れた記録を返す
-function senkuPutInBox(box, phrase) {
-    const items = senkuBoxItems(box.id);
-    if (items.some(x => x.phrase === phrase)) return null;
-    const it = { k: 'bitem', id: newSenkuId(), bid: box.id, phrase: phrase, pos: senkuNextPos(items), ts: Date.now(), del: false };
-    senkuData.bitems.push(it);
-    return it;
+function senkuActiveArchives() {
+    return senkuData.archives.filter(a => !a.del);
 }
 
 function isReadScreenActive() {
@@ -129,27 +88,27 @@ function refreshSenkuTabIfOpen() {
 }
 
 // ========================================================
-// 入選（読む画面から、句を1つ「入選」の句群に入れる）
+// 入選・除外・修正
 // ========================================================
 function addToSenku(phrase) {
     if (!phrase) return false;
-    const recs = [];
-    let g = senkuGroups().find(x => x.auto === 'nyusen');
-    if (!g) {
-        g = senkuMakeGroup('入選', 'nyusen');
-        recs.push(g);
-    }
-    const items = senkuGroupItems(g.id);
-    if (items.some(s => s.phrase === phrase)) {
+    const active = senkuActiveItems();
+    if (active.some(s => s.phrase === phrase)) {
         showToast('すでに入選しています');
         return false;
     }
-    const it = { k: 'gitem', id: newSenkuId(), gid: g.id, phrase: phrase, pos: senkuNextPos(items), ts: Date.now(), del: false };
-    senkuData.gitems.push(it);
-    recs.push(it);
+    const item = {
+        id: newSenkuId(),
+        phrase: phrase,
+        pos: active.length ? active[active.length - 1].pos + 1 : 0,
+        lv: 1,
+        ts: Date.now(),
+        del: false
+    };
+    senkuData.items.push(item);
     saveSenkuData();
-    pushSenkuRecords(recs);
-    showToast(`入選しました（入選の句群 ${items.length + 1}句）`);
+    pushSenkuRecords([item]);
+    showToast(`入選しました（選句 ${active.length + 1}句）`);
     refreshSenkuTabIfOpen();
     return true;
 }
@@ -161,141 +120,63 @@ function addSelectedHaikuToSenku() {
     addToSenku(activeSelectedHaiku.phrase);
 }
 
-// ========================================================
-// 小さなメニュー（箱の選択・⋯メニューに使う）
-// ========================================================
-function openSenkuMenu(title, entries) {
-    document.getElementById('senkuMenuTitle').textContent = title;
-    const list = document.getElementById('senkuMenuList');
-    list.innerHTML = '';
-    entries.forEach(en => {
-        const row = document.createElement('div');
-        row.className = 'senku-archive-row' + (en.danger ? ' senku-menu-danger' : '');
-        row.textContent = en.label;
-        row.onclick = () => { closeSenkuMenu(); en.fn(); };
-        list.appendChild(row);
-    });
-    document.getElementById('senkuMenuModal').classList.remove('hidden');
-}
-
-function closeSenkuMenu() {
-    document.getElementById('senkuMenuModal').classList.add('hidden');
-}
-
-// ========================================================
-// 句群・箱の操作
-// ========================================================
-function senkuCurrentGroup() {
-    return senkuView && senkuView.type === 'group' ? senkuGroups().find(g => g.id === senkuView.id) : null;
-}
-function senkuCurrentBox() {
-    return senkuView && senkuView.type === 'box' ? senkuBoxes().find(b => b.id === senkuView.id) : null;
-}
-
-// いま見ているものが無くなっていたら、最初の句群（なければ最初の箱）を開く
-function ensureSenkuView() {
-    if (senkuCurrentGroup() || senkuCurrentBox()) return;
-    const g = senkuGroups()[0];
-    if (g) { senkuView = { type: 'group', id: g.id }; return; }
-    const b = senkuBoxes()[0];
-    senkuView = b ? { type: 'box', id: b.id } : null;
-}
-
-function setSenkuView(type, id) {
-    senkuView = { type: type, id: id };
-    renderYomuList(false);
-}
-
-// 「＋」：空の箱を作って開く
-function addSenkuBoxAndOpen() {
-    const b = senkuMakeBox();
-    saveSenkuData();
-    pushSenkuRecords([b]);
-    showToast(`「${b.name}」を作りました`);
-    setSenkuView('box', b.id);
-}
-
-function openSenkuViewMenu() {
-    const g = senkuCurrentGroup();
-    const b = senkuCurrentBox();
-    if (g) {
-        openSenkuMenu(`句群「${g.name}」`, [
-            { label: '名前を変更', fn: renameSenkuView },
-            { label: 'この句群を削除', fn: deleteSenkuView, danger: true }
-        ]);
-    } else if (b) {
-        openSenkuMenu(`箱「${b.name}」`, [
-            { label: '名前を変更', fn: renameSenkuView },
-            { label: 'この箱を保存', fn: openSenkuSaveModal },
-            { label: 'この箱を削除', fn: deleteSenkuView, danger: true }
-        ]);
-    }
-}
-
-function renameSenkuView() {
-    const target = senkuCurrentGroup() || senkuCurrentBox();
-    if (!target) return;
-    const name = prompt('名前を入力してください', target.name);
-    if (name === null) return;
-    const text = name.trim();
-    if (!text) return;
-    target.name = text;
-    target.ts = Date.now();
-    saveSenkuData();
-    pushSenkuRecords([target]);
-    refreshSenkuTabIfOpen();
-}
-
-function deleteSenkuView() {
-    const g = senkuCurrentGroup();
-    const b = senkuCurrentBox();
-    const target = g || b;
-    if (!target) return;
-    const msg = g
-        ? `句群「${g.name}」を削除しますか？\n（元の句や、箱に入れた句は消えません）`
-        : `箱「${b.name}」を削除しますか？\n（箱の中の句だけが消えます。句群や元の句は消えません）`;
-    if (!confirm(msg)) return;
-    target.del = true;
-    target.ts = Date.now();
-    saveSenkuData();
-    pushSenkuRecords([target]);
-    senkuView = null;
-    showToast('削除しました');
-    renderYomuList(false);
-}
-
-// 句をタップしたときのパネル
+// 選句の中の句をタップしたときのパネル
 function onSenkuCardClicked(item) {
     activeSenkuItem = item;
     const modalPhraseEl = document.getElementById('modalPhrase');
     modalPhraseEl.innerHTML = renderPhraseRubyHtml(item.phrase);
     applyPhraseLengthClass(modalPhraseEl, item.phrase);
-    const parts = item.k === 'gitem'
-        ? [`<span class="text-action-btn primary" onclick="chooseBoxForActiveSenkuItem()">箱に入れる</span>`,
-           `<span class="text-action-btn danger" onclick="removeActiveSenkuItem()">句群から外す</span>`]
-        : [`<span class="text-action-btn primary" onclick="openSenkuEditModal()">修正</span>`,
-           `<span class="text-action-btn danger" onclick="removeActiveSenkuItem()">箱から外す</span>`];
+    const stage = currentSenkuStage;
+    const parts = [`<span class="text-action-btn primary" onclick="openSenkuEditModal()">修正</span>`];
+    if (stage < 4 && item.lv === stage) parts.push(`<span class="text-action-btn" onclick="moveActiveSenkuStage('up')">${SENKU_STAGES[stage]}へ進める</span>`);
+    if (item.lv > stage) parts.push(`<span class="text-action-btn" onclick="moveActiveSenkuStage('down')">通過を取り消す</span>`);
+    else if (stage > 1) parts.push(`<span class="text-action-btn" onclick="moveActiveSenkuStage('down')">${SENKU_STAGES[stage - 2]}に戻す</span>`);
+    parts.push(`<span class="text-action-btn danger" onclick="removeActiveSenkuItem()">選句から除外</span>`);
     document.getElementById('modalActions').innerHTML = parts.join('<span class="action-divider">|</span>');
     document.getElementById('haikuDetailModal').classList.remove('hidden');
 }
 
-// 句をタップ →「箱に入れる」（ドラッグできないときの代わりの方法）
-function chooseBoxForActiveSenkuItem() {
+function moveActiveSenkuStage(dir) {
     if (!activeSenkuItem) return;
     closeHaikuDetailModal();
-    const phrase = activeSenkuItem.phrase;
+    moveSenkuStage(activeSenkuItem, dir);
     activeSenkuItem = null;
-    const entries = senkuBoxes().map(b => ({ label: b.name, fn: () => senkuDropPhrase('box:' + b.id, phrase) }));
-    entries.push({ label: '＋ 新しい箱', fn: () => senkuDropPhrase('new', phrase) });
-    openSenkuMenu('どの箱に入れますか', entries);
+}
+
+// 段階を動かす（up: いまの選考を通過 / down: 通過の取り消し、または1つ前の段階へ戻す）
+function moveSenkuStage(item, dir) {
+    const stage = currentSenkuStage;
+    let newLv = item.lv;
+    let msg = '';
+    if (dir === 'up') {
+        if (stage >= 4) { showToast('最終がいちばん上の段階です'); return; }
+        if (item.lv > stage) { showToast(`すでに${SENKU_STAGES[stage - 1]}を通過しています`); return; }
+        newLv = stage + 1;
+        msg = `${SENKU_STAGES[stage]}へ進めました`;
+    } else {
+        if (item.lv > stage) {
+            newLv = stage;
+            msg = `${SENKU_STAGES[stage - 1]}の通過を取り消しました`;
+        } else if (stage > 1) {
+            newLv = stage - 1;
+            msg = `${SENKU_STAGES[stage - 2]}に戻しました`;
+        } else {
+            showToast('一次より前はありません（外すときは句をタップして「選句から除外」）');
+            return;
+        }
+    }
+    item.lv = newLv;
+    item.ts = Date.now();
+    saveSenkuData();
+    pushSenkuRecords([item]);
+    showToast(msg);
+    refreshSenkuTabIfOpen();
 }
 
 function removeActiveSenkuItem() {
     if (!activeSenkuItem) return;
     closeHaikuDetailModal();
-    const coll = activeSenkuItem.k === 'gitem' ? senkuData.gitems : senkuData.bitems;
-    const target = coll.find(s => s.id === activeSenkuItem.id);
-    const isGroup = activeSenkuItem.k === 'gitem';
+    const target = senkuData.items.find(s => s.id === activeSenkuItem.id);
     activeSenkuItem = null;
     if (target) {
         target.del = true;
@@ -303,7 +184,7 @@ function removeActiveSenkuItem() {
         saveSenkuData();
         pushSenkuRecords([target]);
     }
-    showToast(isGroup ? '句群から外しました' : '箱から外しました');
+    showToast('選句から除外しました');
     refreshSenkuTabIfOpen();
 }
 
@@ -322,7 +203,7 @@ function submitSenkuEdit() {
     if (!activeSenkuItem) return;
     const text = document.getElementById('senkuEditInput').value.replace(/[\r\n]+/g, '').trim();
     if (!text) { alert('句を入力してください。'); return; }
-    const target = senkuData.bitems.find(s => s.id === activeSenkuItem.id);
+    const target = senkuData.items.find(s => s.id === activeSenkuItem.id);
     if (target) {
         target.phrase = text;
         target.ts = Date.now();
@@ -334,99 +215,30 @@ function submitSenkuEdit() {
     refreshSenkuTabIfOpen();
 }
 
-// 句群の句を箱に入れる（target は 'new' か 'box:<箱のid>'）
-function senkuDropPhrase(target, phrase) {
-    if (!phrase) return;
-    const recs = [];
-    let box = null;
-    let created = false;
-    if (target === 'new') {
-        box = senkuMakeBox();
-        recs.push(box);
-        created = true;
-    } else if (target && target.startsWith('box:')) {
-        box = senkuBoxes().find(b => b.id === target.slice(4));
-    }
-    if (!box) return;
-    const it = senkuPutInBox(box, phrase);
-    if (it) recs.push(it);
-    if (recs.length) {
-        saveSenkuData();
-        pushSenkuRecords(recs);
-    }
-    if (!it) showToast(`「${box.name}」には、すでに入っています`);
-    else showToast(created ? `「${box.name}」を作って入れました` : `「${box.name}」に入れました`);
-    refreshSenkuTabIfOpen();
-}
-
 // ========================================================
 // 選句タブの描画
 // ========================================================
-function senkuChip(label, count, active, onclick) {
-    const el = document.createElement('span');
-    el.className = 'senku-chip' + (active ? ' active' : '');
-    el.appendChild(document.createTextNode(label));
-    if (count !== null) {
-        const n = document.createElement('span');
-        n.className = 'n';
-        n.textContent = String(count);
-        el.appendChild(n);
-    }
-    el.onclick = onclick;
-    return el;
+function setSenkuStage(stage) {
+    currentSenkuStage = stage;
+    renderYomuList(false);
 }
 
-function updateSenkuBar() {
+function updateSenkuStageBar() {
     const bar = document.getElementById('senkuBar');
     if (!bar) return;
     bar.innerHTML = '';
-    const mkRow = (label) => {
-        const row = document.createElement('div');
-        row.className = 'senku-row';
-        const l = document.createElement('span');
-        l.className = 'senku-row-label';
-        l.textContent = label;
-        row.appendChild(l);
-        bar.appendChild(row);
-        return row;
-    };
-    const mkMore = () => {
-        const m = document.createElement('span');
-        m.className = 'senku-more';
-        m.textContent = '⋯';
-        m.title = '名前の変更・削除など';
-        m.onclick = openSenkuViewMenu;
-        return m;
-    };
-
-    const groupRow = mkRow('句群');
-    senkuGroups().forEach(g => {
-        const active = !!(senkuView && senkuView.type === 'group' && senkuView.id === g.id);
-        groupRow.appendChild(senkuChip(g.name, senkuGroupItems(g.id).length, active, () => setSenkuView('group', g.id)));
-        if (active) groupRow.appendChild(mkMore());
+    SENKU_STAGES.forEach((name, i) => {
+        const stage = i + 1;
+        const el = document.createElement('span');
+        el.className = 'senku-stage' + (stage === currentSenkuStage ? ' active' : '');
+        el.appendChild(document.createTextNode(name));
+        const n = document.createElement('span');
+        n.className = 'n';
+        n.textContent = String(senkuStageItems(stage).length);
+        el.appendChild(n);
+        el.onclick = () => setSenkuStage(stage);
+        bar.appendChild(el);
     });
-    const addGroup = document.createElement('span');
-    addGroup.className = 'senku-add';
-    addGroup.textContent = '＋';
-    addGroup.title = '期間を決めて句群を作る';
-    addGroup.onclick = openSenkuRangeModal;
-    groupRow.appendChild(addGroup);
-
-    const boxRow = mkRow('箱');
-    senkuBoxes().forEach(b => {
-        const active = !!(senkuView && senkuView.type === 'box' && senkuView.id === b.id);
-        const chip = senkuChip(b.name, senkuBoxItems(b.id).length, active, () => setSenkuView('box', b.id));
-        chip.dataset.drop = 'box:' + b.id;
-        boxRow.appendChild(chip);
-        if (active) boxRow.appendChild(mkMore());
-    });
-    const addBox = document.createElement('span');
-    addBox.className = 'senku-add';
-    addBox.textContent = '＋';
-    addBox.title = '新しい箱を作る';
-    addBox.dataset.drop = 'new';
-    addBox.onclick = addSenkuBoxAndOpen;
-    boxRow.appendChild(addBox);
 }
 
 function renderSenkuTab(preserveScroll = false) {
@@ -440,44 +252,28 @@ function renderSenkuTab(preserveScroll = false) {
     if (bar) bar.classList.remove('hidden');
     if (actions) actions.classList.remove('hidden');
     document.getElementById('readScreen').classList.add('senku-mode');
-    ensureSenkuView();
-    updateSenkuBar();
+    updateSenkuStageBar();
 
-    // 下の操作：箱を開いているときだけ「この箱を保存」を出す
-    const inBox = !!senkuCurrentBox();
-    ['senkuSaveBtn', 'senkuSaveDivider'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.classList.toggle('hidden', !inBox);
-    });
-
-    const group = senkuCurrentGroup();
-    const box = senkuCurrentBox();
-    const items = group ? senkuGroupItems(group.id) : (box ? senkuBoxItems(box.id) : []);
+    const stage = currentSenkuStage;
+    const items = senkuStageItems(stage);
     const savedScrollLeft = preserveScroll ? scroll.scrollLeft : 0;
     scroll.innerHTML = '';
 
     if (items.length === 0) {
         const msg = document.createElement('div');
         msg.className = 'senku-empty';
-        if (group) msg.textContent = '句群は空です。';
-        else if (box) msg.textContent = '箱は空です。句群の句を、上の箱の名前へドラッグして入れてください。';
-        else msg.textContent = '句群はまだありません。上の「句群」の「＋」で期間を決めて句を集めるか、完成句を上へスワイプしてください。';
+        msg.textContent = stage === 1
+            ? '入選した句はまだありません。句を長押しして上へスワイプするか、句をタップして「入選」を選んでください。'
+            : `${SENKU_STAGES[stage - 1]}に進んだ句はまだありません。${SENKU_STAGES[stage - 2]}で句を長押しして上へスワイプすると、ここに進みます。`;
         scroll.appendChild(msg);
         return;
-    }
-
-    // 句群の中の句のうち、どれかの箱に入っているものには傍線をつける
-    const boxed = new Set();
-    if (group) {
-        const activeBoxIds = new Set(senkuBoxes().map(b => b.id));
-        senkuData.bitems.forEach(x => { if (!x.del && activeBoxIds.has(x.bid)) boxed.add(x.phrase); });
     }
 
     const orderIds = items.map(s => s.id);
     const initialIds = orderIds.slice();
     items.forEach((item, i) => {
         const card = document.createElement('div');
-        card.className = 'saijiki-haiku-card senku-card' + (group && boxed.has(item.phrase) ? ' senku-boxed' : '');
+        card.className = 'saijiki-haiku-card senku-card' + (item.lv > stage ? ' senku-passed' : '');
         card.dataset.id = item.id;
         card.style.order = i;
         card.onclick = () => onSenkuCardClicked(item);
@@ -489,8 +285,7 @@ function renderSenkuTab(preserveScroll = false) {
         card.appendChild(phraseDiv);
 
         scroll.appendChild(card);
-        if (group) attachSenkuGroupCardGestures(card, item);
-        else attachSenkuBoxCardGestures(card, scroll, orderIds, initialIds, item);
+        attachSenkuCardGestures(card, scroll, orderIds, initialIds, item);
     });
 
     requestAnimationFrame(() => { scroll.scrollLeft = savedScrollLeft; });
@@ -499,14 +294,11 @@ function renderSenkuTab(preserveScroll = false) {
 // ========================================================
 // 長押しジェスチャー（タッチ・マウス共通）
 //   長押し（約0.45秒、動かさない）で「つかんだ」状態になり、そのあと動かす
-//   instantMouse: マウスのときは、長押しせず、動かし始めたらすぐ「つかんだ」状態にする
-//   instantVertical: タッチのとき、はっきり縦に動かし始めたら、長押しせずすぐ「つかんだ」状態にする
-//                    （横に動かし始めたときは、ふつうのスクロールに任せる）
 // ========================================================
 function senkuLongPress(el, h) {
     const HOLD_MS = 450;
     const SLOP = 10;
-    let timer = null, armed = false, active = false, byMouse = false;
+    let timer = null, armed = false, active = false;
     let sx = 0, sy = 0, lx = 0, ly = 0, lastTouchEnd = 0;
 
     const pt = (e) => (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]) || e;
@@ -514,11 +306,6 @@ function senkuLongPress(el, h) {
     const stopMouse = () => {
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
-    };
-    const arm = (instant) => {
-        armed = true;
-        try { if (navigator.vibrate && !byMouse && !instant) navigator.vibrate(15); } catch (_) {}
-        if (h.onArm) h.onArm({ x: lx, y: ly });
     };
     const finish = (cancelled) => {
         clearTimer();
@@ -543,13 +330,14 @@ function senkuLongPress(el, h) {
         sy = ly = p.clientY;
         active = true;
         armed = false;
-        byMouse = e.type === 'mousedown';
         clearTimer();
         timer = setTimeout(() => {
             if (!active) return;
-            arm();
+            armed = true;
+            try { if (navigator.vibrate) navigator.vibrate(15); } catch (_) {}
+            if (h.onArm) h.onArm({ x: lx, y: ly });
         }, HOLD_MS);
-        if (byMouse) {
+        if (e.type === 'mousedown') {
             document.addEventListener('mousemove', onMove);
             document.addEventListener('mouseup', onUp);
         }
@@ -560,21 +348,13 @@ function senkuLongPress(el, h) {
         lx = p.clientX;
         ly = p.clientY;
         if (!armed) {
+            // 長押しになる前に動いた → ふつうのスクロール／タップとして任せる
             if (Math.abs(lx - sx) > SLOP || Math.abs(ly - sy) > SLOP) {
                 clearTimer();
-                if (h.instantMouse && byMouse) {
-                    arm(true);   // マウスは、動かし始めたらすぐ「つかんだ」状態にする
-                } else if (h.instantVertical && !byMouse && Math.abs(ly - sy) > Math.abs(lx - sx) * 1.5) {
-                    arm(true);   // タッチは、はっきり縦に動かしたときだけ、すぐ「つかんだ」状態にする
-                } else {
-                    // 長押しになる前に動いた → ふつうのスクロール／タップとして任せる
-                    active = false;
-                    stopMouse();
-                    return;
-                }
-            } else {
-                return;
+                active = false;
+                stopMouse();
             }
+            return;
         }
         if (e.cancelable) e.preventDefault();
         if (h.onMove) h.onMove({ dx: lx - sx, dy: ly - sy, x: lx, y: ly });
@@ -599,7 +379,7 @@ function senkuLongPress(el, h) {
     }, true);
 }
 
-// 読む画面：上へスワイプで「入選」
+// 長押し → 上へスワイプで「入選」
 function attachSenkuAddGesture(el, getPhrase) {
     const THRESH = 45;
     const reset = () => {
@@ -607,7 +387,6 @@ function attachSenkuAddGesture(el, getPhrase) {
         el.style.transform = '';
     };
     senkuLongPress(el, {
-        instantVertical: true,
         onArm() { el.classList.add('senku-armed'); },
         onMove({ dy }) {
             const up = Math.max(0, -dy);
@@ -623,58 +402,8 @@ function attachSenkuAddGesture(el, getPhrase) {
     });
 }
 
-// 句群の中の句：上へスワイプして（または長押ししてつかんで）、上にある箱の名前（または「＋」）へ運んで入れる
-function attachSenkuGroupCardGestures(card, item) {
-    let ghost = null, hover = null;
-    const bar = () => document.getElementById('senkuBar');
-    const targetAt = (x, y) => {
-        const el = document.elementFromPoint(x, y);
-        return el ? el.closest('[data-drop]') : null;
-    };
-    const setHover = (t) => {
-        if (hover === t) return;
-        if (hover) hover.classList.remove('senku-drop-hover');
-        hover = t;
-        if (hover) hover.classList.add('senku-drop-hover');
-    };
-    const cleanup = () => {
-        if (ghost) ghost.remove();
-        ghost = null;
-        card.classList.remove('senku-lifted');
-        const b = bar();
-        if (b) b.classList.remove('senku-dropping');
-        setHover(null);
-    };
-
-    senkuLongPress(card, {
-        instantMouse: true,
-        instantVertical: true,
-        onArm() {
-            const r = card.getBoundingClientRect();
-            ghost = card.cloneNode(true);
-            ghost.classList.add('senku-ghost');
-            ghost.style.cssText = `left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;`;
-            document.body.appendChild(ghost);
-            card.classList.add('senku-lifted');
-            const b = bar();
-            if (b) b.classList.add('senku-dropping');
-        },
-        onMove({ dx, dy, x, y }) {
-            if (ghost) ghost.style.transform = `translate(${dx}px, ${dy}px)`;
-            setHover(targetAt(x, y));
-        },
-        onEnd({ x, y, cancelled }) {
-            // スマホのブラウザが途中で操作を取り消した場合は、最後に重なっていた場所に入れる
-            const t = cancelled ? hover : targetAt(x, y);
-            const value = t ? t.dataset.drop : null;
-            cleanup();
-            if (value) senkuDropPhrase(value, item.phrase);
-        }
-    });
-}
-
-// 箱の中の句：上か下へスワイプすると箱から外れる ／ 長押ししてから横へドラッグで並べ替え
-function attachSenkuBoxCardGestures(card, container, orderIds, initialIds, item) {
+// 選句の中の句：長押し → 横へドラッグで並べ替え ／ 上へスワイプで次の段階へ ／ 下へスワイプで戻す
+function attachSenkuCardGestures(card, container, orderIds, initialIds, item) {
     const THRESH = 45;
     let dragging = false, mode = null, pointerX = 0, lastSwapX = null, rafId = null;
 
@@ -697,8 +426,6 @@ function attachSenkuBoxCardGestures(card, container, orderIds, initialIds, item)
     };
 
     senkuLongPress(card, {
-        instantMouse: true,
-        instantVertical: true,
         onArm({ x }) {
             dragging = true;
             mode = null;
@@ -710,12 +437,12 @@ function attachSenkuBoxCardGestures(card, container, orderIds, initialIds, item)
         },
         onMove({ dx, dy, x }) {
             pointerX = x;
-            // 動かし始めの向きで「並べ替え（横）」か「箱から外す（縦）」かを決める
+            // 動かし始めの向きで「並べ替え（横）」か「段階の移動（縦）」かを決める
             if (!mode && (Math.abs(dx) > 14 || Math.abs(dy) > 14)) {
-                mode = Math.abs(dy) > Math.abs(dx) ? 'out' : 'reorder';
+                mode = Math.abs(dy) > Math.abs(dx) ? 'stage' : 'reorder';
                 if (mode === 'reorder') card.classList.add('senku-dragging');
             }
-            if (mode === 'out') {
+            if (mode === 'stage') {
                 card.style.transform = `translateY(${Math.max(-90, Math.min(90, dy))}px)`;
                 card.classList.toggle('senku-ready', Math.abs(dy) >= THRESH);
                 return;
@@ -749,24 +476,16 @@ function attachSenkuBoxCardGestures(card, container, orderIds, initialIds, item)
             mode = null;
             resetLook();
 
-            if (finalMode === 'out') {
+            if (finalMode === 'stage') {
                 if (Math.abs(dy) >= THRESH && Math.abs(dy) > Math.abs(dx)) {
-                    const target = senkuData.bitems.find(s => s.id === item.id);
-                    if (target) {
-                        target.del = true;
-                        target.ts = Date.now();
-                        saveSenkuData();
-                        pushSenkuRecords([target]);
-                        showToast('箱から外しました');
-                        refreshSenkuTabIfOpen();
-                    }
+                    moveSenkuStage(item, dy < 0 ? 'up' : 'down');
                 }
                 return;
             }
             if (finalMode !== 'reorder' || orderIds.join() === initialIds.join()) return;
 
-            // 並べ替え：見えている句どうしで、元の位置番号を入れ替える
-            const byId = new Map(senkuData.bitems.map(s => [s.id, s]));
+            // 見えている句どうしで、元の位置番号を入れ替える（見えていない句の位置は動かさない）
+            const byId = new Map(senkuData.items.map(s => [s.id, s]));
             const slots = initialIds.map(id => byId.get(id).pos).sort((a, b) => a - b);
             const changed = [];
             orderIds.forEach((id, i) => {
@@ -784,8 +503,10 @@ function attachSenkuBoxCardGestures(card, container, orderIds, initialIds, item)
 }
 
 // ========================================================
-// 箱の保存・過去の選句
+// 選句の保存・過去の選句
 // ========================================================
+const SENKU_MAX_SAVE = 30;   // 1回に保存できる句数（同期の通信量の上限のため）
+
 function senkuArchiveTitle(a) {
     return `${a.year}年${a.month}月${a.subtitle || ''}`;
 }
@@ -802,26 +523,26 @@ function fillSenkuMonthOptions() {
 }
 
 function openSenkuSaveModal() {
-    const box = senkuCurrentBox();
-    if (!box) {
-        alert('保存する箱を開いてください。');
+    const items = senkuStageItems(currentSenkuStage);
+    if (items.length === 0) {
+        alert('このタブに、保存できる句がありません。');
         return;
     }
-    const items = senkuBoxItems(box.id);
-    if (items.length === 0) {
-        alert('この箱は空です。');
+    if (items.length > SENKU_MAX_SAVE) {
+        alert(`一度に保存できるのは${SENKU_MAX_SAVE}句までです。\n二次以降のタブで句を絞ってから保存してください。`);
         return;
     }
     editingSenkuArchiveId = null;
-    savingSenkuBoxId = box.id;
     fillSenkuMonthOptions();
     const now = new Date();
     document.getElementById('senkuYearInput').value = now.getFullYear();
     document.getElementById('senkuMonthSelect').value = String(now.getMonth() + 1);
-    // 箱に自分で名前をつけているなら、それをサブタイトルの初期値にする
-    document.getElementById('senkuSubtitleInput').value = /^箱\d+$/.test(box.name) ? '' : box.name;
-    document.getElementById('senkuSaveTitle').textContent = '箱を保存';
-    document.getElementById('senkuSaveNote').textContent = `「${box.name}」の${items.length}句を保存します。箱はそのまま残ります。`;
+    document.getElementById('senkuSubtitleInput').value = '';
+    document.getElementById('senkuSaveTitle').textContent = '選句を保存';
+    document.getElementById('senkuSaveNote').textContent =
+        `「${SENKU_STAGES[currentSenkuStage - 1]}」の${items.length}句を保存します。保存した句は選句から外れます。`;
+    document.getElementById('senkuClearRest').checked = false;
+    document.getElementById('senkuClearRestRow').classList.remove('hidden');
     document.getElementById('senkuSaveSubmit').textContent = '保存';
     document.getElementById('senkuSaveModal').classList.remove('hidden');
 }
@@ -835,7 +556,8 @@ function openSenkuArchiveRename(id) {
     document.getElementById('senkuMonthSelect').value = String(a.month);
     document.getElementById('senkuSubtitleInput').value = a.subtitle || '';
     document.getElementById('senkuSaveTitle').textContent = '題名を変更';
-    document.getElementById('senkuSaveNote').textContent = `${senkuArchivePhrases(a).length}句`;
+    document.getElementById('senkuSaveNote').textContent = `${a.phrases.length}句`;
+    document.getElementById('senkuClearRestRow').classList.add('hidden');
     document.getElementById('senkuSaveSubmit').textContent = '変更';
     document.getElementById('senkuSaveModal').classList.remove('hidden');
 }
@@ -868,27 +590,31 @@ function submitSenkuSave() {
         return;
     }
 
-    const box = senkuBoxes().find(b => b.id === savingSenkuBoxId);
-    const items = box ? senkuBoxItems(box.id) : [];
-    if (items.length === 0) { closeSenkuSaveModal(); return; }
+    const active = senkuStageItems(currentSenkuStage);
+    if (active.length === 0) { closeSenkuSaveModal(); return; }
     const now = Date.now();
     const archive = {
-        k: 'sarch',
         id: newSenkuId(),
         year: year,
         month: month,
         subtitle: subtitle,
+        phrases: active.map(s => s.phrase),
         savedAt: now,
         ts: now,
         del: false
     };
-    const sitems = items.map((s, i) => ({ k: 'sitem', id: newSenkuId(), aid: archive.id, phrase: s.phrase, pos: i, ts: now, del: false }));
     senkuData.archives.push(archive);
-    senkuData.sitems.push(...sitems);
+    // 保存した句は選句から外す（削除済みの印をつけて、他の端末にも伝える）。
+    // 「残りの句も外す」を選んだときは、選句を空にする
+    const clearRest = document.getElementById('senkuClearRest').checked;
+    const removed = clearRest ? senkuActiveItems() : active;
+    removed.forEach(it => { it.del = true; it.ts = now; });
+    const count = active.length;
     saveSenkuData();
-    pushSenkuRecords([archive].concat(sitems));
+    pushSenkuRecords([archive].concat(removed));
     closeSenkuSaveModal();
-    showToast(`${year}年${month}月${subtitle}（${items.length}句）を保存しました`);
+    showToast(`${year}年${month}月${subtitle}の選句（${count}句）を保存しました`);
+    refreshSenkuTabIfOpen();
 }
 
 function sortedSenkuArchives() {
@@ -917,7 +643,7 @@ function renderSenkuArchiveList() {
         title.textContent = senkuArchiveTitle(a);
         const cnt = document.createElement('span');
         cnt.className = 'senku-archive-count';
-        cnt.textContent = `${senkuArchivePhrases(a).length}句`;
+        cnt.textContent = `${a.phrases.length}句`;
         row.appendChild(title);
         row.appendChild(cnt);
         listEl.appendChild(row);
@@ -941,7 +667,7 @@ function openSenkuArchiveView(id) {
     document.getElementById('senkuViewTitle').textContent = senkuArchiveTitle(a);
     const listEl = document.getElementById('senkuViewList');
     listEl.innerHTML = '';
-    senkuArchivePhrases(a).forEach(phrase => {
+    a.phrases.forEach(phrase => {
         const card = document.createElement('div');
         card.className = 'saijiki-haiku-card';
         card.style.cursor = 'default';
@@ -985,23 +711,6 @@ function renameViewingSenkuArchive() {
     if (viewingSenkuArchiveId) openSenkuArchiveRename(viewingSenkuArchiveId);
 }
 
-// 保存した句群を、新しい箱として戻す（編集し直せる）
-function restoreViewingSenkuArchive() {
-    const a = senkuActiveArchives().find(x => x.id === viewingSenkuArchiveId);
-    if (!a) return;
-    const box = senkuMakeBox(senkuArchiveTitle(a));
-    const recs = [box];
-    senkuArchivePhrases(a).forEach(phrase => {
-        const it = senkuPutInBox(box, phrase);
-        if (it) recs.push(it);
-    });
-    saveSenkuData();
-    pushSenkuRecords(recs);
-    closeSenkuArchiveView();
-    showToast(`「${box.name}」として箱に戻しました`);
-    setSenkuView('box', box.id);
-}
-
 function deleteViewingSenkuArchive() {
     const a = senkuActiveArchives().find(x => x.id === viewingSenkuArchiveId);
     if (!a) return;
@@ -1020,7 +729,6 @@ function deleteViewingSenkuArchive() {
 //   ・1件ごとに固有ID＋更新時刻をつけ、新しいほうを採用して統合する
 //   ・通信は ?senku=... だけを使う。古いGoogleスクリプトのままでも、
 //     選句の通信は俳句のシートに何も書き込まない（無視される）
-//   ・種類は group / gitem / box / bitem / sarch / sitem。旧方式（item / archive）の行は読み飛ばす
 // ========================================================
 let senkuCloudSupported = null;   // null: 未確認 / true: 対応 / false: スクリプトが未更新
 let _senkuSyncing = false;
@@ -1038,17 +746,11 @@ function senkuCloudUrl(params) {
 }
 
 function senkuToRecord(r) {
-    const rec = { id: r.id, kind: r.k, ts: r.ts, del: r.del ? 1 : 0 };
-    switch (r.k) {
-        case 'group': rec.data = { name: r.name, auto: r.auto || '', pos: r.pos }; break;
-        case 'gitem': rec.data = { gid: r.gid, phrase: r.phrase, pos: r.pos }; break;
-        case 'box': rec.data = { name: r.name, pos: r.pos }; break;
-        case 'bitem': rec.data = { bid: r.bid, phrase: r.phrase, pos: r.pos }; break;
-        case 'sarch': rec.data = { year: r.year, month: r.month, subtitle: r.subtitle || '', savedAt: r.savedAt || 0 }; break;
-        case 'sitem': rec.data = { aid: r.aid, phrase: r.phrase, pos: r.pos }; break;
-        default: return null;
+    if (Array.isArray(r.phrases)) {
+        return { id: r.id, kind: 'archive', ts: r.ts, del: r.del ? 1 : 0,
+            data: { year: r.year, month: r.month, subtitle: r.subtitle || '', phrases: r.phrases, savedAt: r.savedAt || 0 } };
     }
-    return rec;
+    return { id: r.id, kind: 'item', ts: r.ts, del: r.del ? 1 : 0, data: { phrase: r.phrase, pos: r.pos, lv: r.lv || 1 } };
 }
 
 // 変更した記録をクラウドへ送る（送りっぱなし。届かなかった分は次回の同期で再送される）
@@ -1069,7 +771,6 @@ function pushSenkuRecords(records) {
     };
     records.forEach(r => {
         const rec = senkuToRecord(r);
-        if (!rec) return;
         if (chunk.length && urlOf(chunk.concat([rec])).length > MAX_URL) {
             urls.push(urlOf(chunk));
             chunk = [];
@@ -1089,9 +790,8 @@ function pushSenkuRecords(records) {
 // 戻り値: { changed: この端末の内容が変わったか, toPush: クラウドへ送り直す記録 }
 function mergeSenkuFromCloud(rows) {
     const local = new Map();
-    Object.keys(SENKU_COLLECTIONS).forEach(kind => {
-        senkuData[SENKU_COLLECTIONS[kind]].forEach(x => local.set(x.id, x));
-    });
+    senkuData.items.forEach(x => local.set(x.id, x));
+    senkuData.archives.forEach(x => local.set(x.id, x));
     const seen = new Set();
     const toPush = [];
     let changed = false;
@@ -1099,7 +799,7 @@ function mergeSenkuFromCloud(rows) {
     (rows || []).forEach(row => {
         const id = String(row[0] || '');
         const kind = String(row[1] || '');
-        if (!id || !SENKU_COLLECTIONS[kind]) return;   // 旧方式の行などは読み飛ばす
+        if (!id) return;
         const ts = Number(row[3]) || 0;
         const del = Number(row[4]) === 1 || row[4] === true;
         let data;
@@ -1112,9 +812,16 @@ function mergeSenkuFromCloud(rows) {
         if (mine && mine.ts === ts) return;
 
         // クラウドのほうが新しい（または、この端末にまだ無い）
-        const rec = senkuNormalize(kind, Object.assign({}, data, { id: id, ts: ts, del: del }), ts);
-        if (!rec) return;
-        if (mine) Object.assign(mine, rec); else senkuData[SENKU_COLLECTIONS[kind]].push(rec);
+        if (kind === 'item') {
+            const rec = { id: id, phrase: data.phrase || '', pos: Number(data.pos) || 0, lv: Math.min(4, Math.max(1, Number(data.lv) || 1)), ts: ts, del: del };
+            if (mine) Object.assign(mine, rec); else senkuData.items.push(rec);
+        } else if (kind === 'archive') {
+            const rec = { id: id, year: data.year, month: data.month, subtitle: data.subtitle || '',
+                phrases: Array.isArray(data.phrases) ? data.phrases : [], savedAt: data.savedAt || 0, ts: ts, del: del };
+            if (mine) Object.assign(mine, rec); else senkuData.archives.push(rec);
+        } else {
+            return;
+        }
         changed = true;
     });
 
@@ -1147,7 +854,7 @@ async function syncSenkuWithCloud(opts) {
         const result = mergeSenkuFromCloud(data.rows);
         if (result.changed) {
             saveSenkuData();
-            if (!document.querySelector('.senku-dragging, .senku-lifted')) {
+            if (!document.querySelector('.senku-dragging')) {
                 refreshSenkuTabIfOpen();
                 const listModal = document.getElementById('senkuArchiveListModal');
                 if (listModal && !listModal.classList.contains('hidden')) renderSenkuArchiveList();
@@ -1163,7 +870,7 @@ async function syncSenkuWithCloud(opts) {
 }
 
 // ========================================================
-// 範囲で句群を作る（作句日が指定した期間内の、自分の完成句を集める）
+// 範囲で入選（作句日が指定した期間内の完成句を、まとめて一次に入れる）
 // ========================================================
 function senkuDateInputValue(d) {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -1184,26 +891,13 @@ function senkuRangeCandidates() {
     const endStr = document.getElementById('senkuRangeEnd').value;
     if (!startStr || !endStr || startStr > endStr) return [];
     const myName = userSettings.authorName || '風月';
-    const seen = new Set();
+    const have = new Set(senkuActiveItems().map(x => x.phrase));
     return haikuHistory
-        .filter(h => h.status === '完成句' && (h.author || myName) === myName && h.phrase
+        .filter(h => h.status === '完成句' && (h.author || myName) === myName && h.phrase && !have.has(h.phrase)
             && senkuDateInRange(h.sakkuDate, startStr, endStr))
         .sort((a, b) => parseDateLabel(a.sakkuDate).exactKey.localeCompare(parseDateLabel(b.sakkuDate).exactKey)
-            || (a.createdAt || 0) - (b.createdAt || 0))
-        .filter(h => !seen.has(h.phrase) && seen.add(h.phrase));   // 同じ句は1つにまとめる
+            || (a.createdAt || 0) - (b.createdAt || 0));
 }
-
-// 期間から句群の名前の初期値をつくる（例：10/1〜11/1）。年が今年でなければ年もつける
-function senkuRangeDefaultName(startStr, endStr) {
-    const [sy, sm, sd] = startStr.split('-').map(Number);
-    const [ey, em, ed] = endStr.split('-').map(Number);
-    const thisYear = new Date().getFullYear();
-    const s = (sy === thisYear ? '' : `${sy}/`) + `${sm}/${sd}`;
-    const e = (ey === sy ? '' : `${ey}/`) + `${em}/${ed}`;
-    return `${s}〜${e}`;
-}
-
-let _senkuRangeNameEdited = false;
 
 function updateSenkuRangePreview() {
     const startStr = document.getElementById('senkuRangeStart').value;
@@ -1214,16 +908,14 @@ function updateSenkuRangePreview() {
     if (!startStr || !endStr) note.textContent = '開始日と終了日を選んでください。';
     else if (startStr > endStr) note.textContent = '終了日は開始日より後にしてください。';
     else {
-        if (!_senkuRangeNameEdited) document.getElementById('senkuRangeName').value = senkuRangeDefaultName(startStr, endStr);
         n = senkuRangeCandidates().length;
-        note.textContent = n ? `自分の完成句 ${n}句 を集めます。` : '該当する句はありません。';
+        note.textContent = n ? `自分の完成句 ${n}句 が入選します（すでに選句にある句は除きます）。` : '該当する句はありません。';
     }
     btn.disabled = n === 0;
 }
 
 function openSenkuRangeModal() {
     const now = new Date();
-    _senkuRangeNameEdited = false;
     document.getElementById('senkuRangeStart').value = senkuDateInputValue(new Date(now.getFullYear(), now.getMonth(), 1));
     document.getElementById('senkuRangeEnd').value = senkuDateInputValue(now);
     updateSenkuRangePreview();
@@ -1237,18 +929,17 @@ function closeSenkuRangeModal() {
 function submitSenkuRange() {
     const cands = senkuRangeCandidates();
     if (!cands.length) return;
-    const startStr = document.getElementById('senkuRangeStart').value;
-    const endStr = document.getElementById('senkuRangeEnd').value;
-    const name = document.getElementById('senkuRangeName').value.trim() || senkuRangeDefaultName(startStr, endStr);
-    const g = senkuMakeGroup(name, '');
+    const active = senkuActiveItems();
+    let pos = active.length ? active[active.length - 1].pos + 1 : 0;
     const now = Date.now();
-    const items = cands.map((h, i) => ({ k: 'gitem', id: newSenkuId(), gid: g.id, phrase: h.phrase, pos: i, ts: now, del: false }));
-    senkuData.gitems.push(...items);
+    const added = cands.map(h => ({ id: newSenkuId(), phrase: h.phrase, pos: pos++, lv: 1, ts: now, del: false }));
+    senkuData.items.push(...added);
     saveSenkuData();
-    pushSenkuRecords([g].concat(items));
+    pushSenkuRecords(added);
     closeSenkuRangeModal();
-    showToast(`句群「${g.name}」を作りました（${items.length}句）`);
-    setSenkuView('group', g.id);
+    currentSenkuStage = 1;
+    showToast(`${added.length}句を入選しました`);
+    refreshSenkuTabIfOpen();
 }
 
 // ========================================================
@@ -1263,7 +954,7 @@ document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') syncSenkuWithCloud();
 });
 
-// 「一句ずつ表示」モードの句にも、上スワイプの入選を付ける
+// 「一句ずつ表示」モードの句にも、長押し→上スワイプの入選を付ける
 (function initSenkuSingleModeGesture() {
     const el = document.querySelector('#readSingleContainer .haiku-screen');
     if (!el) return;
