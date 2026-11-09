@@ -1917,3 +1917,6 @@ body.large-text-mode #previewPhrase.extra-long-phrase {
 /* 句が少ないときは中央に寄せ、多いときは左右にスクロールする（端の自動余白は、あふれたときは0になる） */
 .senku-view-list > :first-child { margin-right: auto; }
 .senku-view-list > :last-child { margin-left: auto; }
+/* 選句の一覧：句が少ないときは中央寄せ（多いときは普通にスクロール） */
+#readScreen.senku-mode #readHaikuList > .senku-card:first-child { margin-right: auto; }
+#readScreen.senku-mode #readHaikuList > .senku-card:last-child { margin-left: auto; }
