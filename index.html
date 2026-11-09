@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png?v=3.0.23">
     <link rel="manifest" href="manifest.json?v=3.0.23">
 
-    <link rel="stylesheet" href="style.css?v=3.0.31">
+    <link rel="stylesheet" href="style.css?v=3.0.32">
 </head>
 <body>
 
@@ -107,17 +107,20 @@
             <span id="tabSenku" class="text-tab" onclick="switchReadTab('選句')">選句</span>
         </div>
 
-        <!-- 📝 選句タブ用の操作バー -->
-        <div id="senkuBar" class="senku-bar hidden">
-            <span id="senkuCount" class="senku-count"></span>
+        <!-- 📝 選句タブ用：選考の段階（一次・二次・三次・最終） -->
+        <div id="senkuBar" class="senku-stage-bar hidden"></div>
+
+        <!-- スクロール一覧表示 -->
+        <div id="readHaikuList" class="horizontal-scroll-container saijiki-scroll-list">
+        </div>
+
+        <!-- 📝 選句タブ用の操作（画面の下に置く） -->
+        <div id="senkuActions" class="senku-actions hidden">
+            <span class="text-action-btn" onclick="openSenkuRangeModal()">範囲で入選</span>
             <span class="action-divider">|</span>
             <span class="text-action-btn primary" onclick="openSenkuSaveModal()">選句を保存</span>
             <span class="action-divider">|</span>
             <span class="text-action-btn" onclick="openSenkuArchiveList()">過去の選句</span>
-        </div>
-
-        <!-- スクロール一覧表示 -->
-        <div id="readHaikuList" class="horizontal-scroll-container saijiki-scroll-list">
         </div>
 
         <!-- 📖 一句ずつ表示コンテナ（おみくじ風鑑賞 ＆ 「i」日付表示） -->
@@ -378,9 +381,29 @@
                 <span>月</span>
             </div>
             <input type="text" id="senkuSubtitleInput" class="text-input" placeholder="サブタイトル（例：うてな投句用）" autocomplete="off">
+            <label id="senkuClearRestRow" class="senku-check"><input type="checkbox" id="senkuClearRest"> 残りの句も選句から外す</label>
             <div class="btn-group">
                 <button class="btn btn-outline" onclick="closeSenkuSaveModal()">キャンセル</button>
                 <button id="senkuSaveSubmit" class="btn" onclick="submitSenkuSave()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📝 選句：範囲で入選 -->
+    <div id="senkuRangeModal" class="card-overlay hidden" onclick="closeSenkuRangeModal()">
+        <div class="modal-card-content" onclick="event.stopPropagation()">
+            <span class="modal-close-corner" onclick="closeSenkuRangeModal()">✕</span>
+            <h3 class="modal-title">範囲で入選</h3>
+            <p class="senku-note">作句日がこの期間にある自分の完成句を、まとめて選句（一次）に入れます。</p>
+            <div class="senku-form-row">
+                <input type="date" id="senkuRangeStart" class="text-input senku-date-input" onchange="updateSenkuRangePreview()">
+                <span>〜</span>
+                <input type="date" id="senkuRangeEnd" class="text-input senku-date-input" onchange="updateSenkuRangePreview()">
+            </div>
+            <p id="senkuRangePreview" class="senku-note"></p>
+            <div class="btn-group">
+                <button class="btn btn-outline" onclick="closeSenkuRangeModal()">キャンセル</button>
+                <button id="senkuRangeSubmit" class="btn" onclick="submitSenkuRange()">入選する</button>
             </div>
         </div>
     </div>
@@ -1034,7 +1057,7 @@ function handleSenku(p) {
     <!-- 🖨️ 印刷専用コンテナ（画面上は非表示、印刷時のみ出現） -->
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
-    <script src="app.js?v=3.0.31"></script>
-    <script src="senku.js?v=3.0.31"></script>
+    <script src="app.js?v=3.0.32"></script>
+    <script src="senku.js?v=3.0.32"></script>
 </body>
 </html>

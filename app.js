@@ -3575,8 +3575,11 @@ function renderYomuList(preserveScroll = false) {
         renderSenkuTab(preserveScroll);
         return;
     }
-    const senkuBarEl = document.getElementById('senkuBar');
-    if (senkuBarEl) senkuBarEl.classList.add('hidden');
+    ['senkuBar', 'senkuActions'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+    });
+    document.getElementById('readScreen').classList.remove('senku-mode');
 
     const savedScrollLeft = preserveScroll ? container.scrollLeft : null;
     container.innerHTML = '';

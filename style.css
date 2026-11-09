@@ -1888,8 +1888,18 @@ body.large-text-mode #previewPhrase.extra-long-phrase {
 .haiku-screen.senku-ready { opacity: 1; filter: drop-shadow(0 8px 14px rgba(120,150,100,0.55)); }
 .saijiki-haiku-card.senku-dragging { opacity: 0.7; background: rgba(0,0,0,0.04); border-radius: 8px; }
 
-.senku-bar { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 0 0 4px; font-size: 0.85rem; z-index: 50; position: relative; }
-.senku-count { color: #5c564d; letter-spacing: 0.08em; }
+/* 選句：タイトル（作者切り替え）は選句では使わないので隠し、その場所を段階の見出しにする */
+#readScreen.senku-mode #readTitleCenter { display: none; }
+.senku-stage-bar { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 4px 0 6px; font-size: 0.85rem; z-index: 50; position: relative; }
+.senku-stage { cursor: pointer; color: #8c8476; padding-bottom: 2px; border-bottom: 1px solid transparent; letter-spacing: 0.06em; white-space: nowrap; transition: color 0.2s, border-color 0.2s; }
+.senku-stage .n { margin-left: 4px; font-size: 0.72rem; color: #a8a193; }
+.senku-stage.active { color: #2b2b2b; border-bottom-color: #2b2b2b; }
+.senku-stage.active .n { color: #5c564d; }
+.senku-actions { position: fixed; left: 0; right: 0; bottom: calc(16px + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 0.85rem; z-index: 60; }
+/* 次の段階へ進んだ句には、右に細い傍線をつける */
+.saijiki-haiku-card.senku-passed .saijiki-phrase { border-right: 1px solid #a8a193; padding-right: 8px; }
+.senku-date-input { flex: 1; min-width: 0; width: auto !important; }
+.senku-check { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: #5c564d; cursor: pointer; }
 .senku-empty { margin: auto; padding: 0 20px; max-width: 320px; text-align: center; color: #888; font-size: 0.9rem; line-height: 1.8; }
 .senku-note { font-size: 0.8rem; color: #777; line-height: 1.7; margin: 0; }
 .senku-form-row { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
@@ -1902,5 +1912,5 @@ body.large-text-mode #previewPhrase.extra-long-phrase {
 .senku-archive-count { color: #8c8476; font-size: 0.8rem; white-space: nowrap; }
 .senku-archive-empty { color: #888; font-size: 0.9rem; padding: 16px 0; }
 .senku-view-card { max-width: 720px; width: 94vw; }
-.senku-view-list { display: flex; flex-direction: row-reverse; justify-content: flex-start; align-items: center; width: 100%; height: 45vh; overflow-x: auto; overflow-y: hidden; }
+.senku-view-list { display: flex; flex-direction: row-reverse; justify-content: flex-start; align-items: center; width: 100%; height: min(62vh, 560px); overflow-x: auto; overflow-y: hidden; }
 #readSingleContainer .haiku-screen { touch-action: none; }

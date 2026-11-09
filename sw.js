@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fugetsu-release-v131';
+const CACHE_NAME = 'fugetsu-release-v132';
 
 const ASSETS_TO_CACHE = [
   './',
