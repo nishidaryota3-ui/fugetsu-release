@@ -1918,5 +1918,8 @@ body.large-text-mode #previewPhrase.extra-long-phrase {
 .senku-view-list > :first-child { margin-right: auto; }
 .senku-view-list > :last-child { margin-left: auto; }
 /* 選句の一覧：句が少ないときは中央寄せ（多いときは普通にスクロール） */
-#readScreen.senku-mode #readHaikuList > .senku-card:first-child { margin-right: auto; }
-#readScreen.senku-mode #readHaikuList > .senku-card:last-child { margin-left: auto; }
+/* 見た目の先頭・末尾に余白用の空き要素を置く（並べ替え中にカードの順番が変わっても、余白が途中に移らない） */
+#readScreen.senku-mode #readHaikuList::before,
+#readScreen.senku-mode #readHaikuList::after { content: ''; flex: 0 0 0; margin: auto; }
+#readScreen.senku-mode #readHaikuList::before { order: -100000; }
+#readScreen.senku-mode #readHaikuList::after { order: 100000; }
