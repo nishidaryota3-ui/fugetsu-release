@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png?v=3.0.23">
     <link rel="manifest" href="manifest.json?v=3.0.23">
 
-    <link rel="stylesheet" href="style.css?v=3.0.38">
+    <link rel="stylesheet" href="style.css?v=3.0.39">
 </head>
 <body>
 
@@ -121,6 +121,8 @@
             <span class="text-action-btn primary" onclick="openSenkuSaveModal()">選句を保存</span>
             <span class="action-divider">|</span>
             <span class="text-action-btn" onclick="openSenkuArchiveList()">過去の選句</span>
+            <span class="action-divider">|</span>
+            <span class="text-action-btn danger" onclick="clearSenkuStage()">空にする</span>
         </div>
 
         <!-- 📖 一句ずつ表示コンテナ（おみくじ風鑑賞 ＆ 「i」日付表示） -->
@@ -426,9 +428,27 @@
             <div class="modal-text-actions">
                 <span class="text-action-btn" onclick="backToSenkuArchiveList()">一覧へ</span>
                 <span class="action-divider">|</span>
+                <span class="text-action-btn primary" onclick="openSenkuRestore()">選句に戻す</span>
+                <span class="action-divider">|</span>
                 <span class="text-action-btn" onclick="renameViewingSenkuArchive()">題名を変更</span>
                 <span class="action-divider">|</span>
                 <span class="text-action-btn danger" onclick="deleteViewingSenkuArchive()">削除</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📝 選句：過去の選句を戻す（いまの選句があるとき） -->
+    <div id="senkuRestoreModal" class="card-overlay hidden" onclick="closeSenkuRestore()">
+        <div class="modal-card-content" onclick="event.stopPropagation()">
+            <span class="modal-close-corner" onclick="closeSenkuRestore()">✕</span>
+            <h3 class="modal-title">選句に戻す</h3>
+            <p id="senkuRestoreNote" class="senku-note"></p>
+            <div class="modal-text-actions">
+                <span class="text-action-btn primary" onclick="restoreSenkuArchive('replace')">置き換える</span>
+                <span class="action-divider">|</span>
+                <span class="text-action-btn" onclick="restoreSenkuArchive('add')">追加する</span>
+                <span class="action-divider">|</span>
+                <span class="text-action-btn" onclick="closeSenkuRestore()">やめる</span>
             </div>
         </div>
     </div>
@@ -1058,6 +1078,6 @@ function handleSenku(p) {
     <div id="printBookletContainer" class="print-booklet-container"></div>
 
     <script src="app.js?v=3.0.37"></script>
-    <script src="senku.js?v=3.0.37"></script>
+    <script src="senku.js?v=3.0.39"></script>
 </body>
 </html>

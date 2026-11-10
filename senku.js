@@ -503,6 +503,31 @@ function attachSenkuCardGestures(card, container, orderIds, initialIds, item) {
 }
 
 // ========================================================
+// 選句を空にする（いま開いている段階）
+//   一次: 選句の句をすべて外す
+//   二次以降: その段階の句を、ひとつ前の段階に戻す
+// ========================================================
+function clearSenkuStage() {
+    const stage = currentSenkuStage;
+    const items = senkuStageItems(stage);
+    if (items.length === 0) { showToast('このタブに句はありません'); return; }
+    const name = SENKU_STAGES[stage - 1];
+    const msg = stage === 1
+        ? `選句の${items.length}句をすべて外します。\nよろしいですか？\n（先に「選句を保存」しておくと、あとで戻せます）`
+        : `${name}の${items.length}句を、${SENKU_STAGES[stage - 2]}に戻します。\nよろしいですか？`;
+    if (!confirm(msg)) return;
+    const now = Date.now();
+    items.forEach(it => {
+        if (stage === 1) it.del = true; else it.lv = stage - 1;
+        it.ts = now;
+    });
+    saveSenkuData();
+    pushSenkuRecords(items);
+    showToast(stage === 1 ? '選句を空にしました' : `${name}を空にしました（${SENKU_STAGES[stage - 2]}に戻しました）`);
+    refreshSenkuTabIfOpen();
+}
+
+// ========================================================
 // 選句の保存・過去の選句
 // ========================================================
 const SENKU_MAX_SAVE = 30;   // 1回に保存できる句数（同期の通信量の上限のため）
@@ -599,6 +624,7 @@ function submitSenkuSave() {
         month: month,
         subtitle: subtitle,
         phrases: active.map(s => s.phrase),
+        lvs: active.map(s => s.lv),   // 保存したときの段階（選句に戻すときに再現する）
         savedAt: now,
         ts: now,
         del: false
@@ -707,6 +733,54 @@ function backToSenkuArchiveList() {
     openSenkuArchiveList();
 }
 
+// ========================================================
+// 過去の選句を、いまの選句に戻す
+// ========================================================
+function openSenkuRestore() {
+    const a = senkuActiveArchives().find(x => x.id === viewingSenkuArchiveId);
+    if (!a || !a.phrases.length) return;
+    const cur = senkuActiveItems().length;
+    if (cur === 0) { restoreSenkuArchive('add'); return; }
+    document.getElementById('senkuRestoreNote').textContent =
+        `「${senkuArchiveTitle(a)}」の${a.phrases.length}句を選句に戻します。いまの選句は${cur}句あります。`;
+    document.getElementById('senkuRestoreModal').classList.remove('hidden');
+}
+
+function closeSenkuRestore() {
+    document.getElementById('senkuRestoreModal').classList.add('hidden');
+}
+
+// mode: 'replace' いまの選句を外して戻す / 'add' いまの選句に加える
+function restoreSenkuArchive(mode) {
+    const a = senkuActiveArchives().find(x => x.id === viewingSenkuArchiveId);
+    closeSenkuRestore();
+    if (!a) return;
+    const now = Date.now();
+    const changed = [];
+    if (mode === 'replace') {
+        senkuActiveItems().forEach(it => { it.del = true; it.ts = now; changed.push(it); });
+    }
+    const existing = new Set(senkuActiveItems().map(x => x.phrase));
+    let pos = 0;
+    senkuActiveItems().forEach(it => { if (it.pos >= pos) pos = it.pos + 1; });
+    let added = 0;
+    a.phrases.forEach((phrase, i) => {
+        if (existing.has(phrase)) return;
+        existing.add(phrase);
+        const lv = Math.min(4, Math.max(1, Number(a.lvs && a.lvs[i]) || 1));
+        const item = { id: newSenkuId(), phrase: phrase, pos: pos++, lv: lv, ts: now, del: false };
+        senkuData.items.push(item);
+        changed.push(item);
+        added++;
+    });
+    saveSenkuData();
+    pushSenkuRecords(changed);
+    closeSenkuArchiveView();
+    currentSenkuStage = 1;
+    showToast(`${added}句を選句に戻しました` + (added < a.phrases.length ? `（すでにある${a.phrases.length - added}句は除く）` : ''));
+    refreshSenkuTabIfOpen();
+}
+
 function renameViewingSenkuArchive() {
     if (viewingSenkuArchiveId) openSenkuArchiveRename(viewingSenkuArchiveId);
 }
@@ -748,7 +822,7 @@ function senkuCloudUrl(params) {
 function senkuToRecord(r) {
     if (Array.isArray(r.phrases)) {
         return { id: r.id, kind: 'archive', ts: r.ts, del: r.del ? 1 : 0,
-            data: { year: r.year, month: r.month, subtitle: r.subtitle || '', phrases: r.phrases, savedAt: r.savedAt || 0 } };
+            data: { year: r.year, month: r.month, subtitle: r.subtitle || '', phrases: r.phrases, lvs: Array.isArray(r.lvs) ? r.lvs : undefined, savedAt: r.savedAt || 0 } };
     }
     return { id: r.id, kind: 'item', ts: r.ts, del: r.del ? 1 : 0, data: { phrase: r.phrase, pos: r.pos, lv: r.lv || 1 } };
 }
@@ -817,7 +891,7 @@ function mergeSenkuFromCloud(rows) {
             if (mine) Object.assign(mine, rec); else senkuData.items.push(rec);
         } else if (kind === 'archive') {
             const rec = { id: id, year: data.year, month: data.month, subtitle: data.subtitle || '',
-                phrases: Array.isArray(data.phrases) ? data.phrases : [], savedAt: data.savedAt || 0, ts: ts, del: del };
+                phrases: Array.isArray(data.phrases) ? data.phrases : [], lvs: Array.isArray(data.lvs) ? data.lvs : undefined, savedAt: data.savedAt || 0, ts: ts, del: del };
             if (mine) Object.assign(mine, rec); else senkuData.archives.push(rec);
         } else {
             return;
